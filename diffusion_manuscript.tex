@@ -54,7 +54,7 @@
 \date{\today}
 
 \begin{abstract}
-We show how to accelerate of molecular dynamics simulations using a theoretical analysis of large, flat regions in the energy landscape.  Due to entropic effects, a system may spend significant time in these flat regions of configuration space, just as enthalpic effects may cause a system to spend significant time trapped in a local energetic minima.  Many advances have been made in the theoretical analysis of local minima, but there has been relatively little study of large, flat regions.  Previous literature suggests that these regions are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes.  In this paper, we investigate the probabilities of entering various energy basins inside these mostly-flat regions.   We show that these flat regions are characterized by \emph{approximately constant hitting probabilities} for the target basins, and connect these global hitting probabilities to ``capacities” of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop a method called Capacity Hopping (CHop) for accelerating molecular dynamics simulations.  Numerical experiments on a toy
+	We show how to accelerate molecular dynamics simulations using theoretical analysis of large regions in the configuration space with flat energy landscape. Due to entropic effects, a system may spend significant time in these large, flat regions, just as enthalpic effects may cause a system to spend significant time trapped in local energetic minima.  Many advances have been made in the theoretical analysis of local minima, but there has been little study of large, flat regions. Experimental evidence suggests that these regions are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes.  In this paper, we investigate the probabilities of entering various target sets inside these flat regions. We show that these flat regions are characterized by \emph{approximately constant hitting probabilities} for the target sets, and connect these hitting probabilities to \textit{capacities} of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop Capacity Hopping (CHop), a method for accelerating molecular dynamics simulations. Numerical experiments on a toy model with a golf-course potential show that CHop is nearly as accurate as naive simulations in estimating hitting probabilities, but 750 times faster.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -72,7 +72,7 @@ Yet despite the substantial increase in speed and accuracy of molecular dynamics
 
 Great efforts have been put into extending the timescale accessible by molecular dynamics simulations. A lot of methods focus on enhanced sampling, with simulated annealing \cite{Kirkpatrick1983-su}, genetic algorithms\cite{Goldberg1989-ko} and parallel tempering\cite{Sugita1999-vh} as representatives. However, dynamics is destroyed in these methods, and additional work\cite{Yang2007-gn, Andrec2005-fh, Zheng2009-ow, Huang2010-uu} is needed in order to recover the kinetic information of the system, usually under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models \cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}. When focusing directly on kinetics, the foundational work is transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk}. Various other methods build on top of this, including  transition path sampling\cite{Dellago1998-lb, Bolhuis2002-ws}, transition interface sampling\cite{Van_Erp2005-vw}, and the more recent transition path theory\cite{E2006-fm, E2010-sr}. The essential idea here is to provide information about the reaction rates between different states, which can then be used under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models \cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp} to understand the kinetics of the system. In addition, different accelerated molecular dynamics methods\cite{Perez2009-jy}(hyperdynamics\cite{Voter1997-gi}, parallel replica\cite{Voter1998-mv} and temperature-accelerated dynamics\cite{Sorensen2000-qm}) aim at directly accelerating the molecular dynamics simulations, by either smoothing the energy landscape, exploring energy basins in parallel, or raising the temperature while maintaining the correct dynamics. We refer the readers to some other reviews\cite{Klenin2011-jf, Christen2008-ge, Perez2009-jy} for a more comprehensive picture of this area.
 
-Careful inspection of the existing methods shows that a majority of the previous developments focus on the enthalpic effects, where the central picture consists of an energy landscape with a multitude of local minima separated by high energetic barriers.  A less studied picture involves the entropic effects.  Even when the energy landscapes has essentially no local minima, the dynamics can still be quite complex \cite{Baum1986-we, Wille1987-tf}.  Some efforts have been made to analyze these kinds of systems \cite{Reguera2001-qa, Lwin2005-dm, Mondal2010-oh, Huang2009-kc, Sorensen2000-qm}, but existing work focuses primarily on ``bottleneck’’ models, where two large regions are connected by a small channel.  In this paper we focus on ``golf-course’’ potentials: a large flat region with several small targets on it. The importance of this golf course picture lies in its ubiquity in biomolecular systems, and its role in characterizing the rate-limiting step for a variety of processes, as demonstrated by strong experimental  evidence \cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv} that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts"\cite{McLeish2005-dq}. In fact, ``the vast majority of the space covered by the energy landscape must actually be flat"\cite{McLeish2005-dq}, indicating the presence and significance of entropic effects.  This is In accelerated molecular dynamics\cite{Sorensen2000-qm}, the authors refer to this problem as the ``low barrier problem". In the review \cite{Christen2008-ge}, the author takes a largely pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space'' (which is indeed the case in the presence of entropic effects), ``not much can be done to speed up their simulation without destroying the dynamics of the system.''
+Careful inspection of the existing methods shows that a majority of the previous developments focus on the enthalpic effects, where the central picture consists of an energy landscape with a multitude of local minima separated by high energetic barriers.  A less studied picture involves the entropic effects.  Even when the energy landscapes has essentially no local minima, the dynamics can still be quite complex \cite{Baum1986-we, Wille1987-tf}.  Some efforts have been made to analyze these kinds of systems \cite{Reguera2001-qa, Lwin2005-dm, Mondal2010-oh, Huang2009-kc, Sorensen2000-qm}, but existing work focuses primarily on ``bottleneck" models, where two large regions are connected by a small channel.  In this paper we focus on ``golf-course" potentials: a large flat region with several small targets on it. The importance of this golf course picture lies in its ubiquity in biomolecular systems, and its role in characterizing the rate-limiting step for a variety of processes, as demonstrated by strong experimental  evidence \cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv} that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts"\cite{McLeish2005-dq}. In fact, ``the vast majority of the space covered by the energy landscape must actually be flat"\cite{McLeish2005-dq}, indicating the presence and significance of entropic effects.  The difficulty for dealing with entropic effects has been identified in various places. In previous works\cite{Baum1986-we, Wille1987-tf, Machta2009-gh}, it's pointed out that enhanced sampling methods such as simulated annealing and parallel tempering work poorly in the presence of entropic effects. In accelerated molecular dynamics\cite{Sorensen2000-qm}, the authors refer to this problem as the ``low barrier problem". In the review \cite{Christen2008-ge}, the author takes a largely pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space'' (which is indeed the case in the presence of entropic effects), ``not much can be done to speed up their simulation without destroying the dynamics of the system.''
 
 In this paper, we argue for a new point of view: for molecular dynamics simulations, the intrinsic slowness and long timescales involved in golf-course potentials can be a blessing rather than a curse.  Indeed, if the targets are sufficiently small and the potential energy is sufficiently flat, the system must reach a local equilibrium before it hits one of the targets. In this case, the starting point becomes irrelevant. Thus, if a region has a golf course potential, the hitting probabilities are nearly constant for nearly all of the region. It turns out these probabilities can be approximated using only local information from the vicinities of the targets, coming in the form of “capacities.”   Whenever the dynamics lead out into a flat region of the potential, we can thus simply hop directly to a target, randomly chosen according to the correct probabilities.  This allows us to accelerate simulations by skipping over the time spent in the flat regions.
 
@@ -87,7 +87,7 @@ The rest of the paper is organized as follows. In Section \ref{sec:toy_model}, w
 
 \section{A Toy Model}\label{sec:toy_model}
 
-To concretely demonstrate the CHop method, we present a simple toy model as an example of an entropic barrier.  In this model, the potential energy landscape is flat, except for the regions around the two targets $A$ and $B$. This large flat region forms an entropic barrier -- the sheer size of it means that it would take the process a long time to find either $A$ or $B$, even though there is no enthalpic barrier keeping it away from $A$ or $B$. To further simplify the analysis and facilitate numerical validation, we will assume all sets of interest are spheres.  A sketch of the relevant sets may be seen in Figure \ref{fig:golfsets}.
+To concretely demonstrate the CHop method, we introduce a simple toy model with a golf-course potential. The potential energy landscape is flat, except for the regions around the two targets $A$ and $B$. This large flat region demonstrates the entropic effects -- the sheer size of it means that it would take the process a long time to find either $A$ or $B$, even though there is no local energetic minima away from $A$ or $B$. To further simplify the analysis and facilitate numerical validation, we will assume all sets of interest are spheres.  A sketch of the relevant sets may be seen in Figure \ref{fig:golfsets}.
 
 \begin{figure}
 \includegraphics[width=.5\textheight]{figs/golfpic}
@@ -113,36 +113,35 @@ Our toy model is governed by the SDE
 \end{equation}
 with reflecting boundary at $\partial \bb {0, 1}$, where $U$ is a continuous potential function for which $U (x) = 0, \forall x \not\in \dot{A} \cup \dot{B}$, and $W_t$ is the $d$-dimensional Brownian motion. In other words, the toy model follows a diffusion process within $\bb {0, 1}$ with trivial potential energy outside the set $\dot{A} \cup \dot{B}$, and trivial diffusion coefficients. Given an initial configuration, $X_0 = x$, we will be interested to know the probability that the diffusion hits $A=\bb{x_A,r_A}$ before it hits $B=\bb{x_B, r_B}$.
 
-This toy model encapsulates the essential characteristics of an entropic barrier in the biomolecular system: if $r_A, r_B$ are small, the trajectory of $X$ will generally be spent well away from $A$ or $B$, in the large ``flat" region of the energy landscape that separates $A$ from $B$. The nontrivial energy landscapes in the immediate vicinity of $A$ and $B$ reflect the local nature of energetic interactions in the system under biological conditions, and the reflecting boundary $\partial\Omega$ captures the notion that not all configurations for the biomolecular system are sensible, because of, for example, the limits on bond lengths, angles and dihedral angles in the case of RNA molecules.
-
-The method we propose in this paper is by no means limited to this example. However, this example is a simple one we can use to test our method, both analytically and numerically. Analytically, we are readily able to give some theorems for this special case. Numerically, even when $r_A, r_B$ are very small and the dimension is modestly high, it is still (barely) possible to perform direct simulations (thanks in part to the very simple geometries involved). This enables us to test our method against the ground truth. Theorems and experiments in more general cases should be possible, but remain for future work.
+This toy model encapsulates the essential characteristics of entropic effects: if $r_A, r_B$ are small, the trajectory of $X$ will generally be spent well away from $A$ or $B$, in the large flat region of the energy landscape that separates $A$ from $B$. The nontrivial energy landscapes in the immediate vicinity of $A$ and $B$ reflect the local nature of energetic interactions in the system under biological conditions, and the reflecting boundary $\partial\Omega$ captures the notion that not all configurations for the biomolecular system are sensible, because of, for example, the limits on bond lengths, angles and dihedral angles in the case of RNA molecules.
 
 \section{Theory: $\varepsilon$-flatness and CHop Probabilities}\label{sec:model_formulation}
 
-Denote the $m$-dimensional Brownian motion by $W_t$. Assume the underlying physical process $\{X_t\}_{t \geqslant
+With this toy model in mind, we now turn to the general results of this paper. Assume the underlying physical process $\{X_t\}_{t \geqslant
 0}$ that's governing the macromolecule is a stationary reversible diffusion process in the configuration space $\Omega$ with invariant
 measure ${\mu}= e^{- U (x)} \mathrm{d} x$, and its dynamics can be described by the SDE
 \begin{equation}\label{equ:general_sde}\mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \end{equation}
 where $b (\cdot) : \Omega \rightarrow \mathbbm{R}^d$ and $\sigma (\cdot) :
 \Omega \rightarrow \mathbbm{R}^{d \times m}$ are differentiable vector-valued
-and matrix-valued functions. We refer the reader to Appendix \ref{sec:reversible_diffusion} for a detailed account of stationary reversible diffusion processes. Fix some target sets $A$ and $B$, our primary interest will be in the theoretical understanding of entropic barriers from the perspective of hitting probabilities. Intuitively, an entropic barrier is a large (relative to the targets) subset of the configuration space $\Omega$ in which the energy $U(x)$ is relatively flat.
+and matrix-valued functions, and $W_t$ is the $m$-dimensional Brownian motion. We refer the reader to Appendix \ref{sec:reversible_diffusion} for a detailed account of stationary reversible diffusion processes.
 
-Let $ \tau_S = \inf \{ t \geqslant 0 : X_t \in S \}, \forall S \subset \mathbbm{R}^d $ denote the time at which the process $\{X_t\}_{t \geq 0}$ first hits the set $S$. We care about hitting probabilities of the form 
+Let $ \tau_S = \inf \{ t \geqslant 0 : X_t \in S \}, \forall S \subset \mathbbm{R}^d $ denote the time at which the process $\{X_t\}_{t \geq 0}$ first hits set $S$. For fixed target sets $A$ and $B$, we care about hitting probabilities of the form 
 \[ h_{A, B}(x) = \mathbb{P}(X_{\tau_{A\cup B}}\in A|X_0=x), \forall x\in \Omega\]
-which denotes the probability that the diffusion hits $A$ before $B$ given that it starts at configuration $x$. Our basic intuition is that, because of the large size (relative to the targets) of the entropic barrier, and the flatness of the energy landscape within the entropic barrier, the hitting probability is actually a global property of the entropic barrier: no matter where we start inside the entropic barrier, we would reach local equilibrium before we hit any of the targets, and the hitting probability remains approximately a constant. Furthermore, because we reach local equilibrium before we hit the targets, the internal structure of the entropic barrier doesn't matter, and we expect the global hitting probability can be accurately estimated using only local information around the targets. 
+i.e. the probability that $\{X_t\}_{t \geq 0}$ hits $A$ before $B$ given that it starts at $x\in\Omega$. 
 
-In this section, we make the above intuitions rigorous: we introduce the concept of $\varepsilon$-flatness, to capture the notion that hitting probability remains approximately a constant, and is a global property for entropic barriers; we establish the connection between hitting probabilities and the capacities of sets around targets, to show that we can understand this global property of the entropic barrier using only local information around the targets.
-\subsection{Hitting Probability as a Global Property for Entropic Barriers}
+Our basic intuition is that, if $A$ and $B$ are sufficiently small relative to $\Omega$, and $U$ is sufficiently flat in $\Omega / (A\cup B)$, then for any starting point $x\in \Omega / (A\cup B)$ away from the target sets $A$ and $B$, we would reach local equilibrium before we hit the targets, and the hitting probability $h_{A, B}(x)$ remains approximately a constant. In addition, since we reach local equilibrium before we hit the targets, the internal structure of $\Omega / (A\cup B)$ away from $A$ and $B$ doesn't matter, and we expect the approximately constant hitting probability $h_{A, B}(x)$ can be accurately estimated using only local information around the targets $A$ and $B$.
+
+In what follows, we make the above intuitions rigorous: we first establish approximately constant hitting probability in the context of our toy model, and then present a theorem showing the connection between the approximately constant hitting probability and the ``capacities" of local sets around the targets.
+
+\subsection{Approximately Constant Hitting Probability}
+
+In this section, we introduce the concept of $\varepsilon$-flatness, and establish it for our toy model, to capture the notion that the hitting probability $h_{A, B}(x)$ remains approximately a constant in $\Omega / (A\cup B)$ away from $A$ and $B$, when $A$ and $B$ are sufficiently small relative to $\Omega$, and $U$ is sufficiently flat on $\Omega / (A\cup B)$.
 
 \begin{definition}($\varepsilon$-flatness)\label{def:epsilon_flat}
 For any function $u$ on $\Omega$ and an $\varepsilon > 0$, a set $M\subset \Omega$ is $\varepsilon$-flat for the function $u$ if $\sup_{x, y \in M} | u (x) - u (y) | < \varepsilon$.
 \end{definition}
 
-The concept of $\varepsilon$-flatness is introduced to capture the notion that the hitting probability remains approximately a constant. We will be particularly interested in the case where a large and general set is $\varepsilon$-flat for some hitting probability function. Our central observation is that, because of the flatness of the energy landscape (exactly flat in the case of our toy model) in the entropic barrier, and the small size of the targets relative to the entropic barrier, we can establish $\varepsilon$-flatness of the entropic barrier for the hitting probability function, which means the probability that we hit a particular target first is more or less constant, no matter where we start the diffusion within the set. This makes the hitting probability a global property within the entropic barrier.
-
-It's beneficial to point out that not all $\varepsilon$-flat sets for hitting probability functions are entropic barriers. In particular, if we consider the isocommitor surfaces, i.e. surfaces on which the hitting probabiilty is exactly a constant, we can see these sets are obviously $\varepsilon$-flat (with $\varepsilon=0$), but they are in no sense entropic barriers. We are really only interested in those large and general sets for which we can still establish $\varepsilon$-flatness.
-
-In what follows, we present a theorem in the context of a characteristic entropic barrier, our toy model, which establishes the $\varepsilon$-flatness of the set $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ for the hitting probability function when the targets $A, B$ are sufficiently small or the dimension is high, for suitably picked sets $\tilde{A}, \tilde{B}$.
+Armed with this definition, we present a theorem in the context our toy model, which establishes the $\varepsilon$-flatness of the set $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ for the hitting probability $h_{A, B}(x)$, when the targets $A, B$ are sufficiently small or the dimension is high, for suitably picked sets $\tilde{A}, \tilde{B}$.
 
 \begin{theorem}\label{thm:epsilon_flat}
 Let $u\triangleq h_{A, B}$, where the diffusion and $A, B$ are defined by the toy model given in Equation \ref{equ:toy_sde} parametrized by $x_A, x_B, r_A, d_A, r_{\tilde{A}}, r_B, d_B, r_{\tilde{B}}$. For any fixed value of $d \geq 3$ and $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(d, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then
@@ -152,18 +151,18 @@ Let $u\triangleq h_{A, B}$, where the diffusion and $A, B$ are defined by the to
 Likeliwise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $d \geq c$ then the same holds.
 \end{theorem}
 
-We defer the proof of this theorem to Appendix \ref{sec:proof_epsilon_flat}. Inspection of the proof demonstrates that the key for establishing $\varepsilon$-flatness is a proper separation of time scales: it takes a short time for the process to reach local equilibrium in the entropic barrier, because of the flatness of the energy landscape in the entropic barrier, while it takes a long time for the process to hit the targets starting in the enropic barrier, because of the size of the targets being small compared with the entropic barrier. In future work it would be helpful to find more general conditions under which $\varepsilon$-flatness can be established, but we expect that it would be possible to establish $\varepsilon$-flatness whenever we have reasonable flatness conditions for the energy landscape in a set that's large relative to the targets.
+We defer the proof of this theorem to Appendix \ref{sec:proof_epsilon_flat}. Inspection of the proof demonstrates that the key for establishing $\varepsilon$-flatness is a proper separation of time scales: it takes a short time for the process $\{X_t\}_{t\geq 0}$to reach local equilibrium in $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$, because of the flatness of the potential energy $U$ in this set, while it takes a long time for the process $\{X_t\}_{t\geq 0}$ to hit the targets $A$ and $B$, starting in $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$, because of the sizes of the targets $A$ and $B$ being small compared with $\Omega$.
 
-\subsection{Approximating Global Hitting Probabilities Using Local Information}
+\subsection{Estimating Constant Hitting Probability Using Local Information}
 
-For a hitting probability function, if a set is $\varepsilon$-flat, then the hitting probability is a global property, and remains approximately a constant in this set. The key theoretical insight of this paper is that we can understand this global property using only local information around the targets. It turns out this local information comes in the form of capacities of sets around the targets. For $A \subset \tilde{A} \subset \Omega$, the capacity
+In this section, we present results showing that when $\varepsilon$-flatness is established, we can accurately estimate the approximately constant hitting probability $h_{A, B}(x)$ using only local information around the targets. It turns out this local information comes in the form of capacities of sets around the targets. For $A \subset \tilde{A} \subset \Omega$, the capacity
 $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ under the stationary reversible diffusion process $\{X_t\}_{t\geq 0}$ is given by
 \[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) = \frac{1}{2} \int_{\Omega}
 \nabla h_{A, \tilde{A}^c} (x)^T a (x) \nabla h_{A, \tilde{A}^c} (x) e^{- U
 (x)} \mathrm{d} x \]
 where $a (x) = \sigma (x) \sigma (x)^T$ is the diffusion matrix. We refer the reader to Appendix \ref{sec:reversible_diffusion} for more details on capacity and the the related concept of Dirichlet form.
 
-We start by considering the simple case where there are only two targets $A$ and $B$, and we are interested to know which one we hit first. For the general stationary reversible SDE given by Equation \ref{equ:general_sde}, we have our main theorem
+We start by considering the simple case where there are only two targets $A$ and $B$. For the general stationary reversible SDE given by Equation \ref{equ:general_sde}, we have our main theorem
 
 \begin{theorem}\label{thm:main_thm}
 Assume we have $A, B \subset \Omega$ disjoint. Define
@@ -178,7 +177,7 @@ for the function $u$, then we have
 \varepsilon + \sqrt{\frac{\varepsilon}{2}} \]
 \end{theorem}
 
-We defer the proof to Appendix \ref{sec:proof_thm}. This theorem establishes the connection of the global property of hitting probabilities to the local property of capacities. It generalizes naturally to the case of multiple targets:
+We defer the proof to Appendix \ref{sec:proof_thm}. This theorem generalizes naturally to the case of multiple targets, with the additional definition of \textit{CHop Probabilities}:
 
 \begin{definition}
 Let $\{X_t\}_{t\geq 0}$ be a stationary reversible diffusion process on $\Omega$.  Pick $A_1\cdots A_n \subset \Omega$ and $\tilde A_1\cdots \tilde A_n \subset \Omega$ such that $A_k \subset \tilde A_k$.  Then the \textbf{CHop Probability} for the set $A_k$ (given all the other sets $A_1\cdots, A_{k-1}, A_{k+1}, \cdots A_n \subset \Omega$ and $\tilde A_1\cdots \tilde A_n \subset \Omega$) is given by
@@ -195,7 +194,7 @@ This corollary follows immediately from Theorem \ref{thm:main_thm} and additivit
 
 \section{Application: CHop Method and Capacity Estimation}\label{sec:algorithm}
 
-In this section, we focus on practical applications. Inspired by the theoretical insights above, we introduce the CHop method as a way to efficiently overcome entropic barriers in molecular dynamics simulations. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
+In this section, we focus on practical applications. Inspired by the theoretical insights above, we introduce the CHop method as a way to accelerate molecular dynamics simulations by efficiently dealing with the entropic effects. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
 
 \subsection{CHop Method}
 
@@ -282,7 +281,7 @@ efficient estimation of $h_{A, \tilde{A}^c} (x)$ on a surface $\partial S$, wher
 
 The method is closely related to milestoning\cite{West2007-cn, Bello-Rivas2015-ld, Aristoff2016-gc} and Markov state models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}, yet is more specialized and tailored to the problem at hand. In particular, we seek not to approximate the underlying process, but only to understand the hitting probability. Our goal is to make the method adaptive to the energy landscape, without the need for any prior knowledge. To this end, we evolve an ensemble of samples, and use a clustering-based approach to define the states.
 
-The method has three main stages: determining the discretized states, running local simulations to estimate the transition probabilities, and estimating the hitting probabilities. We detail the method below, as part of the outline for our capacity estimation algorithm.
+The method has three main stages: determining the discretized states, running local simulations to estimate the transition probabilities, and estimating the hitting probabilities. The method is detailed in Appendix \ref{algorithm}.
 
 \subsubsection{Outline of the Capacity Estimation Algorithm}
 
@@ -300,99 +299,11 @@ In what follows, we put all the pieces from our previous discussions together, a
 \begin{enumerate}
 	\item Pick $G, \tilde{G}$ with smooth boundaries, s.t. $A \subset G \subset \tilde{G} \subset \tilde{A}$
 	\item Estimate the surface areas $|\partial G|$ and $|\partial \tilde{G}|$
-	\item Sample $y_1,y_2,\cdots y_m$ on $\partial G$ and $\tilde y_1,\tilde y_2 \cdots \tilde y_n$ on $\partial \tilde{G}$ according to the invariant measure $e^{- U(x)}\mathrm{d}x$ restricted on $\partial G, \partial \tilde{G}$, and estimate $h_{A,\tilde A^c}(y_i), i=1,\cdots, m$ and $h_{A,\tilde A^c}(\tilde y_i), i=1, \cdots, n$ using Algorithm \ref{alg:hitting_prob_estimation} applied to the cases $S=G$ and $S=\tilde{G}$
+	\item Sample $y_1,y_2,\cdots y_m$ on $\partial G$ and $\tilde y_1,\tilde y_2 \cdots \tilde y_n$ on $\partial \tilde{G}$ according to the invariant measure $e^{- U(x)}\mathrm{d}x$ restricted on $\partial G, \partial \tilde{G}$, and estimate $h_{A,\tilde A^c}(y_i), i=1,\cdots, m$ and $h_{A,\tilde A^c}(\tilde y_i), i=1, \cdots, n$ using Algorithm \ref{alg:hitting_prob_estimation} in Appendix \ref{algorithm} applied to the cases $S=G$ and $S=\tilde{G}$
 	\item Estimate $\nabla h_{G, \tilde{G}^c}(y_i), {\textbf{n}} (y_i), i=1, \cdots, m$ and $\nabla h_{G, \tilde{G}^c}(\tilde{y}_i), {\textbf{n}} (\tilde{y}_i), i=1, \cdots, n$, where ${\textbf{n}} (x)$ denotes the the outward-facing normal vector at point $x$ on the corresponding surfaces
 	\item Estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ using the formula given in Equation \ref{eq:capesteq}
 \end{enumerate}
 }}
-
-where the algorithm for estimating local hitting probabilities is outlined as follows:
-
-{\algorithm{\label{alg:hitting_prob_estimation}Estimating $h_{A,\tilde A^c}(x)$ for many values of $x$ along a shell $\partial S$
-
-\newline
-
-\begin{description}
-	\item[Input] $A \subset S \subset \tilde{A} \subset \Omega$ and a stationary reversible  diffusion process $\{X_t\}_{t \geq 0}$ in $\Omega$ with invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$. We also require a series of subsets
-  \[ \tilde{A} \supset S_0 \supset S_1 \supset \cdots \supset S_{m - 1}
-     \supset S_m = S \supset S_{m + 1} \supset \cdots \supset S_n = A \]
-     which indicate a kind of reaction coordinate.
-
-	\item[Output] A collection of points $z_1,\cdots z_{N_p}$ on $\partial S$ sampled from the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted on $\partial S$, along with estimates of $h_{A,\tilde A^c}(y_i)$ for each point.
-
-\end{description}
-     
-\begin{enumerate}
-\item Discretize the space.  
-\begin{enumerate}
-  \item Generate an ensemble of samples $z_1, \ldots, z_{N_p}$ on $\partial S$
-  according to the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted to $\partial S$. 
-  
-  \item Evolve the ensemble on $\partial S$, by repeatedly taking a random
-	  sample from $\{ z_1, \ldots, z_{N_p} \}$ and follow the dynamics of $\{X_t\}_{t \geq 0}$
-  until the trajectory hits either $\partial S_{m - 1}$ or $\partial S_{m +
-  1}$. Record the hitting locations on $\partial S_{m - 1}$ and $\partial S_{m
-  + 1}$ until we have $N_p$ samples on both $\partial S_{m - 1}$ and $\partial
-  S_{m + 1}$. Store the redundant trials for future estimation of transition
-  probabilities.
-  
-  \item Sequentially evolve the ensembles on $\partial S_{m - 1}, \ldots,
-  \partial S_2$ and on $\partial S_{m + 1}, \ldots, \partial S_{n - 2}$, until
-  we have $N_p$ samples on all of the intermediate surfaces $\partial S_1,
-  \ldots, \partial S_{n - 1}$. Store the redundant trials for future
-  estimation of transition probabilities.
-  
-  \item For each one of the surfaces $\partial S_1, \ldots, \partial S_{n -
-  1}$, cluster the $N_p$ samples on that surface into $N_b \,$ states. 
-\end{enumerate}
-
-The result of this step is a partitioning of each shell $\partial S_i$ into
-$N_b$ discrete regions. 
-
-\item Estimate the transition probabilities between these states by running an additional $N_s$ local simulations for each one of the $N_b$ states on each surface. The result of this step is an estimate of the probability of transitioning from state $k$ on $\partial S_i$ to state $l$ on $\partial S_j$, which we denote by $P^{(i, j)}_{k, l}$, where $k, l \in \{ 1, \ldots, N_b \}$ and $i, j \in \{ 1, \ldots, n - 1 \}$ with $| i - j | = 1$.
-  
-\item Use the transition probabilities to get an estimate of the hitting probabilities for the $N_b$ states on
-  $\partial S$.  In line with related works on Markov state models,\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp} we  approximate the continuous dynamics using closed-form calculations from the discrete Markov chain we have developed in the previous two steps.  In particular, we estimate overall hitting probabilities using the standard ``one-step analysis.'' For any $k \in \{ 1, \ldots, N_b \}$ and $i \in \{ 1, \ldots, n - 1 \}$, let $u^{(i)}_k$ denote the probability of hitting $\partial A = \partial S_n$ before hitting $\partial \tilde{A} = \partial S_0$ if we start the discretized process at state $k$ on $\partial S_i$.  We can calculate our object of interest by solving the matrix difference equation \[ u^{(i)} = P^{(i, i + 1)} u^{(i + 1)} + P^{(i, i - 1)} u^{(i - 1)}, i = 1, \ldots, n - 1 \] with boundary conditions $u^{(0)} = {\textbf{0}}, u^{(n)} = {\textbf{1} }$, where ${\textbf{0}}$ and ${\textbf{1}}$ are vectors of all $0$'s and $1$'s. This gives the estimated hitting probability for each cluster.  We then estimate the hitting probability of each point $z_i$ by
-  \begin{equation}
-	  \label{equ:hitprobest}
-  h_{A,\tilde A^c}(z_i) = u^{(m)}_k, z_i \in \text{cluster }k\text{ on }\partial S\end{equation}
-\end{enumerate}
-}}
-
-\subsubsection{Concrete Choices for the Toy Model}
-
-To understand this algorithm more concretely, let us now use it to estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ in the setup of the toy model. Here we can use the simple geometry and the exactly flat energy landscape of the toy model to our advantage. We follow the outline given in Algorithm \ref{alg:capest}.
-
-\begin{enumerate}
-	\item We pick $G = \dot{A}$ and $\tilde{G} = \tilde{A}$, where $\dot{A}$ and $\tilde{A}$ are as in our toy model (see Figure \ref{fig:golfsets}).
-	\item The surfaces areas can be easily calculated analytically as
-\[|\partial G| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}d_A^{d - 1}, |\partial \tilde{G}| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\tilde{r}_A^{d - 1}\]
-	\item The restrictions of the invariant measure $e^{- U (x)} \mathrm{d} x$ on $\partial G$ and $\partial \tilde{G}$ are simply uniform distributions on these two spheres, and we can generate exact samples on these two spheres. Since $\tilde{G} = \tilde{A}$ it is straightforward to use the probabilistic interpretation of $h$ to see that $h_{A, \tilde{A}^c} (x) = 0, \forall x \in \partial \tilde{G}$, so we only need to apply Algorithm \ref{alg:hitting_prob_estimation} to the case of $S=G=\dot{A}$. Following the notations used in Algorithm \ref{alg:hitting_prob_estimation}, assume we get $N_p$ samples $z_1,\cdots, z_{N_p}$, and the hitting probability vector $u^{(m)}$ for the $N_b$ clusters on $\partial S_m = \partial G$, we have the estimates given in Equation \ref{equ:hitprobest}
-	\item $h_{G, \tilde{G}^c}$ can be identified analytically as the harmonic function on $\tilde{G} / G$\cite{Wendel1980-sj}
-\[ h_{G, \tilde{G}^c} (x) = \frac{1}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x
-- x_A \|^{2 - d} - \frac{r_{\tilde{A}}^{2 - d}}{d_A^{2 - d} -
-r_{\tilde{A}}^{2 - d}} \]
-As a result, the gradient is given by
-\[ \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2
-   - d}} \| x - x_A \|^{1 - d} \frac{x - x_A}{\| x - x_A \|} \]
-Note that on both $\partial \tilde{G}$ and $\partial G$, the outward normal is
-given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, so
-\[
-	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x - x_A \|^{1 - d} = 
-\begin{cases}
-	\frac{(2 - d) r_{\tilde{A}}^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial \tilde{G}\\
-	\frac{(2 - d) d_A^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial G
-\end{cases}
-\]
-\item Finally, note that $U (x) = 0$ and $a (x) = I$ for $x
-\in \partial \tilde{G},\partial G$.  Plugging these into Equation (\ref{eq:capesteq}), we obtain the approximation
-%
-\begin{gather}
-	\ensuremath{\operatorname{cap}} (A, \tilde{A}) \approx \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\frac{d-2}{d_A^{2-d}-r_{\tilde A}^{2-d}}\frac{1}{N_p} \sum_{k=1}^{N_b}n_k u_k^{(m)}
-\end{gather}
-where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$ that belong to cluster $k$ on $\partial S=\partial G=\partial \dot{A}$
-%
-\end{enumerate}
 
 \section{Numerical Experiments and Results}\label{sec:experiments}
 
@@ -1328,6 +1239,93 @@ h_{G, \tilde{G}^c} (x)]^T {\textbf n} (x) \mathd S
 which proves the desired result.
 \hspace*{\fill}$\Box$\medskip
 
+
+\section{Capacity Estimation Algorithm}\label{algorithm}
+The algorithm for estimating local hitting probabilities is outlined as follows:
+
+{\algorithm{\label{alg:hitting_prob_estimation}Estimating $h_{A,\tilde A^c}(x)$ for many values of $x$ along a shell $\partial S$
+
+\newline
+
+\begin{description}
+	\item[Input] $A \subset S \subset \tilde{A} \subset \Omega$ and a stationary reversible  diffusion process $\{X_t\}_{t \geq 0}$ in $\Omega$ with invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$. We also require a series of subsets
+  \[ \tilde{A} \supset S_0 \supset S_1 \supset \cdots \supset S_{m - 1}
+     \supset S_m = S \supset S_{m + 1} \supset \cdots \supset S_n = A \]
+     which indicate a kind of reaction coordinate.
+
+	\item[Output] A collection of points $z_1,\cdots z_{N_p}$ on $\partial S$ sampled from the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted on $\partial S$, along with estimates of $h_{A,\tilde A^c}(y_i)$ for each point.
+
+\end{description}
+     
+\begin{enumerate}
+\item Discretize the space.  
+\begin{enumerate}
+  \item Generate an ensemble of samples $z_1, \ldots, z_{N_p}$ on $\partial S$
+  according to the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted to $\partial S$. 
+  
+  \item Evolve the ensemble on $\partial S$, by repeatedly taking a random
+	  sample from $\{ z_1, \ldots, z_{N_p} \}$ and follow the dynamics of $\{X_t\}_{t \geq 0}$
+  until the trajectory hits either $\partial S_{m - 1}$ or $\partial S_{m +
+  1}$. Record the hitting locations on $\partial S_{m - 1}$ and $\partial S_{m
+  + 1}$ until we have $N_p$ samples on both $\partial S_{m - 1}$ and $\partial
+  S_{m + 1}$. Store the redundant trials for future estimation of transition
+  probabilities.
+  
+  \item Sequentially evolve the ensembles on $\partial S_{m - 1}, \ldots,
+  \partial S_2$ and on $\partial S_{m + 1}, \ldots, \partial S_{n - 2}$, until
+  we have $N_p$ samples on all of the intermediate surfaces $\partial S_1,
+  \ldots, \partial S_{n - 1}$. Store the redundant trials for future
+  estimation of transition probabilities.
+  
+  \item For each one of the surfaces $\partial S_1, \ldots, \partial S_{n -
+  1}$, cluster the $N_p$ samples on that surface into $N_b \,$ states. 
+\end{enumerate}
+
+The result of this step is a partitioning of each shell $\partial S_i$ into
+$N_b$ discrete regions. 
+
+\item Estimate the transition probabilities between these states by running an additional $N_s$ local simulations for each one of the $N_b$ states on each surface. The result of this step is an estimate of the probability of transitioning from state $k$ on $\partial S_i$ to state $l$ on $\partial S_j$, which we denote by $P^{(i, j)}_{k, l}$, where $k, l \in \{ 1, \ldots, N_b \}$ and $i, j \in \{ 1, \ldots, n - 1 \}$ with $| i - j | = 1$.
+  
+\item Use the transition probabilities to get an estimate of the hitting probabilities for the $N_b$ states on
+  $\partial S$.  In line with related works on Markov state models,\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp} we  approximate the continuous dynamics using closed-form calculations from the discrete Markov chain we have developed in the previous two steps.  In particular, we estimate overall hitting probabilities using the standard ``one-step analysis.'' For any $k \in \{ 1, \ldots, N_b \}$ and $i \in \{ 1, \ldots, n - 1 \}$, let $u^{(i)}_k$ denote the probability of hitting $\partial A = \partial S_n$ before hitting $\partial \tilde{A} = \partial S_0$ if we start the discretized process at state $k$ on $\partial S_i$.  We can calculate our object of interest by solving the matrix difference equation \[ u^{(i)} = P^{(i, i + 1)} u^{(i + 1)} + P^{(i, i - 1)} u^{(i - 1)}, i = 1, \ldots, n - 1 \] with boundary conditions $u^{(0)} = {\textbf{0}}, u^{(n)} = {\textbf{1} }$, where ${\textbf{0}}$ and ${\textbf{1}}$ are vectors of all $0$'s and $1$'s. This gives the estimated hitting probability for each cluster.  We then estimate the hitting probability of each point $z_i$ by
+  \begin{equation}
+	  \label{equ:hitprobest}
+  h_{A,\tilde A^c}(z_i) = u^{(m)}_k, z_i \in \text{cluster }k\text{ on }\partial S\end{equation}
+\end{enumerate}
+}}
+
+To understand this algorithm more concretely, let us now use it to estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ in the setup of the toy model. Here we can use the simple geometry and the exactly flat energy landscape of the toy model to our advantage. We follow the outline given in Algorithm \ref{alg:capest}.
+
+\begin{enumerate}
+	\item We pick $G = \dot{A}$ and $\tilde{G} = \tilde{A}$, where $\dot{A}$ and $\tilde{A}$ are as in our toy model (see Figure \ref{fig:golfsets}).
+	\item The surfaces areas can be easily calculated analytically as
+\[|\partial G| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}d_A^{d - 1}, |\partial \tilde{G}| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\tilde{r}_A^{d - 1}\]
+	\item The restrictions of the invariant measure $e^{- U (x)} \mathrm{d} x$ on $\partial G$ and $\partial \tilde{G}$ are simply uniform distributions on these two spheres, and we can generate exact samples on these two spheres. Since $\tilde{G} = \tilde{A}$ it is straightforward to use the probabilistic interpretation of $h$ to see that $h_{A, \tilde{A}^c} (x) = 0, \forall x \in \partial \tilde{G}$, so we only need to apply Algorithm \ref{alg:hitting_prob_estimation} to the case of $S=G=\dot{A}$. Following the notations used in Algorithm \ref{alg:hitting_prob_estimation}, assume we get $N_p$ samples $z_1,\cdots, z_{N_p}$, and the hitting probability vector $u^{(m)}$ for the $N_b$ clusters on $\partial S_m = \partial G$, we have the estimates given in Equation \ref{equ:hitprobest}
+	\item $h_{G, \tilde{G}^c}$ can be identified analytically as the harmonic function on $\tilde{G} / G$\cite{Wendel1980-sj}
+\[ h_{G, \tilde{G}^c} (x) = \frac{1}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x
+- x_A \|^{2 - d} - \frac{r_{\tilde{A}}^{2 - d}}{d_A^{2 - d} -
+r_{\tilde{A}}^{2 - d}} \]
+As a result, the gradient is given by
+\[ \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2
+   - d}} \| x - x_A \|^{1 - d} \frac{x - x_A}{\| x - x_A \|} \]
+Note that on both $\partial \tilde{G}$ and $\partial G$, the outward normal is
+given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, so
+\[
+	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x - x_A \|^{1 - d} = 
+\begin{cases}
+	\frac{(2 - d) r_{\tilde{A}}^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial \tilde{G}\\
+	\frac{(2 - d) d_A^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial G
+\end{cases}
+\]
+\item Finally, note that $U (x) = 0$ and $a (x) = I$ for $x
+\in \partial \tilde{G},\partial G$.  Plugging these into Equation (\ref{eq:capesteq}), we obtain the approximation
+%
+\begin{gather}
+	\ensuremath{\operatorname{cap}} (A, \tilde{A}) \approx \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\frac{d-2}{d_A^{2-d}-r_{\tilde A}^{2-d}}\frac{1}{N_p} \sum_{k=1}^{N_b}n_k u_k^{(m)}
+\end{gather}
+where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$ that belong to cluster $k$ on $\partial S=\partial G=\partial \dot{A}$
+%
+\end{enumerate}
 
 \section{Details on Energy Function} \label{sec:energy_function}
 
