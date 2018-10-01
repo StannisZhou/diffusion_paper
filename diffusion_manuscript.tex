@@ -179,14 +179,14 @@ for the function $u$, then we have
 
 We defer the proof to Appendix \ref{sec:proof_thm}. This theorem generalizes naturally to the case of multiple targets, with the additional definition of \textit{CHop Probabilities}:
 
-\begin{definition}
+\begin{definition}\label{chop_prob}
 Let $\{X_t\}_{t\geq 0}$ be a stationary reversible diffusion process on $\Omega$.  Pick $A_1\cdots A_n \subset \Omega$ and $\tilde A_1\cdots \tilde A_n \subset \Omega$ such that $A_k \subset \tilde A_k$.  Then the \textbf{CHop Probability} for the set $A_k$ (given all the other sets $A_1\cdots, A_{k-1}, A_{k+1}, \cdots A_n \subset \Omega$ and $\tilde A_1\cdots \tilde A_n \subset \Omega$) is given by
 \begin{equation*}
 p_{A_k} = \frac{\ensuremath{\operatorname{cap}} (A_k, \tilde{A}_k)}{\sum_{i = 1}^n \ensuremath{\operatorname{cap}} (A_i, \tilde{A}_i)}, k=1,\dots, n
 \end{equation*} 
 \end{definition}
 
-\begin{cor}\label{thm:main_cor} Let $u_k = h_{A_k,\cup_i A_i}$ denote the probability the process hits $A_k$ before the other target sets.  Fix any $\varepsilon \in \left( 0, \frac{2}{9} \right]$.  If $M = \Omega \backslash \bigcup_{k = 1}^n \tilde{A}_k $ is $\varepsilon$-flat for the functions $\{u_k\}_{k\in1,\dots, n}$ then each $u_k$ is well-approximated by the corresponding CHop Probability:
+\begin{cor}\label{thm:main_cor} Let $u_k = h_{A_k,\cup_{i\neq k} A_i}$ denote the probability the process hits $A_k$ before the other target sets.  Fix any $\varepsilon \in \left( 0, \frac{2}{9} \right]$.  If $M = \Omega \backslash \bigcup_{k = 1}^n \tilde{A}_k $ is $\varepsilon$-flat for the functions $\{u_k\}_{k\in1,\dots, n}$ then each $u_k$ is well-approximated by the corresponding CHop Probability:
 \[ \sup_{x \in M} \left| u_k (x) - p_{A_k} \right| \leqslant \varepsilon + \sqrt{\frac{\varepsilon}{2}}, k=1,\dots, n\]
 \end{cor}
 
@@ -194,30 +194,33 @@ This corollary follows immediately from Theorem \ref{thm:main_thm} and additivit
 
 \section{Application: CHop Method and Capacity Estimation}\label{sec:algorithm}
 
-In this section, we focus on practical applications. Inspired by the theoretical insights above, we introduce the CHop method as a way to accelerate molecular dynamics simulations by efficiently dealing with the entropic effects. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
+In this section, we focus on practical applications. Inspired by the theoretical analysis above, we introduce the CHop method as a way to accelerate molecular dynamics simulations by efficiently dealing with regions with golf-course potential. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
 
 \subsection{CHop Method}
 
 Recall that in the previous section on theory, we made the following two key points:
 
 \begin{enumerate}
-	\item We can establish $\varepsilon$-flatness for entropic barriers, and the hitting probability remains approximately a constant, hence a global property of the entropic barrier.
-	\item We can accurately estimate the global hitting probabilities using CHop probabilities, which depend on capacities that can be determined solely based on the local information around the targets.
+	\item We can establish $\varepsilon$-flatness in regions with a golf-course potential, and the hitting probabilities of the various targets remains approximately a constant over a large part of the flat region.
+	\item The approximately constant hitting probabilities can be accurately estimated using CHop probabilities, which depend on capacities that can be determined solely based on the local information around the targets.
 \end{enumerate}
 
-In most practical applications, molecular dynamics simulations of biomolecular systems are not fast enough to give us information on a biologically relevant time-scale. A large part of this difficulty results from entropic barriers\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv, McLeish2005-dq}. The above theoretical insights provide us with an efficient way to overcome entropic barriers to get information of the biomolecular system on a much longer time-scale: we make use of our knowledge of the targets (which is typically available, e.g. in the form of different secondary structures for RNAs) to carry out local simulations around the targets for the estimation of capacites. Capacities can then be used to calculate the CHop probabilities, which give us an accurate estimate of the global hitting probabilities. This enables us to make probabilistic jumps to one of the targets to accelerate the molecular dynamics simulations, which is the essence of the CHop method.
+In most practical applications, molecular dynamics simulations of biomolecular systems are not fast enough to give us information on a biologically relevant time-scale. A large part of this difficulty results from golf-course potentials\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv, McLeish2005-dq}. The above theoretical insights provide us with an efficient way to deal with golf-course potentials, so that we can get information of the biomolecular system on a much longer time-scale: we make use of our knowledge of the targets (which is typically available, e.g. in the form of different secondary structures for RNAs) to carry out local simulations around the targets for the estimation of capacites. Capacities can then be used to calculate the CHop probabilities, which give us an accurate estimate of the approximately constant hitting probabilities. This enables us to make probabilistic jumps to one of the targets to accelerate the molecular dynamics simulations, which is the essence of the CHop method.
 
-To summarize, on a high level, the CHop method consists of the following steps: 
+To summarize, the CHop method works with a region $\Omega$ which has a golf-course potential under the process $\{X_t\}_{t \geq 0}$. Following the notations in Definition \ref{chop_prob}, we use $A_1\cdots A_n \subset \Omega$ to denote the target sets in the golf-course potential. On a high-level, the CHop method consists of the following steps:
 
 \begin{enumerate}
-	\item Identify an entropic barrier and establish its $\varepsilon$-flatness
-	\item Estimate the capacities of the sets around the targets to get the CHop probabilities
-	\item Make probabilistic jumps from within the entropic barrier to one of the targets, based on the approximated hitting probabilities given by the CHop probabilities
+	\item Identify suitable sets $\tilde A_k \subset \Omega$ where $A_k \subset \tilde{A}_k, k=1, \cdots, n$, such that we can establish the $\varepsilon$-flatness of $M = \Omega \backslash \bigcup_{k = 1}^n \tilde{A}_k $ for hitting probability functions $h_{A_k,\cup_{i\neq k} A_i}(x)$.
+	\item Estimate the capacities $\ensuremath{\operatorname{cap}} (A_k, \tilde{A}_k)$, from which we can derive the CHop probabilities
+\begin{equation*}
+p_{A_k} = \frac{\ensuremath{\operatorname{cap}} (A_k, \tilde{A}_k)}{\sum_{i = 1}^n \ensuremath{\operatorname{cap}} (A_i, \tilde{A}_i)}, k=1,\dots, n
+\end{equation*} 
+	\item Once the process $\{X_t\}_{t \geq 0}$ enters the flat region $M$, make probabilistic jumps to one of the target sets $A_k$ using the CHop probabilities $p_{A_k}, k=1, \cdots, n$.
 \end{enumerate}
 
 It's easy to see that, to make the CHop method practical, we need to be able to estimate the capacities accurately and efficiently. This would be our topic for the rest of this section.
 
-\subsection{Efficient Estimation of Capacities}
+\subsection{Estimation of Capacities}
 
 We start our discussion on estimating the capacities with a simple lemma:
 \begin{lemma}\label{thm:capacity_lemma}
@@ -254,8 +257,6 @@ With these pieces in place, using the lemma, we can approximate the capacity by
 \end{array}
 \end{gather}
 
-\subsubsection{Overcoming the Challenges}
-
 The first challenge (sampling of points) can be addressed using existing methods, e.g. an importance sampling based approach, and is further simplified by the fact that we have the freedom to pick $G$ and $\tilde{G}$. In some special cases (e.g. the toy model), it's not hard to pick $G, \tilde{G}$ in such a way that we can get exact samples from the invariant measure $e^{- U (x)} \mathrm{d} x$.
 
 The second challenge (estimation of $h_{G,\tilde G}$) can be addressed by making judicious choice of $G$ and
@@ -283,7 +284,7 @@ The method is closely related to milestoning\cite{West2007-cn, Bello-Rivas2015-l
 
 The method has three main stages: determining the discretized states, running local simulations to estimate the transition probabilities, and estimating the hitting probabilities. The method is detailed in Appendix \ref{algorithm}.
 
-\subsubsection{Outline of the Capacity Estimation Algorithm}
+\subsection{Outline of the Capacity Estimation Algorithm}
 
 In what follows, we put all the pieces from our previous discussions together, and present the outline of a flexible and general purpose capacity estimation algorithm:
 
@@ -305,6 +306,38 @@ In what follows, we put all the pieces from our previous discussions together, a
 \end{enumerate}
 }}
 
+To understand this algorithm more concretely, let us now use it to estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ in the setup of the toy model. Here we can use the simple geometry and the exactly flat energy landscape of the toy model to our advantage. We follow the outline given in Algorithm \ref{alg:capest}.
+
+\begin{enumerate}
+	\item We pick $G = \dot{A}$ and $\tilde{G} = \tilde{A}$, where $\dot{A}$ and $\tilde{A}$ are as in our toy model (see Figure \ref{fig:golfsets}).
+	\item The surfaces areas can be easily calculated analytically as
+\[|\partial G| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}d_A^{d - 1}, |\partial \tilde{G}| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\tilde{r}_A^{d - 1}\]
+	\item The restrictions of the invariant measure $e^{- U (x)} \mathrm{d} x$ on $\partial G$ and $\partial \tilde{G}$ are simply uniform distributions on these two spheres, and we can generate exact samples on these two spheres. Since $\tilde{G} = \tilde{A}$ it is straightforward to use the probabilistic interpretation of $h$ to see that $h_{A, \tilde{A}^c} (x) = 0, \forall x \in \partial \tilde{G}$, so we only need to apply Algorithm \ref{alg:hitting_prob_estimation} to the case of $S=G=\dot{A}$. Following the notations used in Algorithm \ref{alg:hitting_prob_estimation}, assume we get $N_p$ samples $z_1,\cdots, z_{N_p}$, and the hitting probability vector $u^{(m)}$ for the $N_b$ clusters on $\partial S_m = \partial G$, we have the estimates given in Equation \ref{equ:hitprobest}
+	\item $h_{G, \tilde{G}^c}$ can be identified analytically as the harmonic function on $\tilde{G} / G$\cite{Wendel1980-sj}
+\[ h_{G, \tilde{G}^c} (x) = \frac{1}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x
+- x_A \|^{2 - d} - \frac{r_{\tilde{A}}^{2 - d}}{d_A^{2 - d} -
+r_{\tilde{A}}^{2 - d}} \]
+As a result, the gradient is given by
+\[ \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2
+   - d}} \| x - x_A \|^{1 - d} \frac{x - x_A}{\| x - x_A \|} \]
+Note that on both $\partial \tilde{G}$ and $\partial G$, the outward normal is
+given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, so
+\[
+	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x - x_A \|^{1 - d} = 
+\begin{cases}
+	\frac{(2 - d) r_{\tilde{A}}^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial \tilde{G}\\
+	\frac{(2 - d) d_A^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial G
+\end{cases}
+\]
+\item Finally, note that $U (x) = 0$ and $a (x) = I$ for $x
+\in \partial \tilde{G},\partial G$.  Plugging these into Equation (\ref{eq:capesteq}), we obtain the approximation
+%
+\begin{gather}
+	\ensuremath{\operatorname{cap}} (A, \tilde{A}) \approx \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\frac{d-2}{d_A^{2-d}-r_{\tilde A}^{2-d}}\frac{1}{N_p} \sum_{k=1}^{N_b}n_k u_k^{(m)}
+\end{gather}
+where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$ that belong to cluster $k$ on $\partial S=\partial G=\partial \dot{A}$
+%
+\end{enumerate}
 \section{Numerical Experiments and Results}\label{sec:experiments}
 
 Recall that the central pieces of the CHop method are as follows:
@@ -1240,7 +1273,7 @@ which proves the desired result.
 \hspace*{\fill}$\Box$\medskip
 
 
-\section{Capacity Estimation Algorithm}\label{algorithm}
+\section{Estimating Local Hitting Probabilities}\label{algorithm}
 The algorithm for estimating local hitting probabilities is outlined as follows:
 
 {\algorithm{\label{alg:hitting_prob_estimation}Estimating $h_{A,\tilde A^c}(x)$ for many values of $x$ along a shell $\partial S$
@@ -1294,38 +1327,6 @@ $N_b$ discrete regions.
 \end{enumerate}
 }}
 
-To understand this algorithm more concretely, let us now use it to estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ in the setup of the toy model. Here we can use the simple geometry and the exactly flat energy landscape of the toy model to our advantage. We follow the outline given in Algorithm \ref{alg:capest}.
-
-\begin{enumerate}
-	\item We pick $G = \dot{A}$ and $\tilde{G} = \tilde{A}$, where $\dot{A}$ and $\tilde{A}$ are as in our toy model (see Figure \ref{fig:golfsets}).
-	\item The surfaces areas can be easily calculated analytically as
-\[|\partial G| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}d_A^{d - 1}, |\partial \tilde{G}| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\tilde{r}_A^{d - 1}\]
-	\item The restrictions of the invariant measure $e^{- U (x)} \mathrm{d} x$ on $\partial G$ and $\partial \tilde{G}$ are simply uniform distributions on these two spheres, and we can generate exact samples on these two spheres. Since $\tilde{G} = \tilde{A}$ it is straightforward to use the probabilistic interpretation of $h$ to see that $h_{A, \tilde{A}^c} (x) = 0, \forall x \in \partial \tilde{G}$, so we only need to apply Algorithm \ref{alg:hitting_prob_estimation} to the case of $S=G=\dot{A}$. Following the notations used in Algorithm \ref{alg:hitting_prob_estimation}, assume we get $N_p$ samples $z_1,\cdots, z_{N_p}$, and the hitting probability vector $u^{(m)}$ for the $N_b$ clusters on $\partial S_m = \partial G$, we have the estimates given in Equation \ref{equ:hitprobest}
-	\item $h_{G, \tilde{G}^c}$ can be identified analytically as the harmonic function on $\tilde{G} / G$\cite{Wendel1980-sj}
-\[ h_{G, \tilde{G}^c} (x) = \frac{1}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x
-- x_A \|^{2 - d} - \frac{r_{\tilde{A}}^{2 - d}}{d_A^{2 - d} -
-r_{\tilde{A}}^{2 - d}} \]
-As a result, the gradient is given by
-\[ \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2
-   - d}} \| x - x_A \|^{1 - d} \frac{x - x_A}{\| x - x_A \|} \]
-Note that on both $\partial \tilde{G}$ and $\partial G$, the outward normal is
-given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, so
-\[
-	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x - x_A \|^{1 - d} = 
-\begin{cases}
-	\frac{(2 - d) r_{\tilde{A}}^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial \tilde{G}\\
-	\frac{(2 - d) d_A^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial G
-\end{cases}
-\]
-\item Finally, note that $U (x) = 0$ and $a (x) = I$ for $x
-\in \partial \tilde{G},\partial G$.  Plugging these into Equation (\ref{eq:capesteq}), we obtain the approximation
-%
-\begin{gather}
-	\ensuremath{\operatorname{cap}} (A, \tilde{A}) \approx \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\frac{d-2}{d_A^{2-d}-r_{\tilde A}^{2-d}}\frac{1}{N_p} \sum_{k=1}^{N_b}n_k u_k^{(m)}
-\end{gather}
-where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$ that belong to cluster $k$ on $\partial S=\partial G=\partial \dot{A}$
-%
-\end{enumerate}
 
 \section{Details on Energy Function} \label{sec:energy_function}
 
