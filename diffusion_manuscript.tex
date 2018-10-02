@@ -64,6 +64,7 @@
 \global\long\def\capac#1#2{\mathrm{cap}\left(#1;#2\right)}
 \global\long\def\fnsp{\mathscr{H}^1}
 \global\long\def\bb#1{\mathcal{B}\left(#1\right)}
+\global\long\def\BB#1{\mathcal{\bar B}\left(#1\right)}
 
 \section{Introduction}
 Molecular dynamics, first introduced in the 1970s \cite{McCammon1977-kg, Warshel1976-qg}, has evolved into an indispensable tool in the study of structures and functions of macromolecules, and allows us to obtain a detailed understanding of the dynamics of a diverse range of biomolecular processes, including the folding of macromolecules into their native configurations \cite{Scheraga2007-qw}, and the conformational changes involved in their functioning \cite{Hospital2015-ol}.
@@ -87,104 +88,90 @@ The rest of the paper is organized as follows. In Section \ref{sec:toy_model}, w
 
 \section{A Toy Model}\label{sec:toy_model}
 
-To concretely demonstrate the CHop method, we introduce a simple toy model with a golf-course potential. The potential energy landscape is flat, except for the regions around the two targets $A$ and $B$. This large flat region demonstrates the entropic effects -- the sheer size of it means that it would take the process a long time to find either $A$ or $B$, even though there is no local energetic minima away from $A$ or $B$. To further simplify the analysis and facilitate numerical validation, we will assume all sets of interest are spheres.  A sketch of the relevant sets may be seen in Figure \ref{fig:golfsets}.
+To concretely demonstrate the CHop method, we introduce a simple toy model with a golf-course potential.  This model features a high-dimensional configuration space containing two small target regions, $A$ and $B$.  Away from the targets, the potential energy is completely flat.  To further simplify the analysis and facilitate numerical validation, we will assume all sets of interest are spheres.  The resulting model is perhaps the simplest possible example of a dynamics with golf-course qualities.  
 
-\begin{figure}
-\includegraphics[width=.5\textheight]{figs/golfpic}
-\caption{\label{fig:golfsets} The sets and distances involved on the toy model.}
-\end{figure}
-
-Formally, denote the ball of radius $r$ centered at a point $x \in \mathbbm{R}^d$ by 
-\begin{equation*}
-\bb{x, r} = \{ y : || y - x || \leqslant r \}
-\end{equation*}
-Assume we have $x_A , x_B \in \Omega=\bb{0, 1} \subset \mathbbm{R}^d$ and $0 < r_A < d_A < r_{\tilde{A}}, 0 < r_B < d_B < r_{\tilde{B}}$ such that
-\begin{equation*}
-r_{\tilde{A}} + \| x_A \| < 1, r_{\tilde{B}} + \| x_B \| < 1, \bb {x_A, r_{\tilde{A}}} \cap \bb {x_B, r_{\tilde{B}}} = \varnothing
-\end{equation*}
-Define
+We will now give a formal definition of the model.  The dynamics will take place inside the unit ball, $\Omega = \bb{0,1}$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$.  The configuration space will also feature two important target regions:
 \begin{align*}
-A &= \bb {x_A, r_A}, \dot{A} = \bb {x_A, d_A}, \tilde{A} = \bb {x_A, r_{\tilde{A}}}\\
-B &= \bb {x_B, r_B}, \dot{B} = \bb {x_B, d_B}, \tilde{B} = \bb {x_B, r_{\tilde{B}}} 
+A &\triangleq \bb {x_A, r_A}\\
+B &\triangleq \bb {x_B, r_B}
 \end{align*}
-Our toy model is governed by the SDE
+where $x_A,x_B \in \Omega$.  Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we will be be interested to know whether the dynamics carry the system into $A$ or $B$ first.  These dynamics will be defined in terms of a $d$-dimensional Brownian motion $W_t$, according to 
 \begin{equation} \label{equ:toy_sde}
 \mathrm{d} X_t = - \nabla U (X_t) \mathrm{d} t + \mathrm{d} W_t 
 \end{equation}
-with reflecting boundary at $\partial \bb {0, 1}$, where $U$ is a continuous potential function for which $U (x) = 0, \forall x \not\in \dot{A} \cup \dot{B}$, and $W_t$ is the $d$-dimensional Brownian motion. In other words, the toy model follows a diffusion process within $\bb {0, 1}$ with trivial potential energy outside the set $\dot{A} \cup \dot{B}$, and trivial diffusion coefficients. Given an initial configuration, $X_0 = x$, we will be interested to know the probability that the diffusion hits $A=\bb{x_A,r_A}$ before it hits $B=\bb{x_B, r_B}$.
+with reflecting boundary at the boundary of $\Omega$.  We will require that the potential energy $U$ is differentiable and flat outside of a region around the targets.  In particular, we will fix $d_A>r_A$ and $d_B>d_B$ and require that $U (x) = 0, \forall x \not\in \bb{x_A,d_A} \cup \bb{x_B,x_B}$.  To simplify the theorems, we also require that the surface of $\Omega$ is part of the flat region, i.e. $||x_A||+d_A,||x_B|+d_B<1$.  We also assume that the two target regions do not overlap: $\BB{x_A,d_A},\BB{x_B,x_B}$ are disjoint, where $\BB{}$ denotes the closure of $\bb{}$.  
 
 This toy model encapsulates the essential characteristics of entropic effects: if $r_A, r_B$ are small, the trajectory of $X$ will generally be spent well away from $A$ or $B$, in the large flat region of the energy landscape that separates $A$ from $B$. The nontrivial energy landscapes in the immediate vicinity of $A$ and $B$ reflect the local nature of energetic interactions in the system under biological conditions, and the reflecting boundary $\partial\Omega$ captures the notion that not all configurations for the biomolecular system are sensible, because of, for example, the limits on bond lengths, angles and dihedral angles in the case of RNA molecules.
 
 \section{Theory: $\varepsilon$-flatness and CHop Probabilities}\label{sec:model_formulation}
 
-With this toy model in mind, we now turn to the general results of this paper. Assume the underlying physical process $\{X_t\}_{t \geqslant
-0}$ that's governing the macromolecule is a stationary reversible diffusion process in the configuration space $\Omega$ with invariant
-measure ${\mu}= e^{- U (x)} \mathrm{d} x$, and its dynamics can be described by the SDE
+With this toy model in mind, we now turn to the general results of this paper. In general, we will assume the underlying physical process governing the macromolecule is a stationary reversible diffusion process in the configuration space $\Omega$, with invariant
+measure ${\mu}= e^{- U (x)} \mathrm{d} x$.  In particular, the dynamics will be defined in terms of a $d$-dimensional Brownian motion $W_t$, according to 
 \begin{equation}\label{equ:general_sde}\mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \end{equation}
-where $b (\cdot) : \Omega \rightarrow \mathbbm{R}^d$ and $\sigma (\cdot) :
+where $b: \Omega \rightarrow \mathbbm{R}^d$ and $\sigma :
 \Omega \rightarrow \mathbbm{R}^{d \times m}$ are differentiable vector-valued
-and matrix-valued functions, and $W_t$ is the $m$-dimensional Brownian motion. We refer the reader to Appendix \ref{sec:reversible_diffusion} for a detailed account of stationary reversible diffusion processes.
+and matrix-valued functions.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for a detailed account of stationary reversible diffusion processes.
 
-Let $ \tau_S = \inf \{ t \geqslant 0 : X_t \in S \}, \forall S \subset \mathbbm{R}^d $ denote the time at which the process $\{X_t\}_{t \geq 0}$ first hits set $S$. For fixed target sets $A$ and $B$, we care about hitting probabilities of the form 
-\[ h_{A, B}(x) = \mathbb{P}(X_{\tau_{A\cup B}}\in A|X_0=x), \forall x\in \Omega\]
-i.e. the probability that $\{X_t\}_{t \geq 0}$ hits $A$ before $B$ given that it starts at $x\in\Omega$. 
+As in the toy model, we will be interested in two target regions, $A,B\subset \Omega$.  Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we will be be interested to know whether the dynamics carry the system into $A$ or $B$ first.  That is, we are interested in the hitting probabilities
+\[ h_{A, B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in A|X_0=x)\]
+where $\tau_S$ indicates the time when the process first hits a set $S$, i.e. $\tau_S \triangleq \inf \{ t \geqslant 0 : X_t \in S \}$.  Thus $h_{A,B}(x)$ indicates the probability that $\{X_t\}_{t \geq 0}$ hits $A$ before $B$ given that it starts at $x\in\Omega$. 
 
-Our basic intuition is that, if $A$ and $B$ are sufficiently small relative to $\Omega$, and $U$ is sufficiently flat in $\Omega / (A\cup B)$, then for any starting point $x\in \Omega / (A\cup B)$ away from the target sets $A$ and $B$, we would reach local equilibrium before we hit the targets, and the hitting probability $h_{A, B}(x)$ remains approximately a constant. In addition, since we reach local equilibrium before we hit the targets, the internal structure of $\Omega / (A\cup B)$ away from $A$ and $B$ doesn't matter, and we expect the approximately constant hitting probability $h_{A, B}(x)$ can be accurately estimated using only local information around the targets $A$ and $B$.
-
-In what follows, we make the above intuitions rigorous: we first establish approximately constant hitting probability in the context of our toy model, and then present a theorem showing the connection between the approximately constant hitting probability and the ``capacities" of local sets around the targets.
+Our theoretical inquiry began with an intuition.  Let us consider the case that $A$ and $B$ are very small relative to $\Omega$.  Let us also assume that $U$ is sufficiently flat in $\Omega / (A\cup B)$.  In this case, for any starting point $x\in \Omega / (A\cup B)$, we would reach local equilibrium before we hit the targets.  In that case the hitting probability $h_{A, B}(x)$ should not depend upon the initial condition.  That is, $h_{A,B}(x)$ should be approximately \emph{constant} for all initial conditions $x$ which are reasonably far away from $A$ and $B$.  In addition, since we reach local equilibrium before we hit the targets, the exact internal structure of $\Omega / (A\cup B)$ away from $A$ and $B$ may not be important.  We might therefore hope that the hitting probabilities could be accurately estimated without looking at this internal structure.  In summary, it seems that
+%
+\begin{enumerate}
+    \item There should be some constant $\bar h$ such that $\bar h_{A,B} \approx h_{A,B}(x)$ for all initial conditions $x$ which are reasonably far away from $A$ and $B$.
+    \item It should be possible to estimate $\bar h$ using only knowledge of the dynamics in the local regions around $A,B$.  
+\end{enumerate}
+%
+In what follows, we make the above intuitions rigorous.  First, for our toy model we establish that the hitting probabilities are indeed constant away from $A,B$.  We see the kinds of arguments that would be necessary to establish this result for other models.  Second, we turn to the general case.   Whenever hitting probabilities are approximately constant in a region away from $A,B$, we show that the value of this constant can be determined by looking only at the dynamics of local regions around $A,B$.  In particular, we show that the key quantity is what is known as the ``capacity'' of local sets around the targets. 
 
 \subsection{Approximately Constant Hitting Probability}
 
-In this section, we introduce the concept of $\varepsilon$-flatness, and establish it for our toy model, to capture the notion that the hitting probability $h_{A, B}(x)$ remains approximately a constant in $\Omega / (A\cup B)$ away from $A$ and $B$, when $A$ and $B$ are sufficiently small relative to $\Omega$, and $U$ is sufficiently flat on $\Omega / (A\cup B)$.
-
+In this section, we introduce the concept of $\varepsilon$-flatness, establish it for our toy model, and see when it will hold in general models.  We introduce this concept to formally define what it would mean that the hitting probability function $h_{A, B}(x)$ is ``approximately constant'' in a given region.
+%
 \begin{definition}($\varepsilon$-flatness)\label{def:epsilon_flat}
-For any function $u$ on $\Omega$ and an $\varepsilon > 0$, a set $M\subset \Omega$ is $\varepsilon$-flat for the function $u$ if $\sup_{x, y \in M} | u (x) - u (y) | < \varepsilon$.
+For any function $h$ on $\Omega$ and an $\varepsilon > 0$, a set $M\subset \Omega$ is $\varepsilon$-flat for the function $h$ iff $\sup_{x, y \in M} | h (x) - h (y) | < \varepsilon$.
 \end{definition}
+%
+Note that if $M$ is $\varepsilon$-flat for $h$, then we can always find some constant $\bar h$ so that $\sup_{x \in M}|\bar h-h(x)|<\varepsilon$ for all $x\in M$.  Simply pick $\bar h$ to be $h(x)$ for any $x\in M$.  
 
-Armed with this definition, we present a theorem in the context our toy model, which establishes the $\varepsilon$-flatness of the set $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ for the hitting probability $h_{A, B}(x)$, when the targets $A, B$ are sufficiently small or the dimension is high, for suitably picked sets $\tilde{A}, \tilde{B}$.
+For the toy model, we can see how  $\varepsilon$-flatness applies to hitting probabilities.  Let us recall the notation of the toy model.  We have two sets, $A=\bb{x_A,r_A},B=\bb{x_B,r_B}$ in $d$-dimensional space.  The dynamics are governed by a potential energy which is flat outside of $\bb{x_A,d_A}\cup\bb{x_B,d_B}$, where $d_A>r_A,d_B>r_B$.  We now introduce a third layer of neighborhoods around the target regions.  We fix some $r_{\tilde A}>d_A,r_{\tilde B}>d_B$ and define $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_B,r_{\tilde B}}$.  We will show conditions such that the hitting probabilities are constant away from $\tilde A,\tilde B$.  In particular, the probabilities must be constant as long as when the targets $A, B$ are sufficiently small or the dimension is high:
 
 \begin{theorem}\label{thm:epsilon_flat}
-Let $u\triangleq h_{A, B}$, where the diffusion and $A, B$ are defined by the toy model given in Equation \ref{equ:toy_sde} parametrized by $x_A, x_B, r_A, d_A, r_{\tilde{A}}, r_B, d_B, r_{\tilde{B}}$. For any fixed value of $d \geq 3$ and $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(d, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then
-\begin{equation*}
-	\sup_{x, y \in \bb {0, 1} / (\tilde{A} \cup \tilde{B})}|u(x)-u(y)| < \varepsilon
-\end{equation*}
-Likeliwise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $d \geq c$ then the same holds.
+For any fixed value of $d \geq 3$ and $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(d, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $d \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
 \end{theorem}
 
-We defer the proof of this theorem to Appendix \ref{sec:proof_epsilon_flat}. Inspection of the proof demonstrates that the key for establishing $\varepsilon$-flatness is a proper separation of time scales: it takes a short time for the process $\{X_t\}_{t\geq 0}$to reach local equilibrium in $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$, because of the flatness of the potential energy $U$ in this set, while it takes a long time for the process $\{X_t\}_{t\geq 0}$ to hit the targets $A$ and $B$, starting in $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$, because of the sizes of the targets $A$ and $B$ being small compared with $\Omega$.
+We defer the proof of this theorem to Appendix \ref{sec:proof_epsilon_flat}. Inspection of the proof demonstrates that the key for establishing $\varepsilon$-flatness is a proper separation of time scales: it takes a short time for the process $\{X_t\}_{t\geq 0}$ to reach local equilibrium in $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ and a long time for the process $\{X_t\}_{t\geq 0}$ to hit the targets $A$ and $B$.  Any model with these characteristics will feature $\varepsilon$-flat hitting probabilities.
 
 \subsection{Estimating Constant Hitting Probability Using Local Information}
 
-In this section, we present results showing that when $\varepsilon$-flatness is established, we can accurately estimate the approximately constant hitting probability $h_{A, B}(x)$ using only local information around the targets. It turns out this local information comes in the form of capacities of sets around the targets. For $A \subset \tilde{A} \subset \Omega$, the capacity
-$\ensuremath{\operatorname{cap}} (A, \tilde{A})$ under the stationary reversible diffusion process $\{X_t\}_{t\geq 0}$ is given by
-\[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) = \frac{1}{2} \int_{\Omega}
-\nabla h_{A, \tilde{A}^c} (x)^T a (x) \nabla h_{A, \tilde{A}^c} (x) e^{- U
-(x)} \mathrm{d} x \]
-where $a (x) = \sigma (x) \sigma (x)^T$ is the diffusion matrix. We refer the reader to Appendix \ref{sec:reversible_diffusion} for more details on capacity and the the related concept of Dirichlet form.
+In this section, we show that hitting probabilities can be determined using only local information around the targets, as long as the hitting probability function enjoys $\varepsilon$-flatness.  In particular, it will be sufficient to calculate the ``capacities'' for local sets around the targets.  This is defined as follows.  Let $\{X_t\}_{t\geq 0}$ be a reversible stationary process governed by Equation (\ref{equ:general_sde}).  Then for $A \subset \tilde{A} \subset \Omega$, the capacity $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ for $X$ is defined as
+%
+\[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) \triangleq \frac{1}{2} \int_{\Omega}
+||\sigma(x) \nabla h_{A, \tilde{A}^c}(x)||^2 e^{- U(x)} \mathrm{d} x \]
+%
+Recall that $h_{A, \tilde{A}^c}(x)$ denotes the probability that the dynamics will hit $A$ before hitting $\tilde{A}^c$, given that $X_0=x \in \tilde A\backslash A$.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for more details on capacity and the the related concept of Dirichlet form.
 
-We start by considering the simple case where there are only two targets $A$ and $B$. For the general stationary reversible SDE given by Equation \ref{equ:general_sde}, we have our main theorem
+In the presence of $\varepsilon$-flatness, these capacities are intimately related to hitting probabilities:
 
-\begin{theorem}\label{thm:main_thm}
-Assume we have $A, B \subset \Omega$ disjoint. Define
-\[ u (x) = h_{A, B}(x) = \mathbbm{P} (X_{\tau_{A \cup B}} \in A|X_0 = x) \]
-$\forall \varepsilon \in \left( 0, \frac{2}{9} \right]$, if we can find
-$\tilde{A}, \tilde{B} \subset \Omega$, s.t. $A \subset \tilde{A}, B \subset
-\tilde{B}$, and $M = \Omega / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat
-for the function $u$, then we have
-\[ \sup_{x \in M} \left| u (x) - \frac{\ensuremath{\operatorname{cap}} (A,
+\begin{theorem}\label{thm:main_thm}  Let $\{X_t\}_{t\geq 0}$ be a reversible stationary diffusion on $\Omega$ governed by Equation (\ref{equ:general_sde}).  Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  If $\tilde A,\tilde B$ are disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ is $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$, then 
+\[ \sup_{x \in M} \left| h_{A,B} (x) - \frac{\ensuremath{\operatorname{cap}} (A,
 \tilde{A})}{\ensuremath{\operatorname{cap}} (A, \tilde{A})
 +\ensuremath{\operatorname{cap}} (B, \tilde{B})} \right| \leqslant
 \varepsilon + \sqrt{\frac{\varepsilon}{2}} \]
+for any $\varepsilon \in[0,2/9]$.
 \end{theorem}
 
-We defer the proof to Appendix \ref{sec:proof_thm}. This theorem generalizes naturally to the case of multiple targets, with the additional definition of \textit{CHop Probabilities}:
+We defer the proof to Appendix \ref{sec:proof_thm}. This theorem generalizes naturally to the case of multiple targets.  For a collection of targets with neighborhoods, we first define the approximate probability estimates, which we call ``CHop probabilities.''
 
-\begin{definition}\label{chop_prob}
+\begin{definition}
 Let $\{X_t\}_{t\geq 0}$ be a stationary reversible diffusion process on $\Omega$.  Pick $A_1\cdots A_n \subset \Omega$ and $\tilde A_1\cdots \tilde A_n \subset \Omega$ such that $A_k \subset \tilde A_k$.  Then the \textbf{CHop Probability} for the set $A_k$ (given all the other sets $A_1\cdots, A_{k-1}, A_{k+1}, \cdots A_n \subset \Omega$ and $\tilde A_1\cdots \tilde A_n \subset \Omega$) is given by
 \begin{equation*}
 p_{A_k} = \frac{\ensuremath{\operatorname{cap}} (A_k, \tilde{A}_k)}{\sum_{i = 1}^n \ensuremath{\operatorname{cap}} (A_i, \tilde{A}_i)}, k=1,\dots, n
 \end{equation*} 
 \end{definition}
+
+In terms of these definitions, Theorem \ref{thm:main_thm} then yields:
 
 \begin{cor}\label{thm:main_cor} Let $u_k = h_{A_k,\cup_{i\neq k} A_i}$ denote the probability the process hits $A_k$ before the other target sets.  Fix any $\varepsilon \in \left( 0, \frac{2}{9} \right]$.  If $M = \Omega \backslash \bigcup_{k = 1}^n \tilde{A}_k $ is $\varepsilon$-flat for the functions $\{u_k\}_{k\in1,\dots, n}$ then each $u_k$ is well-approximated by the corresponding CHop Probability:
 \[ \sup_{x \in M} \left| u_k (x) - p_{A_k} \right| \leqslant \varepsilon + \sqrt{\frac{\varepsilon}{2}}, k=1,\dots, n\]
@@ -194,9 +181,7 @@ This corollary follows immediately from Theorem \ref{thm:main_thm} and additivit
 
 \section{Application: CHop Method and Capacity Estimation}\label{sec:algorithm}
 
-In this section, we focus on practical applications. Inspired by the theoretical analysis above, we introduce the CHop method as a way to accelerate molecular dynamics simulations by efficiently dealing with regions with golf-course potential. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
-
-\subsection{CHop Method}
+Inspired by the theoretical analysis above, we introduce the CHop method as a way to accelerate molecular dynamics simulations by efficiently dealing with regions with golf-course potential. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
 
 Recall that in the previous section on theory, we made the following two key points:
 
@@ -205,9 +190,11 @@ Recall that in the previous section on theory, we made the following two key poi
 	\item The approximately constant hitting probabilities can be accurately estimated using CHop probabilities, which depend on capacities that can be determined solely based on the local information around the targets.
 \end{enumerate}
 
-In most practical applications, molecular dynamics simulations of biomolecular systems are not fast enough to give us information on a biologically relevant time-scale. A large part of this difficulty results from golf-course potentials\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv, McLeish2005-dq}. The above theoretical insights provide us with an efficient way to deal with golf-course potentials, so that we can get information of the biomolecular system on a much longer time-scale: we make use of our knowledge of the targets (which is typically available, e.g. in the form of different secondary structures for RNAs) to carry out local simulations around the targets for the estimation of capacites. Capacities can then be used to calculate the CHop probabilities, which give us an accurate estimate of the approximately constant hitting probabilities. This enables us to make probabilistic jumps to one of the targets to accelerate the molecular dynamics simulations, which is the essence of the CHop method.
+The above theoretical insights provide us with an efficient way to deal with golf-course potentials, so that we can get information of the biomolecular system on a much longer time-scale: we make use of our knowledge of the targets (which is typically available, e.g. in the form of different secondary structures for RNAs) to carry out local simulations around the targets for the estimation of capacites. Capacities can then be used to calculate the CHop probabilities, which give us an accurate estimate of the approximately constant hitting probabilities. This enables us to make probabilistic jumps to one of the targets to accelerate the molecular dynamics simulations, which is the essence of the CHop method.
 
-To summarize, the CHop method works with a region $\Omega$ which has a golf-course potential under the process $\{X_t\}_{t \geq 0}$. Following the notations in Definition \ref{chop_prob}, we use $A_1\cdots A_n \subset \Omega$ to denote the target sets in the golf-course potential. On a high-level, the CHop method consists of the following steps:
+\subsection{CHop Method}
+
+Let $\{X_t\}_{t \geq 0}$ by a process governed by Equation \ref{equ:general_sde} on $\Omega$.  Let $A_1\cdots A_n \subset \Omega$ denote the target sets of interest.  On a high-level, the CHop method is a method for approximating hitting probabilities for systems initialized inside large, flat regions.  It consists of the following steps:
 
 \begin{enumerate}
 	\item Identify suitable sets $\tilde A_k \subset \Omega$ where $A_k \subset \tilde{A}_k, k=1, \cdots, n$, such that we can establish the $\varepsilon$-flatness of $M = \Omega \backslash \bigcup_{k = 1}^n \tilde{A}_k $ for hitting probability functions $h_{A_k,\cup_{i\neq k} A_i}(x)$.
@@ -215,10 +202,10 @@ To summarize, the CHop method works with a region $\Omega$ which has a golf-cour
 \begin{equation*}
 p_{A_k} = \frac{\ensuremath{\operatorname{cap}} (A_k, \tilde{A}_k)}{\sum_{i = 1}^n \ensuremath{\operatorname{cap}} (A_i, \tilde{A}_i)}, k=1,\dots, n
 \end{equation*} 
-	\item Once the process $\{X_t\}_{t \geq 0}$ enters the flat region $M$, make probabilistic jumps to one of the target sets $A_k$ using the CHop probabilities $p_{A_k}, k=1, \cdots, n$.
+	\item For any initial condition $x \in M$, approximate the hitting probability $h_{A_k,\cup_{i\neq k} A_i}(x)$ with the CHop probability $p_{A_k}$.  
 \end{enumerate}
 
-It's easy to see that, to make the CHop method practical, we need to be able to estimate the capacities accurately and efficiently. This would be our topic for the rest of this section.
+To make the CHop method practical, we need to be able to estimate the capacities accurately and efficiently. This would be our topic for the rest of this section.
 
 \subsection{Estimation of Capacities}
 
@@ -289,8 +276,6 @@ The method has three main stages: determining the discretized states, running lo
 In what follows, we put all the pieces from our previous discussions together, and present the outline of a flexible and general purpose capacity estimation algorithm:
 
 {\algorithm{\label{alg:capest}Estimating $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ for $A\subset\tilde{A}\subset \Omega$
-
-\newline
 
 \begin{description}
 	\item[Input] $A \subset \tilde{A} \subset \Omega$ and a stationary reversible  diffusion process $\{X_t\}_{t \geq 0}$ in $\Omega$ with invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ and diffusion matrix $a(x)$
@@ -369,8 +354,18 @@ The first sanity check tests the CHop idea at its most basic level: that entropi
 p_A = \frac{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}}}{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}} + \frac{1}{r_B^{2 - d} - r_{\tilde{B}}^{2 - d}}}
 \end{equation}
 
+We test $\varepsilon$-flatness by looking at direct simulation results from different starting points and see if they give roughly the same hitting probabilities. We further test whether the CHop probabilities agree with direct simulation results. Theorem \ref{thm:main_thm} shows that $\varepsilon$-flatness is valid, and CHop probabilities agree with global hitting probabilities in the limiting regime of small $r_A,r_B$, but it is not obvious whether the parameters we use lie in that regime.  In particular, we look at the case $r_A = 0.05, r_{\tilde{A}} = 0.1, r_B = 0.075, r_{\tilde{B}} = 0.15$. In this case, we see that the $\varepsilon$-flatness condition indeed holds, and the CHop probabiity yields an estimate for the hitting probability that is consistent with direct simulations:
 
-\input{simple_hitting_prob_test.tex}
+\begin{description}
+\item[Hitting probabilities estimated with direct simulations] $\approx 0.2236$. We run 2000 diffusion simulations at each one of the 100 randomly picked initial locations from $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each initial location we obtain an estimate of the hitting probability. The mean of these estimates is 0.2236, standard deviation 0.0093. We used time step of size 1e-05. A histogram of the different hitting probabilities, as well as the CHop probability, is shown in Fig. \ref{fig:simple_hitting_prob_test}. The hitting probabilities from different initial locations are in $[0.2055, 0.2480]$, and the $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0425$.
+  
+\item[CHop probability]  0.2286, which is a good approximation for the various hitting probabilities we obtained from direct simulations.
+\end{description}
+
+\begin{figure}
+	\caption{\label{fig:simple_hitting_prob_test} We picked 100 random locations for $ X_0 \not\in \mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each location we used 2000 simulations to estimate the probability of hitting $A$ before $B$. The histogram of the 100 estimates is shown below. The $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0425,$ and the CHop probability gives good approximation to this narrow range of hitting probabilities.}
+	\includegraphics{figs/simple_hitting_prob_hist.png}
+\end{figure}
 
 \subsubsection{Capacity Estimation on Flat Energy Landscape}
 
@@ -380,25 +375,88 @@ The second sanity check tests the capacity estimation algorithm employed by CHop
 cap(A, \tilde{A}) = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\frac{d - 2}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}}
 \end{equation}
 
-\input{capacity_estimation_test.tex}
+Take $r_A = 0.1, r_{\tilde{A}} = 0.4$, and $d_A = 0.2$. We can then compare the exact capacity for this case with the capacity given by our capacity estimation algorithm:
+
+\begin{description}
+\item[Exact value]  $ 0.080210 $. This is the capacity given by the analytical formula.
+\item[Estimate from capacity estimation algorithm]  $ 0.078846 $. To obtain this value we use the version of the capacity estimation algorithm described in the previous section, with parameter values given by 
+\begin{equation*}
+m = 2, n = 4, 
+N_p = 100, N_b = 3,
+N_s = 1000
+\end{equation*}
+We used a 1e-06 time step.
+\end{description}
 
 \subsection{Results on Nontrivial Energy Landscape}
 
 In this section, we present some results for the toy model with nontrivial energy landscape around the targets. In addition to testing $\varepsilon$-flatness and CHop probabilities, as we did in previous sanity checks, we further test the efficiency of our capacity estimation algorithm, to demonstrate that our algorithm can accurately estimate the global hitting probabilities while maintaining great advantage over the direct simulations in terms of speed.
 
-\input{params_energy.tex}
+We experimented with the toy model with $d = 5$ and
+\begin{equation*}
+x_A = \begin{pmatrix}%
+0.5&0.6&0.0&0.0&0.0%
+\end{pmatrix},
+r_A = 0.02,
+d_A = 0.05,
+r_{\tilde{A}} = 0.1
+\end{equation*}
+for target $A$, and
+\begin{equation*}
+x_B = \begin{pmatrix}%
+-0.7&0.0&0.0&0.0&0.0%
+\end{pmatrix},
+r_B = 0.04,
+d_B = 0.075,
+r_{\tilde{B}} = 0.15
+\end{equation*}
+for target $B$.  We refer the reader to appendix \ref{sec:energy_function} for details on the energy function, as well as the actual parameters we used in our experiments.
 
 \subsubsection{$\varepsilon$-flatness and CHop Probabilities}
 
 We again start by testing the basic idea of CHop: we test our assumption of $\varepsilon$-flatness using direct simulations, to see the applicability of this condition when there is a nontrivial energy landscape. We further compare the CHop Probabilities with the hitting probabilities given by the direct simulations.
 
-\input{algorithm_accuracy.tex}
+\begin{description}
+\item[Hitting probabilities estimated with direct simulations:] $\approx 0.8180$.  We run 2000 diffusion simulations at each one of the 100 randomly picked initial locations from $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each initial location we obtain an estimate of the hitting probability. The mean of these estimates is 0.8180, standard deviation 0.0096. We used time step of size 1e-05. A histogram of the different hitting probabilities, as well as the CHop probability, is shown in Fig. \ref{fig:nontrivial_hitting_prob_test}. The hitting probabilities from different initial locations are in $[0.7980, 0.8450]$, and the $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0470$.
+
+\item[CHop probability]  0.8274, which is in good agreement with the hitting probabilities we obtained from direct simulations. For the region around $x_A$, we used
+\begin{equation*}
+m = 2, n = 4, 
+N_p = 5000, N_b = 10,
+N_s = 2000
+\end{equation*}
+For the region around $x_B$, we used
+\begin{equation*}
+m = 2, n = 5, 
+N_p = 5000, N_b = 10,
+N_s = 2000
+\end{equation*}
+For estimating both of these capacities, we used a 1e-07 time step.
+\end{description}
+
+\begin{figure}
+	\caption{\label{fig:nontrivial_hitting_prob_test} We picked 100 random locations for $ X_0 \not\in \mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each location we used 2000 simulations to estimate the probability of hitting $A$ before $B$. The histogram of the 100 estimates is shown below. The $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0470,$ and the CHop probability gives good approximation to this narrow range of hitting probabilities.}
+	\includegraphics{figs/nontrivial_hitting_prob_hist.png}
+\end{figure}
 
 \subsubsection{Efficiency of the Capacity Estimation Algorithm}
 
 To test the efficiency of the algorithm, we compared the time it takes to estimate the hitting probabilities using direct simulations with the time our capacity estimation algorithm needs to estimate the capacities for all targets. Note that in order to make the direct simulations feasible for the $5$-dimensional toy model we are working on, we made our best effort to make the direct simulation fast, including spherical acceleration in the flat region, JIT compilation to remove loop overhead, 24-CPU parallization, and a relatively coarse time step.
 
-\input{algorithm_efficiency.tex}
+\begin{description}
+\item[Direct simulation] 89177.87 seconds (3715.74 seconds on 24 CPUs).  This quantity is an average over the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of 1e-05.  We confirmed that there was no significant overhead due to the parallelization.
+
+\item[CHop speed] 1055.55 seconds on a single CPU. Note that to get an accurate estimate, we need to employ a shorter time step of 1e-07. But this doesn't constitute any computational burden because of the accelerations achieved by CHop.
+
+\end{description}
+
+This reflects an 85-fold acceleration.  Furthermore note that the time-consuming elements of the capacity estimation algorithm are ``embarassingly parallelizable" and should be easy to further accelerate using parallelization.  There was no need to do so in this case because we could easily run the CHop code on our laptops.  However, larger scale problems would certainly benefit from this kind of acceleration.  
+
+
+
+
+The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $N_p, N_b$ and $N_s$.  For example, we performed another experiment with a 1e-06 time step, parameters of $ m = 2, n = 4, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $A$ capacity, and parameters of $ m = 2, n = 5, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $B$ capacity.  The result was an estimate of $0.8420$. This still agrees well with the direct simulations (indeed, there were some initial conditions for which the direct simulation hitting probability estimates agreed with this quantity almost exactly).  Using these parameters, total computation time was reduced to 119.35 seconds, reflecting a 750-fold acceleration.
+
 
 \section{Conclusions and Future Directions}\label{sec:conclusion}
 
@@ -1278,8 +1336,6 @@ The algorithm for estimating local hitting probabilities is outlined as follows:
 
 {\algorithm{\label{alg:hitting_prob_estimation}Estimating $h_{A,\tilde A^c}(x)$ for many values of $x$ along a shell $\partial S$
 
-\newline
-
 \begin{description}
 	\item[Input] $A \subset S \subset \tilde{A} \subset \Omega$ and a stationary reversible  diffusion process $\{X_t\}_{t \geq 0}$ in $\Omega$ with invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$. We also require a series of subsets
   \[ \tilde{A} \supset S_0 \supset S_1 \supset \cdots \supset S_{m - 1}
@@ -1330,7 +1386,75 @@ $N_b$ discrete regions.
 
 \section{Details on Energy Function} \label{sec:energy_function}
 
-\input{params_energy_appendix.tex}
+For the energy function, we hand-designed two different kinds of landscape: random well energy, which we use for the region around target $A$, and random crater energy, which we use for the region around target $B$. The basic components of these energy functions are the well component, given by
+\begin{equation}
+F_w(x|d_w, r) = -\frac{d_w}{r^4}(||x - x_A||_2^4 - 2r^2||x - x_A||_2^2) - d_w
+\end{equation}
+where $d_w$ gives the depth of the well; the crater component, given by
+\begin{equation}
+F_c(x|d_c, h, r) = \frac{d_c}{3b^2r^4 - r^6}(2||x - x_B||_2^2 - 3(b^2 + r^2)||x - x_B||_2^4 + 6b^2r^2||x - x_B||_2^2) - d_c
+\end{equation}
+where $d_c$ and $h$ give the depth and the height of the crater, respectively, and
+\begin{equation}
+b^2 = -\frac{1}{3d}(-3 d_c r^2 + C + \frac{\Delta_0}{C})
+\end{equation}
+with
+\begin{align*}
+C &= 3r^2 \sqrt[3]{d_c h (d_c + \sqrt{d_c (d_c + h)})} \\
+\Delta_0 &= -9 d_c h r^4
+\end{align*}
+and finally a random component, given by
+\begin{equation}
+F_r(x|\mu, \sigma) = \sum_{i=1}^m\prod_{j=1}^d exp(-\frac{(x_j - \mu_{i j})^2}{2\sigma_{i j}^2})
+\end{equation}
+where $\mu=(\mu_{i j})_{m \times d}$ and $\sigma=(\sigma_{i j})_{m \times d}$, with $\mu_i=(\mu_{i 1}, \cdots, \mu_{i, d}), i=1, \cdots, m$ being the locations of $m$ Gaussian random bumps in the region around the targets, and $\sigma_{i j}, i=1, \cdots, m, j=1, \cdots, d$ gives the corresponding standard deviations.
+
+To make sure the energy function is continuous, and the different components of the energy function are balanced, we introduce a mollifier, given by
+\begin{equation}
+F_m(x|x_0, r) = exp(-\frac{r}{r - ||x - x_0||_2^{20}})
+\end{equation}
+where $x_0=x_A, r=d_A$ or $x_0=x_B, r=d_B$, depending on which target we are working with, and a rescaling of the random componet, which is given by $0.1 * d_w$ if we are perturbing the well component, and $0.1 * (d_c + h)$ if we are perturbing the crater component.
+
+Intuitively, for the well component, we use a $4$th order polynomial to get a well-like energy landscape around the target that is continuous and differentiable at the boundary. Similarly, for the crater component, we use a $6$th order polynomial to get a crater-like energy landscape around the target that is also continuous and differentiable at the boundary. For the random component, we are essentially placing a number of Gaussian bumps around the target. And for the mollifier, we are designing the function such that it's almost exactly 1 around the target, until it comes to the outer boundary, when it transitions smoothly and swiftly to 0.
+To summarize, given parameters $d_w, d_c, h$ and random bumps $\mu_{A}, \mu_{B}$ with $\mu^{A}_i\in \dot{A} \setminus A, i=1, \cdots, m_A, \mu^{B}_i \in \dot{B} \setminus B, i=1, \cdots, m_B$, and the corresponding standard deviations $\sigma^{A}, \sigma^{B}$ with $\sigma^{A}_{i j}, i=1,\cdots, m_A, j=1, \cdots, d, \sigma^{B}_{i j}, i=1, \cdots, m_B, j=1, \cdots, d$, the energy function we used in the experiments is given by
+\begin{align}
+F(x) &= F_w(x|d_w, d_A) + 0.1 \times d_w \times F_m(x|x_A, d_A) + F_r(x|\mu^{A}, \sigma^{A}), \forall x \in \dot{A} \setminus A \\
+F(x) &= F_c(x|d_c, h, d_B) + 0.1 \times (d_c + h) \times F_m(x|x_B, d_B) + F_r(x|\mu^{B}, \sigma^{B}), \forall x \in \dot{B} \setminus B
+\end{align}
+
+In our actual experiments, we used
+\begin{equation*}
+d_w = 10.0, 
+d_c = 6.0,
+h = 1.0,
+\sigma^{A}_{i j} = \sigma^{B}_{k, l} = 0.01, \forall i, j, k, l
+\end{equation*} and
+\begin{equation*}
+\mu^{A} = \begin{pmatrix}%
+0.512&0.597&0.009&-0.018&-0.009\\%
+0.496&0.597&0.009&0.026&-0.013\\%
+0.464&0.58&-0.018&-0.007&-0.012\\%
+0.528&0.591&-0.029&0.008&0.022\\%
+0.469&0.601&-0.022&-0.002&0.014\\%
+0.517&0.608&0.013&-0.02&0.021\\%
+0.474&0.588&0.005&0.002&0.003\\%
+0.532&0.575&0.018&0.005&0.01\\%
+0.466&0.6&0.012&0.027&-0.004\\%
+0.497&0.617&-0.006&0.019&-0.033%
+\end{pmatrix}, 
+\mu^{B} = \begin{pmatrix}%
+-0.749&-0.019&-0.022&0.014&0.032\\%
+-0.701&0.013&0.038&0.02&0.005\\%
+-0.683&-0.021&-0.024&-0.02&0.05\\%
+-0.756&-0.012&0.016&-0.001&0.013\\%
+-0.696&0.008&0.038&0.031&-0.037\\%
+-0.68&0.023&-0.041&-0.001&-0.017\\%
+-0.73&-0.022&0.031&-0.033&0.011\\%
+-0.763&0.008&0.013&0.016&0.004\\%
+-0.669&-0.002&-0.006&0.004&-0.033\\%
+-0.709&-0.012&0.032&0.024&-0.02%
+\end{pmatrix}
+\end{equation*}
 
 \bibliographystyle{plain}
 \bibliography{refs.bib}
