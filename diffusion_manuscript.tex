@@ -1,4 +1,4 @@
-\documentclass[english, aip, jcp, priprint, graphicx]{revtex4-1}
+\documentclass[english, aip, jcp, priprint, graphicx,floatfix]{revtex4-1}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
@@ -60,6 +60,8 @@
 \pacs{}% insert suggested PACS numbers in braces on next line
 
 \maketitle %\maketitle must follow title, authors, abstract and \pacs
+
+\global\long\def\TODOTHIS{{\huge !!!!}}
 
 \global\long\def\capac#1#2{\mathrm{cap}\left(#1;#2\right)}
 \global\long\def\fnsp{\mathscr{H}^1}
@@ -273,6 +275,8 @@ The method has three main stages: determining the discretized states, running lo
 
 \subsection{Outline of the Capacity Estimation Algorithm}
 
+\label{sec:outlinecapacest}
+
 In what follows, we put all the pieces from our previous discussions together, and present the outline of a flexible and general purpose capacity estimation algorithm:
 
 {\algorithm{\label{alg:capest}Estimating $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ for $A\subset\tilde{A}\subset \Omega$
@@ -294,7 +298,7 @@ In what follows, we put all the pieces from our previous discussions together, a
 To understand this algorithm more concretely, let us now use it to estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ in the setup of the toy model. Here we can use the simple geometry and the exactly flat energy landscape of the toy model to our advantage. We follow the outline given in Algorithm \ref{alg:capest}.
 
 \begin{enumerate}
-	\item We pick $G = \dot{A}$ and $\tilde{G} = \tilde{A}$, where $\dot{A}$ and $\tilde{A}$ are as in our toy model (see Figure \ref{fig:golfsets}).
+	\item We pick $G = \dot{A}$ and $\tilde{G} = \tilde{A}$, where $\dot{A}$ and $\tilde{A}$ are as in our toy model.
 	\item The surfaces areas can be easily calculated analytically as
 \[|\partial G| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}d_A^{d - 1}, |\partial \tilde{G}| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\tilde{r}_A^{d - 1}\]
 	\item The restrictions of the invariant measure $e^{- U (x)} \mathrm{d} x$ on $\partial G$ and $\partial \tilde{G}$ are simply uniform distributions on these two spheres, and we can generate exact samples on these two spheres. Since $\tilde{G} = \tilde{A}$ it is straightforward to use the probabilistic interpretation of $h$ to see that $h_{A, \tilde{A}^c} (x) = 0, \forall x \in \partial \tilde{G}$, so we only need to apply Algorithm \ref{alg:hitting_prob_estimation} to the case of $S=G=\dot{A}$. Following the notations used in Algorithm \ref{alg:hitting_prob_estimation}, assume we get $N_p$ samples $z_1,\cdots, z_{N_p}$, and the hitting probability vector $u^{(m)}$ for the $N_b$ clusters on $\partial S_m = \partial G$, we have the estimates given in Equation \ref{equ:hitprobest}
@@ -323,76 +327,71 @@ given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, so
 where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$ that belong to cluster $k$ on $\partial S=\partial G=\partial \dot{A}$
 %
 \end{enumerate}
+
+
+%  _   _ _   _ __  __ _______  ______  
+% | \ | | | | |  \/  | ____\ \/ /  _ \ 
+% |  \| | | | | |\/| |  _|  \  /| |_) |
+% | |\  | |_| | |  | | |___ /  \|  __/ 
+% |_| \_|\___/|_|  |_|_____/_/\_\_|    
+                                     
+
 \section{Numerical Experiments and Results}\label{sec:experiments}
 
-Recall that the central pieces of the CHop method are as follows:
+In this section we use simulations to test the limits of our theories and algorithms.  In this work we have made three claims, each of which can be we can test empirically:
 
 \begin{itemize}
-\item $\varepsilon$-flatness can be established for entropic barriers, and the hitting probability remains approximately a constant in the entropic barrier
-\item When $\varepsilon$-flatness holds, the hitting probability function can be well-approximated using CHop probabilities, which are defined in terms of the local property of capacities
-\item The capacities can be accurately and efficiently estimated by the CHop capacity estimation algorithm
+\item In golf-course dynamics the hitting probabilities are approximately constant away from the targets.
+\item In golf-course dynamics, the value of this constant can be well-approximated using CHop probabilities, which are defined in terms of local capacities.
+\item The CHop capacity estimation algorithm is efficient and accurate
 \end{itemize}
 
-In what follows, we present experimental results with our toy model, using both a flat and a nontrivial energy landscape, to verify each one of these aspects:
-
-\begin{itemize}
-\item We run multiple direct simulations from different starting points, to show that the hitting probabilties don't vary much, and verify the $\varepsilon$-flatness condition indeed holds for the parameters we use in the experiments.
-\item We estimate the CHop probabilities with capacities, given either analytically for the flat energy landscape, or numerically from our CHop capacity estimation algorithm for the nontrivial energy landscape, and compare with hitting probabilities from direct simulations, to show that the hitting probability function can be well-approximated using CHop probabilities.
-\item We compare the capacities estimated analytically and numerically for the flat energy landscape, to show the capacities can be accurately estimated using the CHop capacity estimation algorithm, and we compare the time it takes to estimate hitting probabiities using direct simulations with the time it takes to approximate hitting probabilities using CHop probabilities for the nontrivial energy landscape, to show the CHop method achieves high accuracy with considerably faster performance.
-\end{itemize}
-
-All the results presented in this section can be easily reproduced. For detailed instructions, please refer to \url{https://github.com/StannisZhou/capacity_hopping}.
+In what follows, we present experimental results with our toy model, using both a flat and a nontrivial energy landscape, to verify each of these aspects.  All the results presented in this section can be easily reproduced. For detailed instructions, please refer to \url{https://github.com/StannisZhou/capacity_hopping}.
 
 \subsection{Sanity Checks on Flat Energy Landscape}
 
-The first set of experiments are some basic sanity checks, with the goal of demonstrating the basic components of our algorithm. For these sanity checks, we work with a flat energy landscape in $\mathbb{R}^5$, where quantities of interest can be obtained in closed form.
+\begin{figure}
+\fbox{\begin{minipage}{\textwidth}
+    \includegraphics[width=\textwidth]{figs/results.png}
+    \caption{\label{fig:results} \textbf{Simulated hitting probabilities vs. CHop probabilities}.  The CHop method accurately answers the question ``where will we go next?'' for a dynamics simulation initialized in a large, flat region of configuration space.  We start by designating two target regions, $A$ and $B$.  For any given initial condition, our task is to determine the probability that we hit $A$ first. We look at this question in the context of two different dynamics. In subfigure (a), we use the simplest possible dynamics: Brownian motion.  In subfigure (b), we consider the case that the energy landscape $U$ becomes complex and rugged near the targets of interest.  In both cases we consider 100 random initial locations which are away from either target regions.  For each initial condition, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.  For both dynamics we see that the hitting probability is nearly constant for initial conditions which are away from the target regions.  Furthermore, the value of this constant is well-approximated by the CHop estimates.  These simulations show that the CHop probabilities are able to reconstruct a global property of the system, even though they completely invariant to the dynamics for the majority of configuration space.  Indeed, the CHop probabilities can be computed using only small local simulations around each target, and do not require any simulations of trajectories that cross the large, flat region between $A$ and $B$.}
+\end{minipage}}
+\end{figure}
 
-\subsubsection{$\varepsilon$-flatness and CHop Probabilities}
+The first set of experiments are ``sanity checks'' designed to show that the CHop methods works in the simplest possible case.  For these sanity checks, we work with a flat energy landscape in $\mathbb{R}^5$, where quantities of interest can be obtained in closed form.  In particular, we look at the toy model with parameters \TODOTHIS
 
-The first sanity check tests the CHop idea at its most basic level: that entropic barriers can be characterized by $\varepsilon$-flatness, and CHop probabilities calculated using capacities can be used to approximate global hitting probabilities. Here we use the toy model where $U(x)=0, \forall x \not\in A\cup B$. In other words, we have a flat energy landscape everywhere outside the targets. In this case, the capacity can be calculated analytically, and so the CHop probabilities can be computed in closed form:
+\subsubsection{The hitting probabilities are approximately constant}
+
+The first sanity check tests the CHop idea at its most basic level: that the large flat region of a golf-course potential features constant hitting probabilities, i.e.\ $\varepsilon$-flatness.  Theorem \ref{thm:epsilon_flat} shows that this must hold in the limiting regime of small $r_A,r_B$, but it is not obvious whether the parameters we use lie in that regime.  
+
+In the toy model, we see that the $\varepsilon$-flatness condition indeed holds, with $\varepsilon \approx .05$.  We ran 2000 diffusion simulations at each of 100 randomly selected initial conditions in the ``flat region'' $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$.  A histogram of these probabilities may be found in Figure \ref{fig:results}.  From this we see that the hitting probabilities in this region do not substantially depend upon the initial condition, all falling in the range $[0.2055, 0.2480]$.
+
+
+\subsubsection{The value of this constant is well-approximated using CHop probabilities}
+
+Our second check tests whether the CHop probabilities accurately approximate the hitting probabilities.  For this problem, the relevant CHop probabilities can be computed in closed form:
 \begin{equation}
 p_A = \frac{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}}}{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}} + \frac{1}{r_B^{2 - d} - r_{\tilde{B}}^{2 - d}}}
 \end{equation}
 
-We test $\varepsilon$-flatness by looking at direct simulation results from different starting points and see if they give roughly the same hitting probabilities. We further test whether the CHop probabilities agree with direct simulation results. Theorem \ref{thm:main_thm} shows that $\varepsilon$-flatness is valid, and CHop probabilities agree with global hitting probabilities in the limiting regime of small $r_A,r_B$, but it is not obvious whether the parameters we use lie in that regime.  In particular, we look at the case $r_A = 0.05, r_{\tilde{A}} = 0.1, r_B = 0.075, r_{\tilde{B}} = 0.15$. In this case, we see that the $\varepsilon$-flatness condition indeed holds, and the CHop probabiity yields an estimate for the hitting probability that is consistent with direct simulations:
+According to this formula, the CHop probability is given by $.2286$.  This is in good agreement with the average hitting probability found by direct simulation in the previous section, namely $.2236$.  
 
-\begin{description}
-\item[Hitting probabilities estimated with direct simulations] $\approx 0.2236$. We run 2000 diffusion simulations at each one of the 100 randomly picked initial locations from $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each initial location we obtain an estimate of the hitting probability. The mean of these estimates is 0.2236, standard deviation 0.0093. We used time step of size 1e-05. A histogram of the different hitting probabilities, as well as the CHop probability, is shown in Fig. \ref{fig:simple_hitting_prob_test}. The hitting probabilities from different initial locations are in $[0.2055, 0.2480]$, and the $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0425$.
-  
-\item[CHop probability]  0.2286, which is a good approximation for the various hitting probabilities we obtained from direct simulations.
-\end{description}
 
-\begin{figure}
-	\caption{\label{fig:simple_hitting_prob_test} We picked 100 random locations for $ X_0 \not\in \mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each location we used 2000 simulations to estimate the probability of hitting $A$ before $B$. The histogram of the 100 estimates is shown below. The $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0425,$ and the CHop probability gives good approximation to this narrow range of hitting probabilities.}
-	\includegraphics{figs/simple_hitting_prob_hist.png}
-\end{figure}
+\subsubsection{CHop capacity estimation}
 
-\subsubsection{Capacity Estimation on Flat Energy Landscape}
+Finally, we check the accuracy of the capacity estimation algorithm employed by CHop.  We can get an analytical formula for the capacities in this case.  We compare these exact values with those estimated using the method outlined in Section \ref{sec:outlinecapacest}, with parameters $m = 2, n = 4, N_p = 100, N_b = 3,N_s = 1000$ and a time-step of $10^{-6}$.  We obtain the following results:
 
-The second sanity check tests the capacity estimation algorithm employed by CHop. When the energy is flat, we can get an analytical formula for the capacity in the case of concentric spheres. For this test, we try to estimate the capacity $cap(A, \tilde{A})$, with $A=\bb{0, r_A}$ and $\tilde{A}=\bb{0, r_{\tilde{A}}}$, and $U(x)=0,\forall x \in \bb{0, r_{\tilde{A}}} \setminus \bb{0, r_A}$. In this case, the capacity is given analytically as
+\begin{itemize}
+\item $\capac{A}{\tilde{A}}=$\TODOTHIS, and our method obtained the estimate \TODOTHIS
+\item $\capac{B}{\tilde{B}}=$\TODOTHIS, and our method obtained the estimate \TODOTHIS
+\end{itemize}
 
-\begin{equation}
-cap(A, \tilde{A}) = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\frac{d - 2}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}}
-\end{equation}
-
-Take $r_A = 0.1, r_{\tilde{A}} = 0.4$, and $d_A = 0.2$. We can then compare the exact capacity for this case with the capacity given by our capacity estimation algorithm:
-
-\begin{description}
-\item[Exact value]  $ 0.080210 $. This is the capacity given by the analytical formula.
-\item[Estimate from capacity estimation algorithm]  $ 0.078846 $. To obtain this value we use the version of the capacity estimation algorithm described in the previous section, with parameter values given by 
-\begin{equation*}
-m = 2, n = 4, 
-N_p = 100, N_b = 3,
-N_s = 1000
-\end{equation*}
-We used a 1e-06 time step.
-\end{description}
+These show good agreement between the truth and our estimates.
 
 \subsection{Results on Nontrivial Energy Landscape}
 
-In this section, we present some results for the toy model with nontrivial energy landscape around the targets. In addition to testing $\varepsilon$-flatness and CHop probabilities, as we did in previous sanity checks, we further test the efficiency of our capacity estimation algorithm, to demonstrate that our algorithm can accurately estimate the global hitting probabilities while maintaining great advantage over the direct simulations in terms of speed.
+In this section, we apply the CHop method to a model with a nontrivial energy landscape around the targets. We see that our algorithm can accurately estimate the hitting probabilities while maintaining great advantage over the direct simulations in terms of speed.
 
-We experimented with the toy model with $d = 5$ and
+We experimented with the toy model parameters with $d = 5$ and
 \begin{equation*}
 x_A = \begin{pmatrix}%
 0.5&0.6&0.0&0.0&0.0%
@@ -410,53 +409,34 @@ r_B = 0.04,
 d_B = 0.075,
 r_{\tilde{B}} = 0.15
 \end{equation*}
-for target $B$.  We refer the reader to appendix \ref{sec:energy_function} for details on the energy function, as well as the actual parameters we used in our experiments.
+for target $B$.  We refer the reader to Appendix \ref{sec:energy_function} for more details.
 
-\subsubsection{$\varepsilon$-flatness and CHop Probabilities}
+\subsubsection{The hitting probabilities are approximately constant}
 
-We again start by testing the basic idea of CHop: we test our assumption of $\varepsilon$-flatness using direct simulations, to see the applicability of this condition when there is a nontrivial energy landscape. We further compare the CHop Probabilities with the hitting probabilities given by the direct simulations.
+We again start by testing the basic idea of CHop: we use direct simulations to test the hypothesis that the hitting probabilities are relatively flat in away from the targets.  The results can be seen in Figure \ref{fig:results}.   For every initial condition we tested, we found that the hitting probability fell in the interval $[0.7980, 0.8450]$, suggesting that the $\varepsilon$-flatness condition holds with $\varepsilon \approx .05$.
 
-\begin{description}
-\item[Hitting probabilities estimated with direct simulations:] $\approx 0.8180$.  We run 2000 diffusion simulations at each one of the 100 randomly picked initial locations from $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each initial location we obtain an estimate of the hitting probability. The mean of these estimates is 0.8180, standard deviation 0.0096. We used time step of size 1e-05. A histogram of the different hitting probabilities, as well as the CHop probability, is shown in Fig. \ref{fig:nontrivial_hitting_prob_test}. The hitting probabilities from different initial locations are in $[0.7980, 0.8450]$, and the $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0470$.
 
-\item[CHop probability]  0.8274, which is in good agreement with the hitting probabilities we obtained from direct simulations. For the region around $x_A$, we used
-\begin{equation*}
-m = 2, n = 4, 
-N_p = 5000, N_b = 10,
-N_s = 2000
-\end{equation*}
-For the region around $x_B$, we used
-\begin{equation*}
-m = 2, n = 5, 
-N_p = 5000, N_b = 10,
-N_s = 2000
-\end{equation*}
-For estimating both of these capacities, we used a 1e-07 time step.
-\end{description}
 
-\begin{figure}
-	\caption{\label{fig:nontrivial_hitting_prob_test} We picked 100 random locations for $ X_0 \not\in \mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. For each location we used 2000 simulations to estimate the probability of hitting $A$ before $B$. The histogram of the 100 estimates is shown below. The $\varepsilon$-flatness condtion holds with $\varepsilon = 0.0470,$ and the CHop probability gives good approximation to this narrow range of hitting probabilities.}
-	\includegraphics{figs/nontrivial_hitting_prob_hist.png}
-\end{figure}
+\subsubsection{The value of this constant is well-approximated using CHop probabilities}
 
-\subsubsection{Efficiency of the Capacity Estimation Algorithm}
+Using the CHop capacity estimation procedure from Section \ref{sec:outlinecapacest}, we obtained an estimate of $0.8274$ for the CHop probability of this model.  This is in good agreement with the average hitting probability found in our direct simulations, namely $.8180$.  For the capacity estimation procedure, we used the parameters $m=2,N_p=5000,N_b=10,N_s=2000$ and a time-step of $10^{-7}$.  For the $A$ capacity we used $n=4$ and for the slightly larger $B$ region we used $n=5$.  
 
-To test the efficiency of the algorithm, we compared the time it takes to estimate the hitting probabilities using direct simulations with the time our capacity estimation algorithm needs to estimate the capacities for all targets. Note that in order to make the direct simulations feasible for the $5$-dimensional toy model we are working on, we made our best effort to make the direct simulation fast, including spherical acceleration in the flat region, JIT compilation to remove loop overhead, 24-CPU parallization, and a relatively coarse time step.
+\subsubsection{CHop capacity estimation}
+
+In this case it is difficult to assess the accuracy of the CHop capacity algorithm.  It is not possible to obtain exact values for the capacity.  Therefore, we cannot directly test whether our algorithm is accurately estimating the capcities.  However, as the last section showed, the CHop probabilities computed from our estimated capacities do seem to accurately reflect the true hitting probabilities.  This offers some limited evidence that the estimated capacities are also accurate.
+
+We can also test the speed of CHop capacity estimation algorithm.  We compared the time it takes to estimate the hitting probabilities using direct simulations with the time our capacity estimation algorithm needs to estimate the capacities for all targets. Note that in order to make the direct simulations feasible for the $5$-dimensional toy model we are working on, we made our best effort to make the direct simulation fast.  We use an efficient walk-on-spheres method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, 24-CPU parallization, and a relatively coarse time step.  The CPU times for the direct simulations and the CHop method are shown below:
 
 \begin{description}
-\item[Direct simulation] 89177.87 seconds (3715.74 seconds on 24 CPUs).  This quantity is an average over the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of 1e-05.  We confirmed that there was no significant overhead due to the parallelization.
+\item[Direct simulation] 89177.87 seconds (3715.74 seconds on a cluster of 24 CPUs).  This quantity is the sum over the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of $10^{-5}$.  These direct simulations are trivial to perform in parallel, assuring us that there was no significant overhead due to the parallelization.
 
-\item[CHop speed] 1055.55 seconds on a single CPU. Note that to get an accurate estimate, we need to employ a shorter time step of 1e-07. But this doesn't constitute any computational burden because of the accelerations achieved by CHop.
+\item[CHop speed] 1055.55 seconds on a single CPU. In doing this we employed a time step which was 100 times more accurate than the one used for direct simulation (i.e.\ a timestep of $10^{-7}$). Despite this, the CHop algorithm was three times faster on a single node than the direct method run on a cluster of 24 nodes.
 
 \end{description}
 
-This reflects an 85-fold acceleration.  Furthermore note that the time-consuming elements of the capacity estimation algorithm are ``embarassingly parallelizable" and should be easy to further accelerate using parallelization.  There was no need to do so in this case because we could easily run the CHop code on our laptops.  However, larger scale problems would certainly benefit from this kind of acceleration.  
+This reflects an 85-fold acceleration.  Furthermore note that the time-consuming elements of the capacity estimation algorithm are ``embarassingly parallelizable'' and should be easy to further accelerate using parallelization.  There was no need to do so in this case because we could easily run the CHop code on our laptops.  However, larger scale problems would certainly benefit from this kind of acceleration.  
 
-
-
-
-The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $N_p, N_b$ and $N_s$.  For example, we performed another experiment with a 1e-06 time step, parameters of $ m = 2, n = 4, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $A$ capacity, and parameters of $ m = 2, n = 5, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $B$ capacity.  The result was an estimate of $0.8420$. This still agrees well with the direct simulations (indeed, there were some initial conditions for which the direct simulation hitting probability estimates agreed with this quantity almost exactly).  Using these parameters, total computation time was reduced to 119.35 seconds, reflecting a 750-fold acceleration.
-
+The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $N_p, N_b$ and $N_s$.  For example, we performed another experiment with time step of $10^{-6}$, parameters of $ m = 2, n = 4, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $A$ capacity, and parameters of $ m = 2, n = 5, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $B$ capacity.  The result was an estimate of $0.8420$. This still agrees well with the direct simulations (indeed, there were some initial conditions for which the direct simulation hitting probability estimates agreed with this quantity almost exactly).  Using these parameters, total computation time was reduced to 119.35 seconds, reflecting a 750-fold acceleration.
 
 \section{Conclusions and Future Directions}\label{sec:conclusion}
 
