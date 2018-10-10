@@ -188,7 +188,7 @@ This corollary follows immediately from Theorem \ref{thm:main_thm} and additivit
 
 \section{Application: CHop Method and Capacity Estimation}\label{sec:algorithm}
 
-Inspired by the theoretical analysis above, we introduce the CHop method as a way to accelerate molecular dynamics simulations by efficiently dealing with regions with golf-course potential. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
+Inspired by the theoretical analysis above, we introduce the CHop method as a way to study kinetic aspects of biomolecular systems by efficiently dealing with regions with golf-course potential. We present the high-level idea of the CHop method, and give a detailed account of the key computational issue of the CHop method, the efficient estimation of capacities. A general framework based on a simple lemma is given for capacity estimation, and the associated challenges are discussed. To demonstrate this framework, we give an outline of a flexible and general-purpose algorithm for capacity estimation, and make some concrete choices to show how exactly the algorithm works in the case of our toy model. This will serve as the basis for the numerical experiments and results in Section \ref{sec:experiments}.
 
 Recall that in the previous section on theory, we made the following two key points:
 
@@ -197,7 +197,7 @@ Recall that in the previous section on theory, we made the following two key poi
 	\item The approximately constant hitting probabilities can be accurately estimated using CHop probabilities, which depend on capacities that can be determined solely based on the local information around the targets.
 \end{enumerate}
 
-The above theoretical insights provide us with an efficient way to deal with golf-course potentials, so that we can get information of the biomolecular system on a much longer time-scale: we make use of our knowledge of the targets (which is typically available, e.g. in the form of different secondary structures for RNAs) to carry out local simulations around the targets for the estimation of capacites. Capacities can then be used to calculate the CHop probabilities, which give us an accurate estimate of the approximately constant hitting probabilities. This enables us to make probabilistic jumps to one of the targets to accelerate the molecular dynamics simulations, which is the essence of the CHop method.
+The above theoretical insights provide us with an efficient way to deal with golf-course potentials, so that we can get information of the biomolecular system on a much longer time-scale: we make use of our knowledge of the targets (which is typically available, e.g. in the form of different secondary structures for RNAs) to carry out local simulations around the targets for the estimation of capacites. Capacities can then be used to calculate the CHop probabilities, which give us an accurate estimate of the approximately constant hitting probabilities. This enables us to study kinetics of the biomolecular systems by looking at sequences of key configurations visited in molecular dynamics simulations, which is the essence of the CHop method.
 
 \subsection{CHop Method}
 
@@ -346,8 +346,8 @@ where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$
 In this section we use simulations to test the limits of our theories and algorithms.  In this work we have made three claims, each of which can be we can test empirically:
 
 \begin{itemize}
-\item In golf-course dynamics the hitting probabilities are approximately constant away from the targets.
-\item In golf-course dynamics, the value of this constant can be well-approximated using CHop probabilities, which are defined in terms of local capacities.
+\item In regions with golf-course potentials the hitting probabilities are approximately constant away from the targets.
+\item In regions with golf-course potentials, the value of this constant can be well-approximated using CHop probabilities, which are defined in terms of local capacities.
 \item The CHop capacity estimation algorithm is efficient and accurate
 \end{itemize}
 
@@ -378,7 +378,7 @@ Our second check tests whether the CHop probabilities accurately approximate the
 p_A = \frac{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}}}{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}} + \frac{1}{r_B^{2 - d} - r_{\tilde{B}}^{2 - d}}}
 \end{equation}
 
-According to this formula, the CHop probability is given by $.2286$.  This is in good agreement with the average hitting probability found by direct simulation in the previous section, namely $.2236$.  
+According to this formula, the CHop probability is $.2286$.  This is in good agreement with the average hitting probability $.2236$ found by direct simulation in the previous section.
 
 
 \subsubsection{CHop capacity estimation}
@@ -424,7 +424,7 @@ We again start by testing the basic idea of CHop: we use direct simulations to t
 
 \subsubsection{The value of this constant is well-approximated using CHop probabilities}
 
-Using the CHop capacity estimation procedure from Section \ref{sec:outlinecapacest}, we obtained an estimate of $0.8274$ for the CHop probability of this model.  This is in good agreement with the average hitting probability found in our direct simulations, namely $.8180$.  For the capacity estimation procedure, we used the parameters $m=2,N_p=5000,N_b=10,N_s=2000$ and a time-step of $10^{-7}$.  For the $A$ capacity we used $n=4$ and for the slightly larger $B$ region we used $n=5$.  
+Using the CHop capacity estimation procedure from Section \ref{sec:outlinecapacest}, we obtained an estimate of $0.8274$ for the CHop probability of this model.  This is in good agreement with the average hitting probability $.8180$ found in our direct simulations.  For the capacity estimation procedure, we used the parameters $m=2,N_p=5000,N_b=10,N_s=2000$ and a time-step of $10^{-7}$.  For the $A$ capacity we used $n=4$ and for the slightly larger $B$ region we used $n=5$.  
 
 \subsubsection{CHop capacity estimation}
 
