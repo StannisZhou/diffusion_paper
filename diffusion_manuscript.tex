@@ -5,6 +5,7 @@
 \usepackage{mathrsfs}
 \usepackage{bbm,latexsym}
 \usepackage{graphicx}
+\usepackage{cancel}
 
 %%%%%%%%%% Start TeXmacs macros
 \catcode`\<=\active \def<{
@@ -26,6 +27,7 @@
 
 \theoremstyle{plain}
 \newtheorem{thm}{\protect\theoremname}
+\newtheorem*{thm*}{\protect\theoremname}
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{\protect\definitionname}
 \theoremstyle{plain}
@@ -454,133 +456,61 @@ Extensive numerical results demonstrate that CHop is highly effective in the pre
 	\item Think more about ways to model the configuration space as a hierarchical, nested golf-course, with each target as a mini golf-course inside a larger one, and apply CHop recursively so as to develop a complete model for biomolecular systems, much like kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} and Markov State Models \cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}
 \end{enumerate}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   __ _ _ __   __| |_  __
+%  / _` | '_ \ / _` \ \/ /
+% | (_| | |_) | (_| |>  < 
+%  \__,_| .__/ \__,_/_/\_\
+%       |_|               
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \appendix
+
+%     _    ____  ____  _____ _   _ ____ _____  __     _    
+%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ /    / \   
+%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /    / _ \  
+%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \   / ___ \ 
+% /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\ /_/   \_\
+                                                         
+
 
 \section{Stationary Reversible Diffusion Processes}\label{sec:reversible_diffusion}
 
-In this section, we are going to make formal definitions of stationary
-reversible SDEs, and derive some properties that are central to the paper.
-Assume $\{X_t\}_{t \geqslant 0}$ is a stationary diffusion process in
-$\mathbbm{R}^d$ with invariant measure ${\mu}$. Define $\tau_S
-=\ensuremath{\operatorname{int}} \{ t \geqslant 0 : X_t \in S \} , \text{ for
-} S \subset \mathbbm{R}^d$. We first define the notion of reversibility for
-general diffusion processes. Our discussion here follows Section 4.6 of
-Pavliotis\cite{Pavliotis2016-xn}.
-
-\begin{definition}
-(Definition 4.3 of Pavliotis\cite{Pavliotis2016-xn}) A stationary stochastic
-process $\{X_t\}_{t \geqslant 0}$ is time-reversible if its law is invariant under time
-reversal: for every $T \in (0, + \infty)$, $\{X_t\}_{t \geqslant 0}$ and the time-reversed
-process $\{X_{T - t}\}_{t \geqslant 0}$ have the same distribution.
-\end{definition}
-
-Recall that a diffusion pross can be characterized by its generator. It turns
-out the reversibility of a stationary diffusion process can also be
-characterized by its generator. We have
-
-\begin{theorem}
-\label{thm:reversibility}(Theorem 4.5 of Pavliotis\cite{Pavliotis2016-xn}) A
-stationary diffusion process $\{X_t\}_{t \geqslant 0}$ in $\mathbbm{R}^d$ with generator
-$\mathcal{L}$ and invariant measure ${\mu}$ is reversible if and only if
-its generator is self-adjoint in $L^2 (\mathbbm{R}^d ; {\mu})$.
-\end{theorem}
-
-For the rest of this section, we turn to the case where the stationary
-diffusion process $\{X_t\}_{t \geqslant 0}$ satisfies the SDE
+In this section, we set notation and review some properties of stochastic differential equations.   Let $\{X_t\}_{t \geqslant 0}$ denote a stationary reversible diffusion process trapped in 
+$\Omega \subset \mathbbm{R}^d$ by reflecting boundaries, with continuous invariant density $e^{-U}$, satisfying 
+%
 \[ \mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \]
-where $b (\cdot) : \mathbbm{R}^d \rightarrow \mathbbm{R}^d$ and $\sigma
-(\cdot) : \mathbbm{R}^d \rightarrow \mathbbm{R}^{d \times m}$ are
-differentiable vector-valued and matrix-valued functions. Define $a (x) =
-\sigma (x) \sigma (x)^T$. We assume the invariant measure may be written as
-${\mu}= e^{- U (x)}$, where $U (x)$ is a scalar function and can be
-thought of as a generalized potential.
+%
+where $W$ is a $d$-dimensional Brownian motion and $b (\cdot) : \mathbbm{R}^d \rightarrow \mathbbm{R}^d,\sigma
+(\cdot) : \mathbbm{R}^d \rightarrow \mathbbm{R}^{d \times d}$ are differentiable.  If no boundaries are desired, we can take $\Omega= \mathbb{R}^n$.  Recall that $b$ is entirely determined by $\sigma,U$ and the requirement that the process is stationary and reversible:  \TODOTHIS.  We refer to Bovier\cite{Bovier2016-ez} and Pavliotis\cite{Pavliotis2016-xn} for a useful exposition on these kinds of processes.
 
-Recall that, for this SDE, the generator $\mathcal{L}$ is given by
-\[ (\mathcal{L} f) (x) = b (x) \cdot \nabla f (x) + \frac{1}{2} a (x) :
-\nabla^2 f (x) \]
-where $\cdot$ represents the inner product, $:$ represents the Frobenius inner
-product, and $\nabla^2 f (x)$ represents the Hessian matrix of the function $f
-(x)$, i.e.
-\[ (\mathcal{L} f) (x) = \sum_{i = 1}^d b_i (x) \frac{\partial f
-(x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^d \sum_{j = 1}^d a_{ij} (x)
-\frac{\partial^2 f (x)}{\partial x_i \partial x_j} \]
-Using $m$ to denote the Lebesgue measure, the adjoint of $\mathcal{L}$ in $L^2
-(\mathbbm{R}^d ; m)$ is the Fokker Planck operator
-\[ (\mathcal{L}^{\ast} f) (x) = - \nabla \cdot (b (x) f (x)) + \frac{1}{2}
-\nabla^2 : (a (x) f (x)) = - \sum_{i = 1}^d \frac{\partial (b_i (x) f
-(x))}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^d \sum_{j = 1}^d
-\frac{\partial^2 (a_{ij} (x) f (x))}{\partial x_i \partial x_j} \]
-Note that we can further write the Fokker Planck operator $\mathcal{L}^{\ast}$
-as $\mathcal{L}^{\ast} = \nabla \cdot J$, where
-\[ (J f) (x) = - b (x) f (x) + \frac{1}{2} \nabla \cdot (a (x) f (x)) \]
-i.e.
-\[ (J f)_i (x) = - b_i (x) f (x) + \frac{1}{2} \sum_{j = 1}^d \frac{\partial
-(a_{ij} (x) f (x))}{\partial x_j} \]
-In the case where $f (x)$ is a density function, $(J f) (x)$ gives us the
-probability flux of the Markov process starting at the distribution $f (x)$.
-
-Combining these basic formulas with Theorem \ref{thm:reversibility}, it's easy
-to see that the condition for the SDE being reversible is
-\[ (\mathcal{L}^{\ast} f e^{-U}) (x) = e^{- U (x)} (\mathcal{L} f) (x),
-\forall f \]
-Alternatively, we have the following proposition
-
-\begin{proposition}
-(Proposition 4.5 of Pavliotis\cite{Pavliotis2016-xn}) $X_t$ is reversible if
-and only if $(J e^{- U })(x)$ holds, or equivalently, $b (x) = \frac{1}{2}
-\nabla \cdot a (x) - \frac{1}{2} a (x) \nabla U (x)$.
-\end{proposition}
-
-We establish a useful property of stationary reversible SDEs.
-
-\begin{proposition}\label{prop:property_reversible_sde}
-If $X_t$ is reversible, then $(J f e^{- U })(x) = \frac{1}{2} e^{- U
-(x)} a (x) \nabla f (x) , \forall f$.
-\end{proposition}
-
-\noindent\textbf{Proof\ }This result can be established by using the
-definition of $J$, the property $(J e^{- U })(x) = 0$, and straightforward
-calculations. We have
-\begin{eqnarray*}
-(J f e^{- U })(x) & = & - b (x) f (x) e^{- U (x)} + \frac{1}{2} \nabla
-\cdot (a (x) f (x) e^{- U (x)})\\
-\nabla \cdot (a (x) f (x) e^{- U (x)}) & = & f (x) \nabla \cdot (a (x) e^{-
-U (x)}) + e^{- U (x)} a (x) \nabla f (x)\\
-\Longrightarrow (J f e^{- U })(x) & = & f (x) \left[ - b (x) e^{- U (x)}
-+ \frac{1}{2} \nabla \cdot (a (x) e^{- U (x)}) \right] + \frac{1}{2} e^{- U
-(x)} a (x) \nabla f (x)\\
-& = & f (x) (J e^{- U })(x) + \frac{1}{2} e^{- U (x)} a (x) \nabla f (x)\\
-& = & \frac{1}{2} e^{- U (x)} a (x) \nabla f (x)
-\end{eqnarray*}\hspace*{\fill}$\Box$\medskip
-
-We next move on to the definition of Dirichlet form and capacity for
-stationary reversible SDEs. We have the following definitions
+This paper's main results arise from consideration of three related objects induced by this diffusion: the Dirichlet form, the capacity, and the Dirichlet problem.  
 
 \begin{definition}
-Assume $X_t$ is a stationary reversible SDE with invariant measure
-${\mu}= e^{- U (x)} \mathrm{d} x$, the Dirichlet form of $X_t$ is given
+The \textbf{Dirichlet form} of $X$ is given
 by
-\[ \mathcal{E} (f, g) = \frac{1}{2} \int_{\mathbbm{R}^d} \nabla f (x)^T a
-(x) \nabla g (x) e^{- U (x)} \mathrm{d} x \]
+\[ \mathcal{E} (f, g) = \frac{1}{2} \int_\Omega (\sigma(x) \nabla f (x))^T 
+ (\sigma(x) \nabla g (x)) e^{- U (x)} \mathrm{d} x \]
 \end{definition}
 
-Note that in the case of an SDE in $\Omega$ with reflecting boundaries on
-$\partial \Omega$, the stationary measure ${\mu}$ is restricted in
-$\Omega$. In this case, the Dirichlet form is given by
-\[ \mathcal{E} (f, g) = \frac{1}{2} \int_{\Omega} \nabla f (x)^T a (x) \nabla
-g (x) e^{- U (x)} \mathrm{d} x \]
-So this definition also applies to SDEs with reflecting boundaries, which is
-the main object of interest in this paper. In what follows, w.l.o.g., we are
-going to use $\Omega$ to denote the state space of the process.
+This form induces a ``capacity'' on pairs of nested sets:
 
 \begin{definition}
 Let $A \subset \tilde{A} \subset \Omega$ be non-empty. Assume we have an
 open set $D \subset \Omega$ for which $\partial D = \partial A \cup \partial
-\tilde{A}$ and is regular (in the sense of Theorem 7.17 in
-Bovier\cite{Bovier2016-ez}). Denote the Dirichlet form of the reversible
-stationary diffusion process $X_t$ in $\Omega$ with invariant measure
-${\mu}= e^{- U (x)} \mathrm{d} x$ by $\mathcal{E}$. Let $\mathcal{H}_{A,
-\tilde{A}}$ be the space of functions $f$ such that
+\tilde{A}$ and smooth. The \textbf{capacity} $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ is defined as
+%
+\[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) = \inf_{f \in
+\mathcal{H_{A, \tilde{A}}}} \mathcal{E} (f, f) \]
+%
+where $\mathcal{H}_{A, \tilde{A}}$ is the space of functions $f$ such that
 \begin{enumerate}
 \item $f \in H^1$, where $H^1$ is the Soblev space of weakly
 differentiable functions
@@ -590,262 +520,208 @@ differentiable functions
 \item $f \geqslant 1$ on $\partial A$ and $f \leqslant 0$ on $\partial
 \tilde{A}$
 \end{enumerate}
-The capacity $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ is defined as
-\[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) = \inf_{f \in
-\mathcal{H_{A, \tilde{A}}}} \mathcal{E} (f, f) \]
+
 \end{definition}
 
-Before we state the basic properties of the capacity
-$\ensuremath{\operatorname{cap}} (\tilde{A}, \tilde{A})$, we are also going to
-define the Dirichlet problem. This problem turns out to be just another
-perspective on the same minimization problem which appears in the definition
-of the capacity.
+The capacity is intimately connected with a partial differential equation known as the Dirichlet problem:
 
 \begin{definition}
-Let $A, B \subset \Omega$ be non-empty and disjoint. Assume we have an open
-set $D \subset \Omega$ for which $\partial D = \partial A \cup \partial B$
-and is regular. Given a stationary diffusion process $X_t$ in $\Omega$ with
-generator $\mathcal{L}$, the Dirichlet problem is defined as the partial
+Let $A, B \subset \Omega$ be non-empty and disjoint.  The \textbf{Dirichlet problem} for $A,B$ with respect to the diffusion $X$ is defined as the partial
 differential equation
-\[ - (\mathcal{L} h) (x) = 0, \forall x \in D \]
-with boundary conditions
+\[ 0 = \sum_{i = 1}^d b_i (x) \frac{\partial f
+(x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^d \sum_{j = 1}^d a_{ij} (x)
+\frac{\partial^2 f (x)}{\partial x_i \partial x_j} \]
+where $a(x)=\sigma(x)\sigma(x)^T$, with boundary conditions
 \begin{eqnarray*}
 h (x) & = & 1, x \in A\\
 h (x) & = & 0, x \in B
 \end{eqnarray*}
+As long as there is some set $D \subset \Omega$ for which $\partial D = \partial A \cup \partial B$, this problem has a unique solution which we will denote $h_{A,B}$.
 \end{definition}
 
-Under certain regularity conditions (in the form of Theorem 7.17 in
-Bovier\cite{Bovier2016-ez}), the solution $h_{A, B} (x)$ exists and is
-unique, and has the probabilistic interpretation that
-\[ h_{A, B} (x) =\mathbbm{P} (X_{\tau_{A \cup B}} \in A|X_0 = x) \]
-i.e. $h_{A, B} (x)$ is the probability for $X_t$ to hit $A$ first before
-hitting $B$ if we start the process at $x$. This is the celebrated
-{\itshape{Dirichlet Principle}}.
+The connection between the capacity and the Dirichlet problem is given by the following, proved in Theorem 7.33 of Bovier:\cite{Bovier2016-ez}
 
-Armed with this definition, we are ready to state some basic properties of the
-capacity.
-
-\begin{proposition}\label{prop:capacity}
-The capacity $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ satisfies the
-following properties
-\begin{enumerate}
-\item (Probabilistic interpretation) If $\mathcal{H}_{A, \tilde{A}} \neq
-\varnothing$, then the infimum in the definition of
-$\ensuremath{\operatorname{cap}} (A, \tilde{A})$ is attained uniquely at
-the solution to the corresponding Dirichlet problem $h_{A, \tilde{A}^c}$,
-i.e. $\ensuremath{\operatorname{cap}} (A, \tilde{A}) = \mathcal{E} (h_{A,
-\tilde{A}^c}, h_{A, \tilde{A}^c})$.
-
-\item (Additivity) The capacity is additive, i.e. if we have $A \subset
-\tilde{A} \subset \Omega$ and $B \subset \tilde{B} \subset \Omega$ where
-$\tilde{A}$ and $\tilde{B}$ are disjoint, then we have
-\[ \ensuremath{\operatorname{cap}} (A \cup B, \tilde{A} \cup \tilde{B})
-=\ensuremath{\operatorname{cap}} (A, \tilde{A})
-+\ensuremath{\operatorname{cap}} (B, \tilde{B}) \]
-\end{enumerate}
+\begin{proposition}\label{prop:capacitydirichlet}
+If $\mathcal{H}_{A, \tilde{A}} \neq \varnothing$, then
+\[
+\capac{A}{\tilde{A}} = \mathcal{E} (h_{A,\tilde{A}^c}, h_{A, \tilde{A}^c})
+\]
 \end{proposition}
 
-\noindent\textbf{Proof\ }
-\begin{enumerate}
-\item Refer to Theorem 7.33 of Bovier\cite{Bovier2016-ez}
+At first glance, it is unclear why any of these objects are relevant to the study of the diffusion $X$.  The answer comes in the form of the celebrated {\itshape{Dirichlet Principle}}, which states that the solution to the Dirichlet problem carries the probabilistic interpretation 
+\[ h_{A, B} (x) =\mathbbm{P} (X_{\tau_{A \cup B}} \in A|X_0 = x) \]
+where $\tau_S \triangleq \inf \{ t \geqslant 0 : X_t \in S \}$.  That is, $h_{A, B} (x)$ is the probability for $X$ to hit $A$ first before hitting $B$ if we start the process at $x$.  The Dirichlet principle is the key that connects hitting probabilities to the capacity and enables the main results of this work.
 
-\item By definition, we have
-\begin{eqnarray*}
-h_{A, \widetilde{A^{}}^c} (x) & = & 0, \forall x \in \tilde{A}^c\\
-h_{B, \tilde{B}^c} (x) & = & 0, \forall x \in \tilde{B}^c
-\end{eqnarray*}
-which implies
-\begin{eqnarray*}
-\nabla h_{A, \widetilde{A^{}}^c} (x) & = & 0, \forall x \in \tilde{A}^c\\
-\nabla h_{B, \tilde{B}^c} (x) & = & 0, \forall x \in \tilde{B}^c
-\end{eqnarray*}
-Since $\tilde{A}$ and $\tilde{B}$ are disjoint, using the probabilistic interpretation, it's easy to see that
-\begin{eqnarray*}
-h_{A \cup B, (\tilde{A} \cup \tilde{B})^c} (x) & = & h_{A,
-\widetilde{A^{}}^c} (x), \forall x \in \tilde{A}\\
-h_{A \cup B, (\tilde{A} \cup \tilde{B})^c} (x) & = & h_{B, \tilde{B}^c}
-(x), \forall x \in \tilde{B}
-\end{eqnarray*}
-Furthermore, we have $h_{A \cup B, (\tilde{A} \cup \tilde{B})^c} (x) = 0, \forall x \in (\tilde{A} \cup \tilde{B})^c$, which implies
-\[ \nabla h_{A \cup B, (\tilde{A} \cup \tilde{B})^c} (x) = 0, \forall x \in
-(\tilde{A} \cup \tilde{B})^c \]
-Since $X_t$ is reversible, using 1, we have
-\begin{eqnarray*}
-&  & \tmop{cap} (A \cup B, \tilde{A} \cup \tilde{B})\\
-& = & \mathcal{E} (h_{A \cup B, (\tilde{A} \cup \tilde{B})^c}, h_{A \cup
-B, (\tilde{A} \cup \tilde{B})^c})\\
-& = & \frac{1}{2} \int_{\Omega} (\nabla h_{A \cup B, (\tilde{A}
-\cup \tilde{B})^c} (x))^T a (x) \nabla h_{A \cup B, (\tilde{A} \cup
-\tilde{B})^c} (x) e^{- U (x)} \mathd x\\
-& = & \frac{1}{2} \int_{\tilde{A}} (\nabla h_{A \cup B, (\tilde{A} \cup
-\tilde{B})^c} (x))^T a (x) \nabla h_{A \cup B, (\tilde{A} \cup
-\tilde{B})^c} (x) e^{- U (x)} \mathd x\\
-& + & \frac{1}{2} \int_{\tilde{B}} (\nabla h_{A \cup B, (\tilde{A} \cup
-\tilde{B})^c} (x))^T a (x) \nabla h_{A \cup B, (\tilde{A} \cup
-\tilde{B})^c} (x) e^{- U (x)} \mathd x\\
-& + & \frac{1}{2} \int_{(\tilde{A} \cup \tilde{B})^c} (\nabla h_{A \cup
-B, (\tilde{A} \cup \tilde{B})^c} (x))^T a (x) \nabla h_{A \cup B,
-(\tilde{A} \cup \tilde{B})^c} (x) e^{- U (x)} \mathd x\\
-& = & \frac{1}{2} \int_{\tilde{A}} \left( \nabla h_{A,
-\widetilde{A^{}}^c} (x) \right)^T a (x) \nabla h_{A, \widetilde{A^{}}^c}
-(x) (x) e^{- U (x)} \mathd x\\
-& + & \frac{1}{2} \int_{\tilde{B}} (\nabla h_{B, \tilde{B}^c} (x))^T a
-(x) \nabla h_{B, \tilde{B}^c} (x) (x) e^{- U (x)} \mathd x\\
-& = & \frac{1}{2} \int_{\Omega} \left( \nabla h_{A,
-\widetilde{A^{}}^c} (x) \right)^T a (x) \nabla h_{A, \widetilde{A^{}}^c}
-(x) (x) e^{- U (x)} \mathd x\\
-& + & \frac{1}{2} \int_{\Omega} (\nabla h_{B, \tilde{B}^c} (x))^T
-a (x) \nabla h_{B, \tilde{B}^c} (x) (x) e^{- U (x)} \mathd x\\
-& = & \mathcal{E} \left( h_{A, \widetilde{A^{}}^c} (x), h_{A,
-\widetilde{A^{}}^c} (x) \right) + \mathcal{E} (h_{B, \tilde{B}^c} (x),
-h_{B, \tilde{B}^c} (x))\\
-& = & \tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})
-\end{eqnarray*}
-which proves the result.
-\end{enumerate}
-\hspace*{\fill}$\Box$\medskip
+
+%     _    ____  ____  _____ _   _ ____ _____  __  ____  
+%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ / | __ ) 
+%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  |  _ \ 
+%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \  | |_) |
+% /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\ |____/ 
+                                                       
+
 
 \section{Proof of the Main Theorem}\label{sec:proof_thm}
 
-\noindent\textbf{Proof of Theorem \ref{thm:main_thm}\ }
-Note that because of the probabilistic interpretation of the capacity, we have
-\[ \mathcal{E} (u, u) = \tmop{cap} (A, B^c) = \inf_{f \in \mathcal{H}_{A, B^c}} \mathcal{E} (f, f) \]
-Recall that, since $X_t$ is reversible, the Dirichlet form takes the form
-\[ \mathcal{E} (f, f) = \frac{1}{2} \int_{\Omega} (\nabla f (x))^T a
-(x) \nabla f (x) e^{- F (x)} \mathd x \]
-Intuitively, $\forall f \in \mathcal{H}_{A, B^c}$, the Dirichlet form $\mathcal{E} (f, f)$ measures the costs (in terms of suitable norm of the gradient of $f$) we need to pay to grow the function $f$ from being 0 on $\partial B$ to being 1 on $\partial A$. Because of the definition of $u$, $\forall f \in \mathcal{H}_{A, B^c}$, we have the upper bound \[ \mathcal{E} (u, u) \leqslant \mathcal{E} (f, f) \] If we have a relatively tight upper-bound for $\mathcal{E} (u, u)$, it would place significant constraints on the function $u$ itself, because of the $\varepsilon$-flatness of $M$. Since the function $u$ can grow by at most $\varepsilon$ within $M$, most of its growth from being $0$ on $\partial B$ to being 1 on $\partial A$ would have to be done within $\tilde{A} / A$ and $\tilde{B} / B$. Increasing the amount of growth needed within a region by $k$ times would approximately increase the contribution to the Dirichlet form within this region by $k^2$ times, so the value of $u$ within $M$ has to be carefully balanced. Being too far away from 0 would make
-\[ \frac{1}{2} \int_{\tilde{B} / B} (\nabla u (x))^T a (x) \nabla u (x) e^{- U (x)} \mathd x \]
-explode, while being too far away from 1 would make
-\[ \frac{1}{2} \int_{\tilde{A} / A} (\nabla u (x))^T a (x) \nabla u (x) e^{- U (x)} \mathd x \]
-explode. Both cases would violate the upper bound we have already established for $\mathcal{E} (u, u)$.
+Assume $X$ is a reversible stationary diffusion on $\Omega$ governed by Equation (\ref{equ:general_sde}).  Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$.  Let us assume the set boundaries are all smooth.  
 
-Formally, we first establish the upper bound by making use of $h_{A,
-\tilde{A}^c}$ and $h_{B, \widetilde{B}^c}$. $\forall c \in (0, 1)$, define
-\[ \hat{u}_c (x) = \left\{ \begin{array}{l}
-c, \tmop{if} x \in M\\
-(1 - c) h_{A, \widetilde{A}^c} (x) + c, \tmop{if} x \in \tilde{A}\\
-c (1 - h_{B, \widetilde{B}^c} (x)), \tmop{if} x \in \tilde{B}
-\end{array} \right. \]
-Obviously $\hat{u}_c \in \mathcal{H_{}}_{A, B^c}$, which implies
-\begin{eqnarray*}
-&  & \mathcal{E} (u, u)\\
-& \leqslant & \mathcal{E} (\hat{u}_c, \hat{u}_c)\\
-& = & \frac{1}{2} \int_{\Omega} (\nabla \hat{u}_c (x))^T a (x)
-\nabla \hat{u}_c (x) e^{- U (x)} \mathd x\\
-& = & \frac{1}{2} \int_{\tilde{A}} (\nabla \hat{u}_c (x))^T a (x) \nabla
-\hat{u}_c (x) e^{- U (x)} \mathd x + \frac{1}{2} \int_{\tilde{B}} (\nabla
-\hat{u}_c (x))^T a (x) \nabla \hat{u}_c (x) e^{- U (x)} \mathd x\\
-& = & \frac{1}{2} (1 - c)^2 \int_{\tilde{A}} (\nabla h_{A, \widetilde{A}^c}
-(x))^T a (x) \nabla h_{A, \widetilde{A}^c} (x) e^{- U (x)} \mathd x\\
-& + & \frac{1}{2} c^2 \int_{\tilde{B}} (\nabla h_{B, \widetilde{B}^c}
-(x))^T a (x) \nabla h_{B, \widetilde{B}^c} (x) e^{- U (x)} \mathd x\\
-& = & (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B}),
-\forall c \in (0, 1)
-\end{eqnarray*}
-Minimizing this w.r.t. $c$, we get an upper bound for $\mathcal{E} (u, u)$:
-\[ \mathcal{E} (u, u) \leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
-\tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \]
-Next, note that, because $M$ is an $\varepsilon$-flat barrier for $u$, we have
-\[ \sup_{x \in M} u (x) - \inf_{x \in M} u (x) < \varepsilon \]
-Define $m = \frac{1}{2} (\sup_{x \in M} u (x) + \inf_{x \in M} (u (x)))$, we have
-\begin{equation}
-\label{epsilonflat}
-| u (x) - m | < \frac{\varepsilon}{2}, \forall x \in M 
-\end{equation}
-And we have $u (x) \geqslant m - \frac{\varepsilon}{2}, \forall x \in \partial \tilde{B}$, and $u (x) \leqslant m + \frac{\varepsilon}{2}, \forall x \in \partial \tilde{A}$. Since $u (x) = 1, \forall x \in A$, and $u (x) = 0, \forall x \in B$, define
-\begin{eqnarray*}
-u_A (x) & = & \left\{ \begin{array}{l}
-\frac{u (x) - m - \frac{\varepsilon}{2}}{1 - m - \frac{\varepsilon}{2}}, x
-\in \tilde{A}\\
-0, x \nin \tilde{A}
-\end{array} \right., \tmop{if} m + \frac{\varepsilon}{2} < 1\\
-u_B (x) & = & \left\{ \begin{array}{l}
-1 - \frac{1}{m - \frac{\varepsilon}{2}} u (x), x \in \tilde{B}\\
-0, x \nin \tilde{B}
-\end{array} \right., \tmop{if} m > \frac{\varepsilon}{2}
-\end{eqnarray*}
-we have $u_A \in \mathcal{H}_{A, \tilde{A}}, u_B \in \mathcal{H}_{B,
-\tilde{B}}$, and
-\begin{eqnarray*}
-&  & \mathcal{E} (u, u)\\
-& = & \frac{1}{2} \int_{\Omega} (\nabla u (x))^T a (x) \nabla u (x)
-e^{- U (x)} \mathd x\\
-& \geqslant & \frac{1}{2} \int_{\tilde{A}} (\nabla u (x))^T a (x) \nabla u
-(x) e^{- U (x)} \mathd x + \frac{1}{2} \int_{\tilde{B}} (\nabla u (x))^T a
-(x) \nabla u (x) e^{- U (x)} \mathd x\\
-& \geqslant & \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \mathcal{E}
-(u_A, u_A) \chi_{\left( 0, 1 - \frac{\varepsilon}{2} \right)} (m) + \left( m
-- \frac{\varepsilon}{2} \right)^2 \mathcal{E} (u_B, u_B) \chi_{\left(
-\frac{\varepsilon}{2}, 1 \right)} (m)\\
-& \geqslant & \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,
-\tilde{A}) \chi_{\left( 0, 1 - \frac{\varepsilon}{2} \right)} (m) + \left( m
-- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B}) \chi_{\left(
-\frac{\varepsilon}{2}, 1 \right)} (m)
-\end{eqnarray*}
-Combining this with the upper bound we already establish, we have
-\[ \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A, \tilde{A})
-\chi_{\left( 0, 1 - \frac{\varepsilon}{2} \right)} (m) + \left( m -
-\frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B}) \chi_{\left(
-\frac{\varepsilon}{2}, 1 \right)} (m) \leqslant \frac{\tmop{cap} (A,
-\tilde{A}) \tmop{cap} (B, \tilde{B})}{\tmop{cap} (A, \tilde{A}) +
-\tmop{cap} (B, \tilde{B})} \]
-In the typical case where $m \in \left( \frac{\varepsilon}{2}, 1 - \frac{\varepsilon}{2} \right)$, the above constraint becomes the quadratic inequality
-\[ \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A, \tilde{A}) +
-\left( m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})
-\leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
-\tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \]
-Solving this, we have
-\begin{eqnarray*}
-m & \geqslant & \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
-\tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} +
-\frac{\varepsilon}{2} \frac{\tmop{cap} (B, \tilde{B}) - \tmop{cap} (A,
-\tilde{A})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} - \frac{2
-\sqrt{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B, \tilde{B})
-\frac{\varepsilon}{2} \left( 1 - \frac{\varepsilon}{2} \right)}}{\tmop{cap}
-(A, \tilde{A}) + \tmop{cap} (B, \tilde{B})}\\
-m & \leqslant & \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
-\tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} +
-\frac{\varepsilon}{2} \frac{\tmop{cap} (B, \tilde{B}) - \tmop{cap} (A,
-\tilde{A})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} + \frac{2
-\sqrt{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B, \tilde{B})
-\frac{\varepsilon}{2} \left( 1 - \frac{\varepsilon}{2} \right)}}{\tmop{cap}
-(A, \tilde{A}) + \tmop{cap} (B, \tilde{B})}
-\end{eqnarray*}
-from which we deduce that $\left| m - \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B, \tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \right| \leqslant \frac{\varepsilon}{2} + \sqrt{\frac{\varepsilon}{2}}$.
+Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathcal{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
 
-In the extreme cases where $m$ is outside $\left( \frac{\varepsilon}{2}, 1 - \frac{\varepsilon}{2} \right)$, in order for the inequality to hold, we would need to have $\frac{\tmop{cap} (A, \tilde{A})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})}$ to be very small when \ $m \leqslant \frac{\varepsilon}{2}$, and very big when $m \geqslant 1 - \frac{\varepsilon}{2}$, which would give us the desired bound. Because of symmetry, the proofs for these two cases are essentially the same. We take the case $m \leqslant \frac{\varepsilon}{2}$ as an example. In this case, we have the inequality
-\[ \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A, \tilde{A})
-\leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
+\begin{lemma}  The Dirichlet form of $h_{A,B}$ can be upper-bounded in terms of the capacities:
+\[ \mathcal{E} (h_{A,B}, h_{A,B}) \leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
 \tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \]
-which implies
-\[ \frac{\tmop{cap} (B, \tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B,
-\tilde{B})} \geqslant (1 - \varepsilon)^2 \]
-from which we have
-\begin{eqnarray*}
-&  & \frac{\tmop{cap} (A, \tilde{A})}{\tmop{cap} (A, \tilde{A}) +
-\tmop{cap} (B, \tilde{B})}\\
-& = & 1 - \frac{\tmop{cap} (B, \tilde{B})}{\tmop{cap} (A, \tilde{A}) +
-\tmop{cap} (B, \tilde{B})}\\
-& \leqslant & 1 - (1 - \varepsilon)^2\\
-& = & 2 \varepsilon - \varepsilon^2
-\end{eqnarray*}
-It's easy to see that when $\varepsilon \leqslant \frac{2}{9}$, we have
-\[ 2 \varepsilon - \varepsilon^2 - \left( \frac{\varepsilon}{2} +
-\sqrt{\frac{\varepsilon}{2}} \right) = \frac{3 \varepsilon}{2} -
-\varepsilon^2 - \sqrt{\frac{\varepsilon}{2}} = \sqrt{\varepsilon} \left(
-\frac{3}{2} \sqrt{\varepsilon} - \varepsilon^{\frac{3}{2}} -
-\sqrt{\frac{1}{2}} \right) \leqslant \sqrt{\varepsilon} \left( \frac{3}{2}
-\frac{\sqrt{2}}{3} - \frac{\sqrt{2}}{2} \right) = 0 \]
-As a result, we have both $\frac{\tmop{cap} (A, \tilde{A})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \leqslant \frac{\varepsilon}{2} + \sqrt{\frac{\varepsilon}{2}}$ and $m \leqslant \frac{\varepsilon}{2} \leqslant \frac{\varepsilon}{2} + \sqrt{\frac{\varepsilon}{2}}$, which implies
-\[ \left| m - \frac{\tmop{cap} (A, \tilde{A})}{\tmop{cap} (A, \tilde{A}) +
-\tmop{cap} (B, \tilde{B})} \right| \leqslant \frac{\varepsilon}{2} +
-\sqrt{\frac{\varepsilon}{2}} \]
-Putting this together with Equation \ref{epsilonflat}, we have
-\[ \left| u (x) - \frac{\tmop{cap} (A, \tilde{A})}{\tmop{cap} (A, \tilde{A}) +
-\tmop{cap} (B, \tilde{B})} \right| \leqslant \varepsilon +
-\sqrt{\frac{\varepsilon}{2}} \]
-\hspace*{\fill}$\Box$\medskip
+\end{lemma}
+\begin{proof}
+Per Proposition \ref{prop:capacitydirichlet} and the Dirichlet principle, we have that 
+%
+\[
+\mathcal{E} (h_{A,B}, h_{A,B}) = \capac{A}{B^c} \leq \mathcal{E} (u,u)
+\]
+%
+for any $u\in \mathcal{H}_{A, B^c}$.  Thus, to prove an upper bound it suffices to find functions $u$ for which $u\in \mathcal{H}_{A, B^c}$ and we can calculate $\mathcal{E}(u,u)$.  To this end, consider
+%
+\[
+u_c (x) \triangleq \left\{ \begin{array}{ll}
+(1 - c) h_{A, \widetilde{A}^c} (x) + c & \tmop{if} x \in \tilde{A}\\
+c (1 - h_{B, \widetilde{B}^c} (x)) & \tmop{if} x \in \tilde{B}\\
+c & \tmop{otherwise}
+\end{array} \right. 
+\]
+%
+These functions are well-suited to giving us upper bounds on $\mathcal{E} (h_{A,B}, h_{A,B})$.  Indeed:
+\begin{itemize}
+\item $u_c \in \mathcal{H}_{A, B^c}$.  Indeed, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly to in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  Thus, since we have assumed the boundaries of $\tilde A,\tilde B$ are smooth, $u_c \in \mathcal H_{A,B^c}$.  
+\item $\mathcal{E}(u_c,u_c)$ can be calculated by applying Proposition \ref{prop:capacitydirichlet} twice, yielding $\mathcal{E}(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
+\end{itemize}
+Thus the $u_c$ functions give us a practical way to calculate upper bounds: 
+\[
+\mathcal{E} (h_{A,B}, h_{A,B})\leq (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})
+\]
+This inequality holds for any value of $c$.  To get the best bound, we can take derivatives to minimize the right hand side with respect to $c$.  The result is 
+\[
+c^* = \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}
+\]
+Plugging this into the previous equation, we obtain our final result.
+\end{proof}
+
+%%%%%%%%%%%
+%%%%%%%%%%%
+
+\begin{lemma}  Let $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  The Dirichlet form of $h_{A,B}$ can be lower-bounded in terms of $m$ and the capacities:
+\[\mathcal{E} (h_{A,B}, h_{A,B}) \geq  
+   \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \mathbb{I}_{m\leq 1-\frac{\varepsilon}{2}} + 
+   \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\mathbb{I}_{m\geq \frac{\varepsilon}{2}} 
+\]
+\end{lemma}
+\begin{proof}
+Recall that $\mathcal{E} (h_{A,B}, h_{A,B})$ can be expressed as an integral over $\Omega$.  We decompose this into three integrals: one over $\tilde A$, one over $\Omega \backslash \tilde A,\tilde B$, and one over $\tilde B$.  
+\[
+\mathcal{E} (h_{A,B}, h_{A,B}) = \int_{\tilde A} \Vert \sigma \nabla h_{A,B}\Vert^2 dx
+                                 + \int_{\tilde B} \Vert \sigma \nabla h_{A,B}\Vert^2 dx
+                                 + \int_{\Omega \backslash \tilde A,\tilde B} \Vert \sigma \nabla h_{A,B}\Vert^2 dx
+\]
+Since the integrand is always positive, we can get a lower bound by simply ignoring the integral over $\Omega \backslash \tilde A,\tilde B$ and focusing on the integrals over $\tilde A,\tilde B$.  The $\tilde A,\tilde B$ integrals can be lower-bounded using capacities.  
+
+For example, let us focus on the $A$ case.  There are two different possibilities we must consider:
+\begin{itemize}
+\item If $m>1-\varepsilon/2$ we will simply note that the integral over the $\tilde A$ region is nonnegative.  
+\item If $m\leq 1-\varepsilon/2$, then we define
+    \[
+    u_A (x) \triangleq \frac{h_{A,B} (x) - m - \frac{\varepsilon}{2}}{1 - m - \frac{\varepsilon}{2}}
+    \]
+    Note that $u_A \in \mathcal H_{A,\tilde A}$.  Indeed, $h_{A,B}(x)=1$ for $x \in \partial A$ and the $\varepsilon$-flatness condition shows that $h_{A,B}(x) \leq m + \frac {1}{2}$ for $x \in \partial \tilde A$.  Thus, applying the definition of the capacity, we see that $\mathcal{E}(u_A,u_A) \geq \capac{A}{\tilde A}$.  Thus we see that
+    %
+    \begin{align*}
+    \int_{\tilde A} \Vert \sigma \nabla h_{A,B}\Vert^2 dx &= \left(1 - m - \frac{\varepsilon}{2}\right)^2 \int_{\tilde A} \Vert \sigma \nabla u_{A}\Vert^2 dx\\
+         &\geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}
+    \end{align*}
+\end{itemize}
+Putting these together, we obtain
+\[
+\int_{\tilde A} \Vert \sigma \nabla h_{A,B}\Vert^2 dx \geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}\mathbb{I}_{m\leq 1-\frac{\varepsilon}{2}}
+\]
+Applying the same ideas to the integral over $\tilde B$, we obtain our result.
+\end{proof}
+
+%%%%%%%%%%%
+%%%%%%%%%%%
+
+
+\begin{thm*}  The hitting probabilities can be well-approximated by the capacities:
+\[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\ensuremath{\operatorname{cap}} (A,
+\tilde{A})}{\ensuremath{\operatorname{cap}} (A, \tilde{A})
++\ensuremath{\operatorname{cap}} (B, \tilde{B})} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
+\end{thm*}
+
+\begin{proof}
+\global\long\def\capA{\kappa_A}
+\global\long\def\capB{\kappa_B}
+
+To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tilde B}$.  Applying the previous two lemmas, we obtain the inequality
+\[
+\frac{\capA \capB}{\capA +\capB}
+\geq
+\left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \mathbb{I}_{m\leq 1-\frac{\varepsilon}{2}} + 
+   \left( m- \frac{\varepsilon}{2} \right)^2 \capB \mathbb{I}_{m\geq \frac{\varepsilon}{2}} 
+\]
+In analyzing this inequality, there are three possibilities to consider.  
+\begin{itemize}
+    \item If $m \in (\epsilon/2,1-\epsilon/2)$, the quadratic formula yields
+    \begin{eqnarray*}
+    m & \geqslant & \frac{\capA}{\capA + \capB} + \frac{
+    \frac{\varepsilon}{2}(\capB - \capA) - 
+    \sqrt{\capA \capB \varepsilon( 2 - \varepsilon)}}{\capA+\capB}\\
+    m & \leqslant & \frac{\capA}{\capA + \capB} + \frac{
+    \frac{\varepsilon}{2}(\capB - \capA) +
+    \sqrt{\capA \capB \varepsilon( 2 - \varepsilon)}}{\capA+\capB}
+    \end{eqnarray*}
+    Applying $\left|\frac{\capB - \capA}{\capA + \capB}\right| \leq 1$ and the fact that the geometric mean $\sqrt{\capA \capB}$ never exceeds the arithmetic mean $(\capA+\capB) / 2$, it follows that
+    \[
+    \left|m -  \frac{\capA}{\capA + \capB}\right| \leq \frac{\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
+    \]
+    Applying the fact that $m$ was designed so that $|h_{A,B}(x) - m| <\varepsilon/2|$ for all $x \notin \tilde A,\tilde B$, we obtain
+    \[
+    \left|h_{A,B} -  \frac{\capA}{\capA + \capB}\right| \leq \frac{2\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
+    \]
+
+    \item If $m<\varepsilon/2$, our equations become 
+    \[
+    \frac{\cancel{\capA} \capB}{\capA +\capB}
+    \geq
+    \left( 1-m- \frac{\varepsilon}{2} \right)^2 \cancel{\capA} 
+    \]
+    Our assumption that $m \leq \varepsilon/2$ indicates that $(1- m- \varepsilon/2)^2 \geq (1-\varepsilon)^2$, thus in fact we have 
+    \[
+    \frac{\capB}{\capA +\capB}
+    \geq
+    \left( 1- \varepsilon \right)^2  = 1 + \varepsilon^2 - 2\varepsilon
+    \]
+    which means that $\capA/(\capA +\capB)
+    \leq
+    2\varepsilon - \varepsilon^2 \leq 2\varepsilon$.  
+    Thus we assumed $m\in[0,\varepsilon/2]$ and showed that $\capA/(\capA+\capB)\in[0,2\varepsilon-\varepsilon^2]$, so it follows that 
+    \[
+    \left|m -  \frac{\capA}{\capA + \capB}\right| \leq 2\varepsilon -\varepsilon^2
+    \]
+    and so for any $x\notin \tilde A,\tilde B$, we have 
+    \[
+    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
+    \]
+    
+    \item If $m>1-\varepsilon/2$, the same bound can be achieved by arguments which are symmetric to those employed in $m<\varepsilon/2$:
+    \[
+    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
+    \]
+\end{itemize}
+Our final result is found by noting that all these bounds are upper-bounded by $\varepsilon + \sqrt{\varepsilon/2}$.
+\end{proof}
+
+%     _    ____  ____  _____ _   _ ____ _____  __   ____ 
+%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ /  / ___|
+%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  | |    
+%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \  | |___ 
+% /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\  \____|
+           
 
 \section{Proof of the $\varepsilon$-flatness of the Toy Model}\label{sec:proof_epsilon_flat}
 
