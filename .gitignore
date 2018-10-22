@@ -1,0 +1,9 @@
+*.blg
+*.bbl
+*.aux
+*.fdb_latexmk
+*.log
+*.deb
+*junk.py
+*.fls
+*junk.txt

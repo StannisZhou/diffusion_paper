@@ -33,6 +33,9 @@
 \theoremstyle{plain}
 \newtheorem{cor}[thm]{\protect\corollaryname}
 
+\global\long\def\dimension{{\mathfrak{n}}}
+
+
 \usepackage{babel}
 \providecommand{\corollaryname}{Corollary}
 \providecommand{\definitionname}{Definition}
@@ -65,6 +68,7 @@
 
 \global\long\def\TODOTHIS{{\huge !!!!}}
 
+\global\long\def\indicatorf#1{\mathbb{I}_{#1}}
 \global\long\def\capac#1#2{\mathrm{cap}\left(#1;#2\right)}
 \global\long\def\fnsp{\mathscr{H}^1}
 \global\long\def\bb#1{\mathcal{B}\left(#1\right)}
@@ -99,7 +103,7 @@ The rest of the paper is organized as follows. In Section \ref{sec:toy_model}, w
 
 To concretely demonstrate the CHop method, we introduce a simple toy model with a golf-course potential.  This model features a high-dimensional configuration space containing two small target regions, $A$ and $B$.  Away from the targets, the potential energy is completely flat.  To further simplify the analysis and facilitate numerical validation, we will assume all sets of interest are spheres.  The resulting model is perhaps the simplest possible example of a dynamics with golf-course qualities.  
 
-We will now give a formal definition of the model.  The dynamics will take place inside the unit ball, $\Omega = \bb{0,1}$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$.  The configuration space will also feature two important target regions:
+We will now give a formal definition of the model.  The dynamics will take place inside the unit ball, $\Omega = \bb{0,1}\subset \mathbb{R}^\dimension$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$.  The configuration space will also feature two important target regions:
 \begin{align*}
 A &\triangleq \bb {x_A, r_A}\\
 B &\triangleq \bb {x_B, r_B}
@@ -117,8 +121,8 @@ This toy model encapsulates the essential characteristics of entropic effects: i
 With this toy model in mind, we now turn to the general results of this paper. In general, we will assume the underlying physical process governing the macromolecule is a stationary reversible diffusion process in the configuration space $\Omega$, with invariant
 measure ${\mu}= e^{- U (x)} \mathrm{d} x$.  In particular, the dynamics will be defined in terms of a $d$-dimensional Brownian motion $W_t$, according to 
 \begin{equation}\label{equ:general_sde}\mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \end{equation}
-where $b: \Omega \rightarrow \mathbbm{R}^d$ and $\sigma :
-\Omega \rightarrow \mathbbm{R}^{d \times m}$ are differentiable vector-valued
+where $b: \Omega \rightarrow \mathbbm{R}^\dimension$ and $\sigma :
+\Omega \rightarrow \mathbbm{R}^{\dimension \times m}$ are differentiable vector-valued
 and matrix-valued functions.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for a detailed account of stationary reversible diffusion processes.
 
 As in the toy model, we will be interested in two target regions, $A,B\subset \Omega$.  Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we will be be interested to know whether the dynamics carry the system into $A$ or $B$ first.  That is, we are interested in the hitting probabilities
@@ -147,7 +151,7 @@ Note that if $M$ is $\varepsilon$-flat for $h$, then we can always find some con
 For the toy model, we can see how  $\varepsilon$-flatness applies to hitting probabilities.  Let us recall the notation of the toy model.  We have two sets, $A=\bb{x_A,r_A},B=\bb{x_B,r_B}$ in $d$-dimensional space.  The dynamics are governed by a potential energy which is flat outside of $\bb{x_A,d_A}\cup\bb{x_B,d_B}$, where $d_A>r_A,d_B>r_B$.  We now introduce a third layer of neighborhoods around the target regions.  We fix some $r_{\tilde A}>d_A,r_{\tilde B}>d_B$ and define $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_B,r_{\tilde B}}$.  We will show conditions such that the hitting probabilities are constant away from $\tilde A,\tilde B$.  In particular, the probabilities must be constant as long as when the targets $A, B$ are sufficiently small or the dimension is high:
 
 \begin{theorem}\label{thm:epsilon_flat}
-For any fixed value of $d \geq 3$ and $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(d, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $d \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
+For any fixed value of the ambient dimension $\dimension \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(\dimension, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $\dimension \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
 \end{theorem}
 
 We defer the proof of this theorem to Appendix \ref{sec:proof_epsilon_flat}. Inspection of the proof demonstrates that the key for establishing $\varepsilon$-flatness is a proper separation of time scales: it takes a short time for the process $\{X_t\}_{t\geq 0}$ to reach local equilibrium in $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ and a long time for the process $\{X_t\}_{t\geq 0}$ to hit the targets $A$ and $B$.  Any model with these characteristics will feature $\varepsilon$-flat hitting probabilities.
@@ -307,29 +311,29 @@ To understand this algorithm more concretely, let us now use it to estimate $\en
 \begin{enumerate}
 	\item We pick $G = \dot{A}$ and $\tilde{G} = \tilde{A}$, where $\dot{A}$ and $\tilde{A}$ are as in our toy model.
 	\item The surfaces areas can be easily calculated analytically as
-\[|\partial G| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}d_A^{d - 1}, |\partial \tilde{G}| = \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\tilde{r}_A^{d - 1}\]
+\[|\partial G| = \frac{2\pi^{\frac{\dimension}{2}}}{\Gamma(\frac{\dimension}{2})}d_A^{\dimension - 1}, |\partial \tilde{G}| = \frac{2\pi^{\frac{\dimension}{2}}}{\Gamma(\frac{\dimension}{2})}\tilde{r}_A^{\dimension - 1}\]
 	\item The restrictions of the invariant measure $e^{- U (x)} \mathrm{d} x$ on $\partial G$ and $\partial \tilde{G}$ are simply uniform distributions on these two spheres, and we can generate exact samples on these two spheres. Since $\tilde{G} = \tilde{A}$ it is straightforward to use the probabilistic interpretation of $h$ to see that $h_{A, \tilde{A}^c} (x) = 0, \forall x \in \partial \tilde{G}$, so we only need to apply Algorithm \ref{alg:hitting_prob_estimation} to the case of $S=G=\dot{A}$. Following the notations used in Algorithm \ref{alg:hitting_prob_estimation}, assume we get $N_p$ samples $z_1,\cdots, z_{N_p}$, and the hitting probability vector $u^{(m)}$ for the $N_b$ clusters on $\partial S_m = \partial G$, we have the estimates given in Equation \ref{equ:hitprobest}
 	\item $h_{G, \tilde{G}^c}$ can be identified analytically as the harmonic function on $\tilde{G} / G$\cite{Wendel1980-sj}
-\[ h_{G, \tilde{G}^c} (x) = \frac{1}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x
-- x_A \|^{2 - d} - \frac{r_{\tilde{A}}^{2 - d}}{d_A^{2 - d} -
-r_{\tilde{A}}^{2 - d}} \]
+\[ h_{G, \tilde{G}^c} (x) = \frac{1}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} \| x
+- x_A \|^{2 - \dimension} - \frac{r_{\tilde{A}}^{2 - \dimension}}{d_A^{2 - \dimension} -
+r_{\tilde{A}}^{2 - \dimension}} \]
 As a result, the gradient is given by
-\[ \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2
-   - d}} \| x - x_A \|^{1 - d} \frac{x - x_A}{\| x - x_A \|} \]
+\[ \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - \dimension}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2
+   - \dimension}} \| x - x_A \|^{1 - \dimension} \frac{x - x_A}{\| x - x_A \|} \]
 Note that on both $\partial \tilde{G}$ and $\partial G$, the outward normal is
 given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, so
 \[
-	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - d}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \| x - x_A \|^{1 - d} = 
+	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - \dimension}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} \| x - x_A \|^{1 - d} = 
 \begin{cases}
-	\frac{(2 - d) r_{\tilde{A}}^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial \tilde{G}\\
-	\frac{(2 - d) d_A^{1 - d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} & \text{if }x \in \partial G
+	\frac{(2 - \dimension) r_{\tilde{A}}^{1 - \dimension}}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} & \text{if }x \in \partial \tilde{G}\\
+	\frac{(2 - \dimension) d_A^{1 - d}}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} & \text{if }x \in \partial G
 \end{cases}
 \]
 \item Finally, note that $U (x) = 0$ and $a (x) = I$ for $x
 \in \partial \tilde{G},\partial G$.  Plugging these into Equation (\ref{eq:capesteq}), we obtain the approximation
 %
 \begin{gather}
-	\ensuremath{\operatorname{cap}} (A, \tilde{A}) \approx \frac{2\pi^{\frac{d}{2}}}{\Gamma(\frac{d}{2})}\frac{d-2}{d_A^{2-d}-r_{\tilde A}^{2-d}}\frac{1}{N_p} \sum_{k=1}^{N_b}n_k u_k^{(m)}
+	\ensuremath{\operatorname{cap}} (A, \tilde{A}) \approx \frac{2\pi^{\frac{\dimension}{2}}}{\Gamma(\frac{\dimension}{2})}\frac{d-2}{d_A^{2-\dimension}-r_{\tilde A}^{2-\dimension}}\frac{1}{N_p} \sum_{k=1}^{N_b}n_k u_k^{(m)}
 \end{gather}
 where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$ that belong to cluster $k$ on $\partial S=\partial G=\partial \dot{A}$
 %
@@ -377,7 +381,7 @@ In the toy model, we see that the $\varepsilon$-flatness condition indeed holds,
 
 Our second check tests whether the CHop probabilities accurately approximate the hitting probabilities.  For this problem, the relevant CHop probabilities can be computed in closed form:
 \begin{equation}
-p_A = \frac{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}}}{\frac{1}{r_A^{2 - d} - r_{\tilde{A}}^{2 - d}} + \frac{1}{r_B^{2 - d} - r_{\tilde{B}}^{2 - d}}}
+p_A = \frac{\frac{1}{r_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}}}{\frac{1}{r_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} + \frac{1}{r_B^{2 - \dimension} - r_{\tilde{B}}^{2 - \dimension}}}
 \end{equation}
 
 According to this formula, the CHop probability is $.2286$.  This is in good agreement with the average hitting probability $.2236$ found by direct simulation in the previous section.
@@ -484,12 +488,12 @@ Extensive numerical results demonstrate that CHop is highly effective in the pre
 \section{Stationary Reversible Diffusion Processes}\label{sec:reversible_diffusion}
 
 In this section, we set notation and review some properties of stochastic differential equations.   Let $\{X_t\}_{t \geqslant 0}$ denote a stationary reversible diffusion process trapped in 
-$\Omega \subset \mathbbm{R}^d$ by reflecting boundaries, with continuous invariant density $e^{-U}$, satisfying 
+$\Omega \subset \mathbbm{R}^\dimension$ by reflecting boundaries, with continuous invariant density $e^{-U}$, satisfying 
 %
 \[ \mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \]
 %
-where $W$ is a $d$-dimensional Brownian motion and $b (\cdot) : \mathbbm{R}^d \rightarrow \mathbbm{R}^d,\sigma
-(\cdot) : \mathbbm{R}^d \rightarrow \mathbbm{R}^{d \times d}$ are differentiable.  If no boundaries are desired, we can take $\Omega= \mathbb{R}^n$.  Recall that $b$ is entirely determined by $\sigma,U$ and the requirement that the process is stationary and reversible:  \TODOTHIS.  We refer to Bovier\cite{Bovier2016-ez} and Pavliotis\cite{Pavliotis2016-xn} for a useful exposition on these kinds of processes.
+where $W$ is a $d$-dimensional Brownian motion and $b (\cdot) : \mathbbm{R}^\dimension \rightarrow \mathbbm{R}^\dimension,\sigma
+(\cdot) : \mathbbm{R}^\dimension \rightarrow \mathbbm{R}^{\dimension \times d}$ are differentiable.  If no boundaries are desired, we can take $\Omega= \mathbb{R}^\dimension$.  Recall that $b$ is entirely determined by $\sigma,U$ and the requirement that the process is stationary and reversible; indeed, per Proposition 4.5 of Pavliotis\cite{Pavliotis2016-xn} we have that $b_i(x)=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j + \sum_j a_{ij}(x) \partial U(x)/\partial x_j$ where $a=\sigma\sigma^T$.  We refer to Bovier\cite{Bovier2016-ez} and Pavliotis\cite{Pavliotis2016-xn} for a useful exposition on these kinds of processes.
 
 This paper's main results arise from consideration of three related objects induced by this diffusion: the Dirichlet form, the capacity, and the Dirichlet problem.  
 
@@ -528,8 +532,8 @@ The capacity is intimately connected with a partial differential equation known 
 \begin{definition}
 Let $A, B \subset \Omega$ be non-empty and disjoint.  The \textbf{Dirichlet problem} for $A,B$ with respect to the diffusion $X$ is defined as the partial
 differential equation
-\[ 0 = \sum_{i = 1}^d b_i (x) \frac{\partial f
-(x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^d \sum_{j = 1}^d a_{ij} (x)
+\[ 0 = \sum_{i = 1}^\dimension b_i (x) \frac{\partial f
+(x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^\dimension \sum_{j = 1}^\dimension a_{ij} (x)
 \frac{\partial^2 f (x)}{\partial x_i \partial x_j} \]
 where $a(x)=\sigma(x)\sigma(x)^T$, with boundary conditions
 \begin{eqnarray*}
@@ -609,8 +613,8 @@ Plugging this into the previous equation, we obtain our final result.
 
 \begin{lemma}  Let $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  The Dirichlet form of $h_{A,B}$ can be lower-bounded in terms of $m$ and the capacities:
 \[\mathcal{E} (h_{A,B}, h_{A,B}) \geq  
-   \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \mathbb{I}_{m\leq 1-\frac{\varepsilon}{2}} + 
-   \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\mathbb{I}_{m\geq \frac{\varepsilon}{2}} 
+   \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \indicatorf_{m\leq 1-\frac{\varepsilon}{2}} + 
+   \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\indicatorf_{m\geq \frac{\varepsilon}{2}} 
 \]
 \end{lemma}
 \begin{proof}
@@ -638,7 +642,7 @@ For example, let us focus on the $A$ case.  There are two different possibilitie
 \end{itemize}
 Putting these together, we obtain
 \[
-\int_{\tilde A} \Vert \sigma \nabla h_{A,B}\Vert^2 dx \geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}\mathbb{I}_{m\leq 1-\frac{\varepsilon}{2}}
+\int_{\tilde A} \Vert \sigma \nabla h_{A,B}\Vert^2 dx \geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}\indicatorf_{m\leq 1-\frac{\varepsilon}{2}}
 \]
 Applying the same ideas to the integral over $\tilde B$, we obtain our result.
 \end{proof}
@@ -657,14 +661,14 @@ Applying the same ideas to the integral over $\tilde B$, we obtain our result.
 \global\long\def\capA{\kappa_A}
 \global\long\def\capB{\kappa_B}
 
-To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tilde B}$.  Applying the previous two lemmas, we obtain the inequality
+To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tilde B}$.  Applying the previous two lemmas together, we obtain the inequality
 \[
 \frac{\capA \capB}{\capA +\capB}
-\geq
-\left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \mathbb{I}_{m\leq 1-\frac{\varepsilon}{2}} + 
-   \left( m- \frac{\varepsilon}{2} \right)^2 \capB \mathbb{I}_{m\geq \frac{\varepsilon}{2}} 
+\geq \mathcal{E}(h_{A,B},h_{A,B}) \geq
+\left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \indicatorf_{m\leq 1-\frac{\varepsilon}{2}} + 
+   \left( m- \frac{\varepsilon}{2} \right)^2 \capB \indicatorf_{m\geq \frac{\varepsilon}{2}} 
 \]
-In analyzing this inequality, there are three possibilities to consider.  
+where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  In analyzing this inequality, there are three possibilities to consider.  
 \begin{itemize}
     \item If $m \in (\epsilon/2,1-\epsilon/2)$, the quadratic formula yields
     \begin{eqnarray*}
@@ -679,9 +683,9 @@ In analyzing this inequality, there are three possibilities to consider.
     \[
     \left|m -  \frac{\capA}{\capA + \capB}\right| \leq \frac{\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
     \]
-    Applying the fact that $m$ was designed so that $|h_{A,B}(x) - m| <\varepsilon/2|$ for all $x \notin \tilde A,\tilde B$, we obtain
+    Applying the fact that $m$ was designed so that $|h_{A,B}(x) - m| <\varepsilon/2$ for all $x \notin \tilde A,\tilde B$, we obtain
     \[
-    \left|h_{A,B} -  \frac{\capA}{\capA + \capB}\right| \leq \frac{2\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
+    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq \frac{2\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
     \]
 
     \item If $m<\varepsilon/2$, our equations become 
@@ -725,153 +729,70 @@ Our final result is found by noting that all these bounds are upper-bounded by $
 
 \section{Proof of the $\varepsilon$-flatness of the Toy Model}\label{sec:proof_epsilon_flat}
 
-\noindent\textbf{Proof of Theorem \ref{thm:epsilon_flat}\ }
-We use $M_t$ to denote a simple Brownian motion
-trapped inside $\Omega = \mathcal{B} (0, 1)$ by reflecting boundaries. Define
-\begin{eqnarray*}
-&  & \bar{u} =\mathbbm{E} [u (Z)], \text{where } Z \sim \tmop{Uniform}
-(\Omega)\\
-&  & \tilde{u} (x, t) =\mathbbm{E} [u (M_t) |M_0 = x]\\
-&  & \tilde{\tau}_M = \inf \{ t : M_t \in \mathcal{B} (x_A, d_A) \cup
-\mathcal{B} (x_B, d_B) \}\\
-&  & \tilde{\tau}_X = \inf \{ t : X_t \in \mathcal{B} (x_A, d_A) \cup
-\mathcal{B} (x_B, d_B) \}
-\end{eqnarray*}
-Note that, for our toy model $X_t$, since the energy landscape is flat outside
-$\mathcal{B} (x_A, d_A) \cup \mathcal{B} (x_B, d_B)$, $\tilde{\tau}_M |M_0 =
-x$ has the same distribution as $\tilde{\tau}_X |X_0 = x$, $\forall x \in
-\Omega / (\mathcal{B} (x_A, d_A) \cup \mathcal{B} (x_B, d_B))$. In particular,
-applying the Dynkin's formula, we have
-\[ u (x) =\mathbbm{E} [u (X_{t \wedge \tilde{\tau}_X}) |X_0 = x] =\mathbbm{E}
-[u (M_{t \wedge \tilde{\tau}_M}) |M_0 = x], \forall x \in \Omega /
-(\tilde{A} \cup \tilde{B}) \]
-Using the above, and the fact that $u (x) \in [0, 1], \forall x \in \Omega /
-(\tilde{A} \cup \tilde{B})$, it's easy to see
-\begin{eqnarray*}
-| u (x) - \tilde{u} (x, t) | & \leqslant & \mathbbm{E} [| u (M_{t \wedge
-\tilde{\tau}_M}) - u (M_t) | |M_0 = x]\\
-& = & \mathbbm{E} [| u (M_{t \wedge \tilde{\tau}_M}) - u (M_t) | \chi_{(0,
-t)} (\tilde{\tau}_M) |M_0 = x]\\
-& \leqslant & \mathbbm{P} (\tilde{\tau}_M < t|M_0 = x)\\
-& = & \mathbbm{P} (\tilde{\tau}_X < t|X_0 = x)\\
-&  & 
-\end{eqnarray*}
-Using Lemma \ref{lem:uniform_ergodicity}, we also have
-\begin{eqnarray*}
-| \tilde{u} (x, t) - \bar{u} | & \leqslant & \left| \int_{\Omega} u (y)
-\mu_x^t (\mathd y) - \int_{\Omega} u (y) \pi (\mathd y) \right|\\
-& \leqslant & | \mu_x^t - \pi | (\Omega)\\
-& = & d (\mu_x^t, \pi)\\
-& < & \frac{2}{t}
-\end{eqnarray*}
-where $| \mu_x^t - \pi |$ is the total variation of the signed measure
-$\mu_x^t - \pi$.
+Consider the setup of the Toy Model described in Section \ref{sec:toy_model}.  A stationary reversible diffusion $X$ is trapped inside the unit $\dimension$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the csae where $X_0$ is outside of $\tilde A=\bb{x_A,d_A},\tilde B=\bb{x_A,d_B}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,d_A},\dot B=\bb{x_B,d_B}$.  
 
-From Lemma \ref{lem:longtime}, for any fixed value of $d \geqslant 3$ and
-$r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a $c = c (d,
-r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_A, d_B < c$, then
-\[ \mathbbm{P} \left( \tilde{\tau}_X < \frac{8}{\varepsilon} |X_0 \nin
-\tilde{A} \cup \tilde{B} \right) < \frac{\varepsilon}{4} \]
-Likewise, for any fixed value of $d_A, r_{\tilde{A}}, d_B, r_{\tilde{B}},
-\varepsilon > 0$, there exists a $c = c (d_A, r_{\tilde{A}}, d_B,
-r_{\tilde{B}}, \varepsilon)$, such that if the dimension $d \geqslant c$ then
-the same holds.
+It turns out that by taking the $\dimension$ is sufficiently high or $d_A,d_B$ are sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$:
 
-This implies that, $\forall x \nin \tilde{A} \cup \tilde{B}$
-\begin{eqnarray*}
-| u (x) - \bar{u} | & \leqslant & \left| u (x) - \tilde{u} \left( x,
-\frac{8}{\varepsilon} \right) \right| + \left| \tilde{u} \left( x,
-\frac{8}{\varepsilon} \right) - \bar{u} \right|\\
-& \leqslant & \mathbbm{P} \left( \tilde{\tau}_X < \frac{8}{\varepsilon}
-|X_0 = x \right) + \frac{2}{\frac{8}{\varepsilon}}\\
-& < & \frac{\varepsilon}{4} + \frac{\varepsilon}{4}\\
-& = & \frac{\varepsilon}{2}\\
-\Longrightarrow \sup_{x, y \nin \tilde{A} \cup \tilde{B}} | u (x) - u (y) |
-& < & \varepsilon
-\end{eqnarray*}
-which is the desired result.\hspace*{\fill}$\Box$\medskip
+\begin{thm*}  For any fixed value of the ambient dimension $\dimension \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(\dimension, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $\dimension \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
+\end{thm*}
+
+\begin{proof}
+Let us assume $X_0 \notin \tilde A,\tilde B$.  There are essentially two things that must be proved:
+\begin{enumerate}
+\item The process $X$ converges to its stationary distribution fairly quickly.  This is supported by Lemma \ref{lem:uniform_ergodicity}.  Since $h_{A,B}(x) \in [0,1]$, this Lemma gives that
+%
+\[
+|\mathbb{E}[h_{A,B}(M_t)-h_{A,B}(Z)]| \leq 2^2/4t =1/t
+\]
+%
+where $Z$ is distributed according to the uniform distribution on $\Omega$ and $M$ is a Brownian motion trapped in $\Omega$ by normally reflecting boundaries.  
+
+To connect this result on $M$ to our object of interest $h_{A,B}$, note that without loss of generality we may assume $X,M$ are on the same probability space and $M_t=X_t$ for $t<\tilde\tau \triangleq \inf \{t:\ X_t \in \partial \dot A \cup \partial \dot B\}$.  Moreover, noting that $\tilde\tau\wedge t$ is a stopping time and applying the Strong Markov property, we observe that 
+%
+\[
+h_{A,B}(x) = \mathbb{E} [\indicatorf{X_{t\wedge\tilde\tau} \in \partial A}] 
+        = \mathbb{E} [\mathbb{E}[\indicatorf{X_{t\wedge\tilde\tau} \in \partial A} | X_{t\wedge\tilde\tau}]]
+        = \mathbb{E} [h_{A,B}(X_{t\wedge\tilde\tau})] = \mathbb{E} [h_{A,B}(M_{t\wedge\tilde\tau})]
+\]
+%
+Thus
+\begin{align*}
+|h_{A,B}(x) - \mathbb{E}[h_{A,B}(Z)]| &= |\mathbb{E} [h_{A,B}(M_{t\wedge\tilde\tau})] - \mathbb{E}[h_{A,B}(Z)]|\\
+&\leq |\mathbb{E} [h_{A,B}(M_{t\wedge\tilde\tau})] - h_{A,B}(M_t)]| + |\mathbb{E} [h_{A,B}(M_{t}) - h_{A,B}(Z)]|\\
+&\leq \mathbb{P}(\tilde \tau \leq t) + 1/t
+\end{align*}
+%
+
+\item The hitting time $\tilde \tau$ is generally long.  This is supported by Lemma \ref{lem:longtime}.  This says that if $X_0 \not\in\tilde{A} \cup \tilde{B}$ we can ensure
+%
+\[
+\mathbbm{P} \left( \tilde{\tau} < \frac{8}{\varepsilon} \right) < \frac{\varepsilon}{4} 
+\]
+%
+for arbitrarily small $\varepsilon$ by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
+\end{enumerate}
+Putting these two results together at $t=8/\varepsilon$ we obtain that we can make $|h_{A,B}(x) - \mathbb{E}[h_{A,B}(Z)]| \leq \varepsilon / 4 + \varepsilon/8 \leq \varepsilon$ for arbitrarily small $\varepsilon$ by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{lemma}
-\label{lem:uniform_ergodicity}(Uniform ergodicity) Let $\Omega = \mathcal{B}
-(0, 1) \subset \mathbbm{R}^d$, and use $M_t$ to denote a Brownian motion
-trapped by reflecting boundaries inside $\Omega$. Use $\pi$ to denote the
-uniform distribution within $\Omega$, which is also the equilibrium
-distribution of $M_t$. Then the distribution $\mu_x^t =\mathbbm{P} (M_t \in
-\cdot |M_0 = x)$ converges in total variation distance to $\pi$, and we can
-have the uniform bound
-\[ d (\mu_x^t, \pi) = \sup_{A \subset \Omega} | \mu_x^t (A) - \pi (A) | <
-\frac{2}{t}, \forall x \in \Omega, t > 0 \]
+\label{lem:uniform_ergodicity}(Uniform ergodicity) Let $\Omega\subset\mathbbm{R}^d$ be a convex set with diameter $\xi$ and let $M$ denote a Brownian motion trapped by reflecting boundaries inside $\Omega$.  The distribution of $M_t$ converges uniformly to the uniform distribution:
+%
+\[ 
+\sup_{f:\ \Omega\rightarrow [0,1]} | \mathbb{E}[f(M_t) - f(Z)|M_0=x]| \leq \xi^2/4t \qquad \forall x\in \Omega, t>0
+\]
+%
+where $Z$ is uniformly distributed on $\Omega$.
 \end{lemma}
-
-\noindent\textbf{Proof\ }We adopt a coupling construction. Assume $M_0 = x$.
-Let $Y_t$ denote another Brownian motion trapped by reflecting boundaries
-inside $\Omega$, and assume $Y_0 \sim \pi$. Note that, due to the lack of any
-potential, we in fact have $Y_t \sim \pi, \forall t$. Define
-\begin{eqnarray*}
-\rho_1 & = & \inf \{ t : \| M_t \|_2 = \| Y_t \|_2 \}\\
-\alpha & = & \frac{M_{\rho_1} - Y_{\rho_1}}{\| M_{\rho_1} \|_2 - \|
-Y_{\rho_1} \|_2}
-\end{eqnarray*}
-and further define
-\[ \tilde{Y}_t = \left\{ \begin{array}{l}
-Y_t, t \leqslant \rho_1\\
-M_t - 2 \alpha \langle \alpha, M_t \rangle, t \geqslant \rho_1
-\end{array} \right. \]
-Now take
-\[ \rho_2 = \inf \{ t \geqslant \rho_1 : \langle \alpha, M_t \rangle = 0 \} \]
-and finally define
-\[ \widetilde{\tilde{Y}}_t = \left\{ \begin{array}{l}
-Y_t, t \leqslant \rho_1\\
-M_t - 2 \alpha \left\langle \alpha, M_{t \,} \right\rangle, \rho_1
-\leqslant t \leqslant \rho_2\\
-M_t, \rho_2 \leqslant t
-\end{array} \right. \]
-Then $\widetilde{\tilde{Y}}$ itself must carry the law of Brownian motion
-trapped inside of $\Omega$ with $\widetilde{\tilde{Y}}_0 \sim \pi$, and thus
-also satisfies $\widetilde{\tilde{Y}}_t \sim \pi, \forall t > 0$. In
-particular, $\forall A \subset \Omega$,
-\begin{eqnarray*}
-&  & | \mu_x^t (A) - \pi (A) |\\
-& = & | \mathbbm{P} (M_t \in A) -\mathbbm{P} (\widetilde{\tilde{Y}}_t \in
-A) |\\
-& = & | \mathbbm{E} [\chi_A (M_t) - \chi_A (\widetilde{\tilde{Y}}_t)] |\\
-& \leqslant & \mathbbm{P} (\rho_2 \geqslant t)\\
-& \leqslant & \frac{\mathbbm{E} [\rho_2]}{t}
-\end{eqnarray*}
-Thus to complete the proof of the lemma, it suffices to bound $\mathbbm{E}
-[\rho_2]$. Use $W_t$ to denote a $d$-dimensional Brownian motion. Define
-\[ \tau^W = \inf \{ t : \| W_t \| \geqslant 1 \} \]
-Then
-\begin{equation}
-\mathbbm{E} [\tau^W |W_0 = x] = \frac{1 - \| x \|_2^2}{d}
-\label{equ:expectation}
-\end{equation}
-This can be easily verified by writing down the corresponding Possion equation
-for the expectation $f (x) =\mathbbm{E} [\tau^W |W_0 = x]$.
-\begin{eqnarray*}
-- \frac{1}{2} \triangle f (x) & = & 1\\
-f (x) & = & 0, \forall x \in \partial \mathcal{B} (0, 1)
-\end{eqnarray*}
-With this result, we first bound $\mathbbm{E} [\rho_1]$. Define $\rho_1^M =
-\inf \{ t : \| M_t \|_2 = 1 \}$ and $\rho_1^Y = \inf \{ t : \| Y_t \|_2 = 1
-\}$. Since $\| X_t \|, \| Y_t \| \leqslant 1, \forall t$, it follows that
-$\rho_1 \leqslant \rho_1^M \wedge \rho_1^Y$. Applying Equation
-\ref{equ:expectation}, we have
-\[ \mathbbm{E} [\rho_1] \leqslant \mathbbm{E} [\rho_1^M] = \frac{1 - \| x
-\|^2_2}{d} \leqslant \frac{1}{d} < 1, \forall d \geqslant 3 \]
-To bound $\mathbbm{E} [\rho_2 - \rho_1]$, we note that $\rho_2 - \rho_1$ is
-stochastically dominated by the time it takes a one-dimensional reflecting
-Brownian motion in $[- 1, 1]$ to hit $0$, starting at $\| x \|_2$. Using the
-reflection principle, we can see that this hitting time is equivalent to the
-first exit time from the interval $[- 1, 1]$ of a one-dimensional Brownian
-motion starting at $1 - \| x \|^{}_2$. Using Equation $\ref{equ:expectation}$,
-we have
-\[ \mathbbm{E} [\rho_2 - \rho_1] \leqslant \frac{1 - (1 - \| x \|_2)^2}{1}
-\leqslant 1 \]
-Putting these together, we have
-\[ d (\mu_x^t, \pi) = \sup_{A \subset \Omega} | \mu_x^t (A) - \pi (A) | <
-\frac{2}{t}, \forall x \in \Omega, t > 0 \]
-\hspace*{\fill}$\Box$\medskip
+\begin{proof}
+Let $F_\xi(t)$ denote the survival function for the first exit time of a one-dimensional Brownian motion from the intervals $[-\xi,\xi]$ when initialized at the origin.  Per Loper,\cite{Loper2018} 
+\[
+\sup_{f:\ \Omega\rightarrow [0,1]} | \mathbb{E}[f(M_t) - f(Z)|M_0=x]| \leq F_\xi(4t)
+\]
+It is well-known that this one-dimensional first-exit time is characterized by an expected value of $\xi^2$.  Thus, applying the Markov inequality, it follows that $F_\xi(t) \leq \xi^2 / t$ and so $F_\xi(4t) \leq \xi^2 / 4t$. 
+\end{proof}
 
 \begin{lemma}
 \label{lem:longtime}Define $\tilde{\tau}_X = \inf \{ t : X_t \in \mathcal{B}
