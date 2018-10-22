@@ -54,7 +54,7 @@
 \date{\today}
 
 \begin{abstract}
-	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations consitute an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. CHop provides valuable information in the presence of entropic barriers. It is based on a novel theoretical analysis of hitting probabilities in the presence of entropic barriers; we show that in many cases the hitting probabilities are approximately invariant to the initial condition, as long as the intitial condition is modestly far away from the targets.  Given this invariance, we show that the hitting probabilities must also be invariant to the energy landscape away from the target sets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities. Numerical experiments on a toy model with a golf-course potential show that CHop is nearly as accurate as naive simulations in estimating hitting probabilities, but 750 times faster.
+	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations consitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Hitting probabilities provide valuable information in the presence of entropic barriers. CHop is based on a novel theoretical analysis of hitting probabilities in the presence of entropic barriers; we show that in many cases the hitting probabilities are approximately invariant to the initial condition, as long as the intitial condition is modestly far away from the targets.  Given this invariance, we show that the hitting probabilities must also be invariant to the energy landscape away from the target sets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities. Numerical experiments on a toy model with a golf-course potential show that CHop is nearly as accurate as naive simulations in estimating hitting probabilities, but 660 times faster.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -74,9 +74,9 @@ Molecular dynamics simulations help us understand a diverse range of biomolecula
 
 Efforts have been made to extend the timescale accessible by molecular dynamics simulations from two distinct perspectives: A \emph{kinetic perspective} seeks to find ways to directly understand the dynamics and simulate them with less computational effort, usually under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}. The reaction rates are given by various methods that build on top of transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk}, including transition path sampling\cite{Dellago1998-lb, Bolhuis2002-ws}, transition interface sampling\cite{Van_Erp2005-vw}, and transition path theory\cite{E2006-fm, E2010-sr}. By constrast, a \emph{thermodynamic perspective} aims to understand and efficiently sample from the ``equilibrium distribution'' on the configuration space; simulated annealing,\cite{Kirkpatrick1983-su} genetic algorithms\cite{Goldberg1989-ko} and parallel tempering\cite{Sugita1999-vh} are representative examples of this approach. However, dynamics is destroyed in these methods, and additional work\cite{Yang2007-gn, Andrec2005-fh, Zheng2009-ow, Huang2010-uu} is needed in order to recover the kinetic information of the system.
 
-In this paper we will focus on the \emph{hitting probability question}: ``Given an initial condition $X_0$ and two target sets, $A,B$, what is the probability that we will hit target $A$ first?'' This question lies in-between the two different perspectives. Compared with the thermodynamic perspective, it adds certain dynamic information in that we can obtain sequences of \emph{key configurations} from the hitting probabilities. Compared with the kinetic perspective, it lacks certain dynamic information in that we are interested not in \emph{how long} it takes to hit each target, but only in the probability that we hit one target first. The \emph{hitting probability question} by itself can help us understand certain kinetic aspects of the system, e.g. important intermediates and folding pathways in the context of folding, by looking at sequences of key configurations visited in the simulations; it also appears as an important subproblem for other methods, e.g. transition probability estimation in Markov State Models, commitor function estimation in transition path theory, etc..
+In this paper we will focus on the \emph{hitting probability question}: ``Given an initial condition $X_0$ and two target sets, $A,B$, what is the probability that we will hit target $A$ first?'' This question lies in-between the two different perspectives. Compared with the thermodynamic perspective, it adds certain dynamic information in that we are interested in not only the equilibrium distribution, but also transitions between different states. Compared with the kinetic perspective, it lacks certain dynamic information in that we are interested not in \emph{how long} it takes to hit each target, but only in the probability that we hit one target first. The \emph{hitting probability question} by itself provides valuable kinetic information, and also appears as an important subproblem for other methods, e.g. transition probability estimation in Markov State Models, commitor function estimation in transition path theory, etc..
 
-We are especially interested in the ``small-target" regime for the \emph{hitting probability question}, where we try to reach small targets out of a vast number of possible configurations. This constitutes an \emph{entropic barrier}. A prototypical example is regions on the energy landscape with ``golf-course'' potentials.\cite{bicout2000entropic, Baum1986-we, Wille1987-tf}. These potentials commonly take place in high-dimensional configuration spaces. They feature a large region and several small targets within the region.  Away from the targets, the potential energy is relatively flat.  Near the targets, the potential energy may be complicated. Regions on the energy landscape with these small-target golf-course potentials are ubiquitous in biomolecular systems. Folding-like dynamics (such as RNA folding or protein folding) are one prominent example, where it is thought that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.''\cite{McLeish2005-dq} Experimental evidence shows that exploration of regions with golf-course potentials forms the rate-limiting step for a variety of processes.\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv}
+We are especially interested in the ``small-target" regime for the hitting probability question, where we try to reach small targets out of a vast number of possible configurations. This constitutes an \emph{entropic barrier}. A prototypical example is regions on the energy landscape with ``golf-course'' potentials.\cite{bicout2000entropic, Baum1986-we, Wille1987-tf}. These potentials commonly take place in high-dimensional configuration spaces. They feature a large region and several small targets within the region.  Away from the targets, the potential energy is relatively flat.  Near the targets, the potential energy may be complicated. Regions on the energy landscape with these small-target golf-course potentials are ubiquitous in biomolecular systems. Folding-like dynamics (such as RNA folding or protein folding) are one prominent example, where it is thought that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.''\cite{McLeish2005-dq} Experimental evidence shows that exploration of regions with golf-course potentials forms the rate-limiting step for a variety of processes.\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv}
 
 Direct simulations offer one way to estimate hitting probabilities, but perform poorly in the presence of entropic barriers. If the targets are very small, it may take a long time for the process to find either target.  It will thus require significant  computational effort to directly simulate an entire trajectory. In general, the computational efficiency of direct simulations will scale inversely with the size of the targets.
 
@@ -92,7 +92,7 @@ The contributions of this paper are as follows:
 	\item[Application] Inspired by the theoretical results, we present CHop as a general method to estimate hitting probabilities in the presence of entropic barriers. We verify the effectiveness of CHop through extensive numerical experiments.
 \end{description}
 
-The rest of the paper is organized as follows. In Section \ref{sec:toy_model}, we present a toy model with a golf-course potential.  This example will run across the entire paper as a central thread for our theoretical and numerical analysis. In Section \ref{sec:model_formulation}, we present our theoretical results. We define $\varepsilon$-flatness to capture the idea that hitting probabilities are approximately invariant to the initial condition, as long as the initial condition is away from the targets.  In Theorem \ref{thm:epsilon_flat} we then establish the $\varepsilon$-flatness of the toy model. Finally, in Corollary \ref{thm:main_cor} we show the consequences of the $\varepsilon$-flatness condition for for general stationary reversible SDEs: hitting probabilities for initial conditions away from the targets can be approximated using local capacities, with an error of roughly $\sqrt\varepsilon$.  Thus these hitting probabilities are approximately invariant to the energy landscape away from the targets.  In Section \ref{sec:algorithm}, we talk about applications. We propose CHop as a general method for estimating hitting probabilities in the presence of entropic barriers, and discuss the central computational issue of CHop: the efficient estimation of the capacities. We present extensive numerical experiments and results in Section \ref{sec:experiments} to demonstrate the effectiveness of CHop, before giving conclusions and future directions in Section \ref{sec:conclusion}.
+The rest of the paper is organized as follows. In Section \ref{sec:toy_model}, we present a toy model with a golf-course potential.  This example will run across the entire paper as a central thread for our theoretical and numerical analysis. In Section \ref{sec:model_formulation}, we present our theoretical results. We define $\varepsilon$-flatness to capture the idea that hitting probabilities are approximately invariant to the initial condition, as long as the initial condition is away from the targets.  In Theorem \ref{thm:epsilon_flat} we then establish the $\varepsilon$-flatness of the toy model. Finally, in Corollary \ref{thm:main_cor} we show the consequences of the $\varepsilon$-flatness condition for for general stationary reversible SDEs: hitting probabilities for initial conditions away from the targets can be approximated using local capacities, with an error of roughly $\sqrt\varepsilon$.  Thus these hitting probabilities are approximately invariant to the energy landscape away from the targets.  In Section \ref{sec:algorithm}, we talk about applications. We propose CHop as a general method for estimating hitting probabilities in the presence of entropic barriers, and discuss the central computational issue of CHop: the efficient estimation of the capacities. We present extensive numerical experiments and results in Section \ref{sec:experiments} to demonstrate the effectiveness of CHop, before giving some discussions in Section \ref{sec:discussion}.
 
 
 \section{A Toy Model}\label{sec:toy_model}
@@ -453,17 +453,15 @@ The times reported above reflect a particular choice of parameters, but we found
 %  \___\___/|_| |_|\___|_|\__,_|___/_|\___/|_| |_|___/
                                                     
 
-\section{Discussion and Future Directions}\label{sec:conclusion}
+\section{Conclusions and Discussions}\label{sec:discussion}
 
-Shape is function for many dynamic processes, including proteins and non-coding RNAs. Being in the right state at the right time can be difficult\cite{Levinthal1968-ov} and getting it wrong is often fatal.\cite{Luheshi2008-wd} It is vitally important that macromolecules can reliably fold to the right state, time and time again. However, more than 50 years after the demonstration that protein folding is a straightforward biophysical process \cite{Anfinsen1961-xe}, and more than 25 years after the clear formulation of the RNA folding problem \cite{Draper1992-pm}, high-quality simulation algorithms remain elusive.   
+In this work, we offer new insight in the presence of entropic barriers, from a hitting-probability perspective. While lacking timing information, hitting probabilities offer more kinetic understanding than purely thermodynamic analyses, and appear as an important subproblem in various other methods. We show that hitting probabilities, in the presence of entropic barriers where targets are small, often feature an approximate invariance to initial conditions away from the targets. This invariance further imply an invariance to the energy landscape away from the targets. This means that the hitting probabilities can be calculated using only local simulations around the targets. These insights are used to produce CHop, an practical algorithm to estimate hitting probabilities of small targets in the presence of entropic barriers. Numerical experiments on a toy model with a golf-course potential demonstrate the effectiveness of CHop.
 
-A majority of previous developments have focused on analysis of \emph{enthalpic barriers} and the properties of dynamics stuck in local minima.\cite{Christen2008-ge}  Proper understanding of these enthalpic effects can tremendously accelerate simulation.  Transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk} is perhaps the foundational work in this direction. Various other methods build on top of this, including different accelerated molecular dynamics methods\cite{Perez2009-jy}(hyperdynamics\cite{Voter1997-gi}, parallel replica\cite{Voter1998-mv} and temperature-accelerated dynamics\cite{Sorensen2000-qm}), transition path sampling,\cite{Dellago1998-lb, Bolhuis2002-ws} transition interface sampling,\cite{Van_Erp2005-vw} and the more recent transition path theory.\cite{E2006-fm, E2010-sr} The accelerated molecular dynamics methods achieve the acceleration by either smoothing the energy landscape, exploring energy basins in parallel, or raising the temperature while maintaining the correct dynamics. For transition path sampling, transition interface sampling and the transition path theory, the basic idea is to providing information about the reaction rates between different states, with the transition path theory also giving us a theoretical framework and a more comprehensive picture of the actual reaction processes.
+Entropic barriers, which arise because of the difficulty of reaching a small number of target configurations out of a vast number of possible configurations, are in contrast to \emph{enthalpic barriers}, which arise because of the diffuculty of escaping local minima. The challenges of molecular dynamics result from the complicated energy landscapes associated with different biomolecular systems, and can largely be summarized by these two different kinds of barriers. However, careful inspection of the existing methods shows that a majority of the previous developments focus on enthalpic barriers, where the central picture consists of an energy landscape with a multitude of local minima separated by high energetic barriers. A less studied picture involves the entropic barriers, where the energy landscapes has essentially no local minima, and the main difficulty is in finding small targets. We hope this work provides valuable insights into this important but less studied picture, and that it sheds some light into the broader problem of understanding the role of entropy in the kinetics of complex biomolecular systems. 
 
-Though these advances have significantly accelerated simulation, molecular dynamics methods still spend enormous computational effort simulating trajectories across \emph{entropic barriers} to get in the vicinity of small target regions.  In many important problems, the key regions of configuration space are quite small from a combinatorial point of view.\cite{McLeish2005-dq}  This means that it may take a long time to simulate trajectories which hit those small targets -- not because of any local energetic minima, but simply because of the vastness of configuration space.  Traditional acceleration techniques are not always applicable to this problem.\cite{Baum1986-we, Wille1987-tf, Machta2009-gh} 
+Our interests in this work come from thinking about RNA folding, and we see this work as laying the foundation for a general-purpose method for the folding of RNA molecules. The central picture is that of a hierarchical golf course: each part of the configuration space that are consistent with a particular secondary structure can be thought of as a golf course; the ``holes" in this golf course are other secondary structures obtained by forming new base pairs; breaking base pairs would bring us back to a larger golf course, while forming base pairs would bring us into a smaller one. CHop would serve as a fundamental tool in this picture. This is an ambitious proposal, and opens all kinds of interesting questions involving the geometry of the configuration space and the folding dynamics. Furthremore, under this picture, in addition to hitting probabilities, CHop can provide us with more kinetic information of the system, by giving us a way to efficiently get sequences of secondary structures. These sequences can play an important role in understanding questions like important intermediates and folding pathways of non-coding RNA molecules.
 
-In this work, we offer new insight into these crucial ``small-target'' problems, from a hitting-probability perspective.  While offering less kinetic insight than direct simulation, hitting probabilities offer more kinetic understanding than purely thermodynamic analyses.  We show that hitting probability problems with small targets often feature an approximate invariance to initial conditions away from the targets.  This invariance can then be used to show invariance to the energy landscape away from the targets.  This means that the probabilities can be calculated using only local simulations around the targets.  We hope this offers some light into the broader problem of understanding the role of entropy in the kinetics of complex molecular dynamics.  We also use these insights to produce CHop, an practical algorithm to estimate hitting probabilities for small-target problems.  
-
-Simulations suggest that CHop is highly effective for small-target problems, both in terms of accuracy and speed.  However, simulations can be deceiving.  In future work, we hope to apply CHop to real-world problems to see if novel insights can be gained using this capacity-based perspective.  
+\newpage
 
 \appendix
 
@@ -1113,11 +1111,11 @@ T_n^{\tmop{out}} + T^{\tmop{in}} \right]} \right]$, we make use of the results
 in Wendel\cite{Wendel1980-sj}. Taking $n = 0$ in equation
 $(8)$ and $(9)$ in Wendel\cite{Wendel1980-sj}, we have
 \begin{eqnarray*}
-\mathbbm{E} [e^{- sT^{\tmop{in}}}] & = & \left( \frac{d_A}{\tilde{d}_A}
+p\mathbbm{E} [e^{- sT^{\tmop{in}}}] & = & \left( \frac{d_A}{\tilde{d}_A}
 \right)^h \frac{I_h (\nu r_{\tilde{A}}) K_h (\nu \tilde{d}_A) - I_h (\nu
 \tilde{d}_A) K_h (\nu r_{\tilde{A}})}{I_h (\nu r_{\tilde{A}}) K_h (\nu d_A)
 - I_h (\nu d_A) K_h (\nu r_{\tilde{A}})}\\
-\mathbbm{E} [e^{- sT^{\tmop{out}}}] & = & \left(
+(1 - p)\mathbbm{E} [e^{- sT^{\tmop{out}}}] & = & \left(
 \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \frac{I_h (\nu d_A) K_h (\nu
 \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu d_A)}{I_h (\nu d_A) K_h (\nu
 r_{\tilde{A}}) - I_h (\nu r_{\tilde{A}}) K_h (\nu d_A)}
@@ -1130,10 +1128,10 @@ these formulas, it's easy to see that
 T^{\tmop{in}} \right]} \right]\\
 & = & \frac{p\mathbbm{E} [e^{- sT^{\tmop{in}}}]}{1 - (1 - p) \mathbbm{E}
 [e^{- sT^{\tmop{out}}}]}\\
-& = & \frac{p \left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (\nu
+& = & \frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (\nu
 r_{\tilde{A}}) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu
 r_{\tilde{A}}))}{(I_h (\nu r_{\tilde{A}}) K_h (\nu d_A) - I_h (\nu d_A) K_h
-(\nu r_{\tilde{A}})) + (1 - p) \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
+(\nu r_{\tilde{A}})) + \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
 \right)^h (I_h (\nu d_A) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h
 (\nu d_A))}
 \end{eqnarray*}
@@ -1153,22 +1151,22 @@ K_h (z) & \sim & \sqrt{\frac{\pi}{2 h}} \left( \frac{ez}{2 h} \right)^{- h}
 \end{eqnarray*}
 Using these properties, and the explicit formula for $p$, we can see that,
 when $d_A \rightarrow 0$, we have
-\[ p \rightarrow 0, \left( \frac{d_A}{\tilde{d}_A} \right)^h \rightarrow 0,
+\[ \left( \frac{d_A}{\tilde{d}_A} \right)^h \rightarrow 0,
 I_h (\nu d_A) \rightarrow 0, K_h (\nu d_A) \rightarrow \infty \]
 $I_h (\nu r_{\tilde{A}}) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h
 (\nu r_{\tilde{A}})$ would remain a constant, so the numerator
-\[ p \left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (\nu r_{\tilde{A}}) K_h
+\[ \left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (\nu r_{\tilde{A}}) K_h
 (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu r_{\tilde{A}}))
 \rightarrow 0 \]
 For the denominator, we have
 \begin{eqnarray*}
 &  & (I_h (\nu r_{\tilde{A}}) K_h (\nu d_A) - I_h (\nu d_A) K_h (\nu
-r_{\tilde{A}})) + (1 - p) \left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h
+r_{\tilde{A}})) + \left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h
 (I_h (\nu d_A) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu
 d_A))\\
-& = & \left( I_h (\nu r_{\tilde{A}}) - (1 - p) \left(
+& = & \left( I_h (\nu r_{\tilde{A}}) - \left(
 \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h I_h (\nu \tilde{d}_A) \right)
-K_h (\nu d_A) + \left( (1 - p) \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
+K_h (\nu d_A) + \left( \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
 \right)^h K_h (\nu \tilde{d}_A) - K_h (\nu r_{\tilde{A}}) \right) I_h (\nu
 d_A)
 \end{eqnarray*}
@@ -1194,24 +1192,23 @@ $d_A \rightarrow 0$, we have the denominator goes to $\infty$, which implies
 \[ \lim_{d_A \rightarrow 0} \mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N
 T_n^{\tmop{out}} + T^{\tmop{in}} \right]} \right] = 0 \]
 When the dimension $d \rightarrow \infty$, we have $h = \frac{d - 2}{2}
-\rightarrow \infty$ and
-\[ p \rightarrow 0, \left( \frac{d_A}{\tilde{d}_A} \right)^h \rightarrow 0 \]
+\rightarrow \infty$ and $\left( \frac{d_A}{\tilde{d}_A} \right)^h \rightarrow 0$.
 In this case, using DLMF\cite{noauthor_undated-ti} equations 10.41.1 and 10.41.2, we can see that
 $\mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N T_n^{\tmop{out}} +
 T^{\tmop{in}} \right]} \right]$ behaves like
 \begin{eqnarray*}
-&  & \frac{p \left( \frac{d_A}{\tilde{d}_A} \right)^h \frac{1}{2 h} \left[
+&  & \frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h \frac{1}{2 h} \left[
 \left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h - \left(
 \frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h \right]}{\frac{1}{2 h} \left[
 \left( \frac{r_{\tilde{A}}}{d_A} \right)^h - \left(
-\frac{d_A}{r_{\tilde{A}}} \right)^h \right] + (1 - p) \left(
+\frac{d_A}{r_{\tilde{A}}} \right)^h \right] + \left(
 \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \frac{1}{2 h} \left[ \left(
 \frac{d_A}{\tilde{d}_A} \right)^h - \left( \frac{\tilde{d}_A}{d_A} \right)^h
 \right]}\\
-& = & \frac{p \left( \frac{d_A}{\tilde{d}_A} \right)^h}{\frac{\left(
+& = & \frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h}{\frac{\left(
 \frac{r_{\tilde{A}}}{d_A} \right)^h - \left( \frac{d_A}{r_{\tilde{A}}}
 \right)^h}{\left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h - \left(
-\frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h} + (1 - p) \left(
+\frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h} + \left(
 \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \left[ \frac{\left(
 \frac{d_A}{\tilde{d}_A} \right)^h - \left( \frac{\tilde{d}_A}{d_A}
 \right)^h}{\left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h - \left(
