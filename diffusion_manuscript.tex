@@ -1035,14 +1035,14 @@ Combining these bounds, we can prove the desired result
 
 \section{Proof of the lemma}\label{sec:proof_lemma}
 
-To calculate the CHop probabilities which approximate hitting probabilities, we need to be able to estimate capacities.  To this end, we employ connect the capacity to the difference between two surface integrals.  To do so, we need a version of Green's first identity:
+To calculate the CHop probabilities which approximate hitting probabilities, we need to be able to estimate capacities.  To this end, we connect the capacity to the difference between two surface integrals.  To do so, we need a version of Green's first identity:
 
-\begin{lemma}  \label{ref:greenident}Fix sets $A \subset \tilde A \subset \Omega$ with smooth boundary.  Then for any smooth functions $f,g$,
+\begin{lemma}  \label{ref:greenident}Fix some $M \subset \Omega$ with smooth boundary.  Then for any smooth functions $f,g$,
 \begin{gather*}
-\int_{\tilde A\backslash A} \nabla f(x)^T a(x) \nabla g(x) e^{-U(x)}dx \\
-= \int_{\partial (\tilde A\backslash A)} f(x) \mathbf{n}(x)^T a(x) \nabla g(x) e^{-U(x)}dS - 2\int_{\tilde A\backslash A} f(x) (\mathcal{L}g)(x)e^{-U(x)}dx
+\int_{M} \nabla f(x)^T a(x) \nabla g(x) e^{-U(x)}dx \\
+= \int_{\partial M} f(x) \mathbf{n}(x)^T a(x) \nabla g(x) e^{-U(x)}dS - 2\int_{M} f(x) (\mathcal{L}g)(x)e^{-U(x)}dx
 \end{gather*}
-where $\mathbf{n}$ are the normal vectors facing out of the set $\tilde A\backslash A$ and $dS$ is the integral with respect to the $(\dimension-1)$-dimensional Hausdorff measure and 
+where $\mathbf{n}$ are the normal vectors facing out of the set $M$ and $dS$ is the integral with respect to the $(\dimension-1)$-dimensional Hausdorff measure and 
 \[
 (\mathcal{L}f)(x) \triangleq \sum_i b_i(x) \frac{\partial f (x)}{\partial x_i} + 
     \frac{1}{2} \sum_{ij}a_{ij}(x)\frac{\partial^2 f(x)}{\partial x_i \partial x_j} 
@@ -1053,14 +1053,14 @@ This is in fact an elementary application of integration by parts formulas.
 
 To fit the formulas on the page, we here adopt the notation that superscripts indicate derivatives, e.g. $f^i_j  = \partial f_j(x)/\partial x_i$.  In this notation, our goal is to prove that
 \[
-\sum_{ij} \int_{\tilde A\backslash A} f^i a_{ij} g^j e^{-U}dx 
-= \sum_{ij}\int_{\partial (\tilde A\backslash A)} f \mathbf{n}_i a_{ij} g^j e^{-U}dS - 2\int_{\tilde A\backslash A} f (\mathcal{L}g)e^{-U}dx
+\sum_{ij} \int_{M} f^i a_{ij} g^j e^{-U}dx 
+= \sum_{ij}\int_{\partial M} f \mathbf{n}_i a_{ij} g^j e^{-U}dS - 2\int_{M} f (\mathcal{L}g)e^{-U}dx
 \]
 This is straightforward to show.  Applying integration by parts we obtain
     \begin{align*}
-    &\sum_{ij} \int_{\tilde A\backslash A} f^i \left[a_{ij} g^j e^{-U}\right]dx \\ 
-    =&\sum_{ij} \int_{\partial (\tilde A\backslash A)} f \left[a_{ij} g^i e^{-U}\right]dS - 
-            \sum_{ij}\int_{\tilde A\backslash A} f  \left[(a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i) e^{-U}\right]dx
+    &\sum_{ij} \int_{M} f^i \left[a_{ij} g^j e^{-U}\right]dx \\ 
+    =&\sum_{ij} \int_{\partial M} f \left[a_{ij} g^i e^{-U}\right]dS - 
+            \sum_{ij}\int_{M} f  \left[(a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i) e^{-U}\right]dx
     \end{align*}
 Thus to prove this Lemma it suffices to show that $2\mathcal{L}g=\sum_{ij}a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i$.  This follows directly from substituting the reversibility constraint on $b$ from Appendix \ref{sec:reversible_diffusion} into the expression for $\mathcal{L}g$.
 \end{proof}
