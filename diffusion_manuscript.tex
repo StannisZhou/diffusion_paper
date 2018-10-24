@@ -28,6 +28,7 @@
 \theoremstyle{plain}
 \newtheorem{thm}{\protect\theoremname}
 \newtheorem*{thm*}{\protect\theoremname}
+\newtheorem*{lem*}{\protect\lemmaname}
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{\protect\definitionname}
 \theoremstyle{plain}
@@ -120,12 +121,12 @@ This toy model encapsulates the essential characteristics of entropic effects: i
 
 \section{Theory: $\varepsilon$-flatness and CHop Probabilities}\label{sec:model_formulation}
 
-With this toy model in mind, we now turn to the general results of this paper. In general, we will assume the underlying physical process governing the macromolecule is a stationary reversible diffusion process in the configuration space $\Omega$, with invariant
-measure ${\mu}= e^{- U (x)} \mathrm{d} x$.  In particular, the dynamics will be defined in terms of a $d$-dimensional Brownian motion $W_t$, according to 
+With this toy model in mind, we now turn to the general results of this paper. In general, we will assume the underlying physical process governing the macromolecule is a stationary reversible diffusion process $X$ trapped in the configuration space $\Omega$ by reflecting boundaries.  We assume $X$ has invariant
+measure ${\mu}= e^{- U (x)} \mathrm{d} x$, and the dynamics can be expressed in terms of a $d$-dimensional Brownian motion $W_t$ by the stochastic differential equation
 \begin{equation}\label{equ:general_sde}\mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \end{equation}
 where $b: \Omega \rightarrow \mathbbm{R}^\dimension$ and $\sigma :
 \Omega \rightarrow \mathbbm{R}^{\dimension \times m}$ are differentiable vector-valued
-and matrix-valued functions.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for a detailed account of stationary reversible diffusion processes.
+and matrix-valued functions.  Note that the stationary and reversible conditions place restrictions on what values of $b,\sigma,U$ are permitted.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for a detailed account of stationary reversible diffusion processes.
 
 As in the toy model, we will be interested in two target regions, $A,B\subset \Omega$.  Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we will be be interested to know whether the dynamics carry the system into $A$ or $B$ first.  That is, we are interested in the hitting probabilities
 \[ h_{A, B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in A|X_0=x)\]
@@ -497,74 +498,58 @@ Our interests in this work come from thinking about RNA folding, and we see this
 
 \section{Stationary Reversible Diffusion Processes}\label{sec:reversible_diffusion}
 
-In this section, we set notation and review some properties of stochastic differential equations.   Let $\{X_t\}_{t \geqslant 0}$ denote a stationary reversible diffusion process trapped in 
-$\Omega \subset \mathbbm{R}^\dimension$ by reflecting boundaries, with continuous invariant density $e^{-U}$, satisfying 
-%
-\[ \mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \]
-%
-where $W$ is a $d$-dimensional Brownian motion and $b (\cdot) : \mathbbm{R}^\dimension \rightarrow \mathbbm{R}^\dimension,\sigma
-(\cdot) : \mathbbm{R}^\dimension \rightarrow \mathbbm{R}^{\dimension \times d}$ are differentiable.  If no boundaries are desired, we can take $\Omega= \mathbb{R}^\dimension$.  Recall that $b$ is entirely determined by $\sigma,U$ and the requirement that the process is stationary and reversible; indeed, per Proposition 4.5 of Pavliotis\cite{Pavliotis2016-xn} we have that $b_i(x)=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j + \sum_j a_{ij}(x) \partial U(x)/\partial x_j$ where $a=\sigma\sigma^T$.  We refer to Bovier\cite{Bovier2016-ez} and Pavliotis\cite{Pavliotis2016-xn} for a useful exposition on these kinds of processes.
+In this section, we set notation and review known properties of stochastic differential equations.   
 
-This paper's main results arise from consideration of three related objects induced by this diffusion: the Dirichlet form, the capacity, and the Dirichlet problem.  
+\subsection{Defining the process}
 
-\begin{definition}
-The \textbf{Dirichlet form} of $X$ is given
-by
-\[ \mathcal{E} (f, g) = \frac{1}{2} \int_\Omega (\sigma(x) \nabla f (x))^T 
- (\sigma(x) \nabla g (x)) e^{- U (x)} \mathrm{d} x \]
-\end{definition}
+Let $\dimension \geq 3$ and $\Omega \subset \mathbb{R}^\dimension$ be a bounded open set with smooth boundary.  Our central object of interest will be a diffusion $X$ trapped in $\Omega$ by some kind of reflecting boundaries.  The construction of such reflected diffusions is a bit of a delicate art, so we will start by taking a moment to rigorously define the process $X$.
 
-This form induces a ``capacity'' on pairs of nested sets:
+Let $W$ denote a Brownian motion.  Let $b:\ \bar \Omega \rightarrow \mathbb{R}^\dimension,\sigma:\ \bar \Omega \rightarrow \mathbb{R}^{\dimension\times\dimension}$ smooth.  Let $\mathbf{n}$ denote the outward normal of $\partial \Omega$ and $\nu:\ \partial \Omega \rightarrow \mathbb{R}^\dimension$ a smooth vector field satisfying $\mathbf{n}^T\nu\geq c>0$. Let $x_0 \in \Omega$.  Then there is a pathwise unique continuous $W$-adapted strong Markov process $X$ and (random) measure $L$ such that 
+\begin{gather}\label{eq:SDER}
+X_t = x_0 + \int_0^t b(X_s)ds + \int_0^t \sigma(X_s)dW_s - \int_0^t \nu(X_s) L(ds)
+\end{gather}
+and $L(\{t:\ X_t \notin \partial \Omega\})=0$.\cite{lions1984stochastic} 
 
-\begin{definition}
-Let $A \subset \tilde{A} \subset \Omega$ be non-empty. Assume we have an
-open set $D \subset \Omega$ for which $\partial D = \partial A \cup \partial
-\tilde{A}$ and smooth. The \textbf{capacity} $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ is defined as
-%
-\[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) = \inf_{f \in
-\mathcal{H_{A, \tilde{A}}}} \mathcal{E} (f, f) \]
-%
-where $\mathcal{H}_{A, \tilde{A}}$ is the space of functions $f$ such that
+We will further assume that $X$ is reversible with respect to a measure $\rho(dx)=e^{-U(x)}dx$ with $\rho(\Omega)=1$ and $U:\ \bar \Omega \rightarrow \mathbb{R}$ smooth.  Here by reversible we mean that
+\[
+\int_{A}\mathbb{P}(X_{t}\in B|X_{0}=x)\rho(dx)  =\int_{B}\mathbb{P}(X_{t}\in A|X_{0}=x)\rho(dx)
+\]
+for any open sets $A,B\subset \Omega$ and any $t>0$.  Due to this condition, we are not completely free in our choice of $b,\sigma,\nu$.  A sufficient condition for reversibility is $X$ is given in Chen,\cite{chen1993reflecting} namely that
+\begin{align*}
+b_i(x)&=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j - \frac{1}{2}\sum_j a_{ij}(x) \partial U(x)/\partial x_j \\
+\nu(x)&= a(x) \mathbf{n}(x)
+\end{align*}
+where $a=\sigma\sigma^T$ is uniformly elliptic.  Specifically, Chen showns that under these conditions, one can construct a reversible process which also obeys Equation (\ref{eq:SDER}).  Since Lions\cite{lions1984stochastic} showed that the solution to Equation (\ref{eq:SDER}) is unique, it follows that Chen's process is exactly $X$.  Thus, since Chen's process is reversible, $X$ must also be reversible.  It seems that the conditions on $b,\nu$ are in fact necessary for reversibility, although our review of the literature did not reveal a conclusive answer.  Proposition 4.5 of Pavliotis\cite{Pavliotis2016-xn} gives a formal argument in this direction, but we could not find a completely rigorous analysis.  The results of this paper apply only to reversible processes for which these $b,\nu$ conditions hold.
+
+\subsection{Three perspectives on hitting probabilities}
+
+Many of our results are based on the fact that hitting probability functions can actually be seen from three distinct perspectives:
+
 \begin{enumerate}
-\item $f \in H^1$, where $H^1$ is the Soblev space of weakly
-differentiable functions
+    \item Hitting probabilities.  Let $\tau_S \triangleq \inf\{t:\ X_t \in S\}$ for any set $S$ and $h_{A,B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in \partial A)$.
+    
+    \item Dirichlet problem.  Let $h^\mathrm{dir}_{A,B}(x)$ denote the solution to the partial differential equation
+    \begin{align*}
+    0 &= \sum_{i = 1}^\dimension b_i (x) \frac{\partial u
+        (x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^\dimension \sum_{j = 1}^\dimension a_{ij} (x)
+        \frac{\partial^2 u (x)}{\partial x_i \partial x_j}\\
+    1 &= u(x),x\in A \\
+    0 &= u(x) ,x\in B \\
+    0 &= \mathbf{n}(x)^Ta(x)\nabla u(x), x \in \partial{\Omega} \backslash (\partial A \cup \partial B)
+    \end{align*}
+    This solution is unique and smooth.\cite{lieberman1986mixed}  What's more, it is equal to the hitting probability function: $h^\mathrm{dir}_{A,B}(x)=h_{A,B}(x)$ (cf.\ Section 6.7 of Chen\cite{chen2012symmetric}).
 
-\item $\mathcal{E} (f, f) < \infty$
-
-\item $f \geqslant 1$ on $\partial A$ and $f \leqslant 0$ on $\partial
-\tilde{A}$
+    \item Variational form.  Let $\mathscr{E}(f,g)\triangleq \int_\Omega \nabla f(x)^T a(x) g(x) \rho(dx)$ denote the ``Dirichlet Form.''  Let $\mathscr L^2(\bar \Omega,\rho)$ denote the Hilbert space of functions on $\bar \Omega$ which are square-integrable with respect to $\rho$.  Let $\mathcal{H}^1(\bar \Omega,\rho)=W^{1,2}(\bar \Omega,\rho) \subset \mathscr{L}^2(\bar \Omega,\rho)$ denote the corresponding once-weakly-differentiable Hilbert Sobolev space.  Let $A,B\subset \Omega$, disjoint, and let $h^\mathrm{var}_{A,B}(x)$ denote the solution to 
+    \begin{align*}
+    \min_{u \in \mathcal H^1} \quad & \mathscr{E}(u,u) \\
+    \mbox{subject to} \quad & u(x)=1,x\in A \\
+     & u(x)=0,x\in B
+    \end{align*}
+    This solution is unique and equal to $h^\mathrm{dir}$.\cite{karatson2005discrete}  We will call the value of $\mathscr{E}(h^\mathrm{var}_{A,B}(x),h^\mathrm{var}_{A,B}(x))$ the ``condensor capacity'' from $\partial A$ to $\partial B$, or just the ``capacity'' for short.  We will denote it by $\capac{A}{\Omega \backslash B}$.
 \end{enumerate}
 
-\end{definition}
 
-The capacity is intimately connected with a partial differential equation known as the Dirichlet problem:
-
-\begin{definition}
-Let $A, B \subset \Omega$ be non-empty and disjoint.  The \textbf{Dirichlet problem} for $A,B$ with respect to the diffusion $X$ is defined as the partial
-differential equation
-\[ 0 = \sum_{i = 1}^\dimension b_i (x) \frac{\partial f
-(x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^\dimension \sum_{j = 1}^\dimension a_{ij} (x)
-\frac{\partial^2 f (x)}{\partial x_i \partial x_j} \]
-where $a(x)=\sigma(x)\sigma(x)^T$, with boundary conditions
-\begin{eqnarray*}
-h (x) & = & 1, x \in A\\
-h (x) & = & 0, x \in B
-\end{eqnarray*}
-As long as there is some set $D \subset \Omega$ for which $\partial D = \partial A \cup \partial B$, this problem has a unique solution which we will denote $h_{A,B}$.
-\end{definition}
-
-The connection between the capacity and the Dirichlet problem is given by the following, proved in Theorem 7.33 of Bovier:\cite{Bovier2016-ez}
-
-\begin{proposition}\label{prop:capacitydirichlet}
-If $\mathcal{H}_{A, \tilde{A}} \neq \varnothing$, then
-\[
-\capac{A}{\tilde{A}} = \mathcal{E} (h_{A,\tilde{A}^c}, h_{A, \tilde{A}^c})
-\]
-\end{proposition}
-
-At first glance, it is unclear why any of these objects are relevant to the study of the diffusion $X$.  The answer comes in the form of the celebrated {\itshape{Dirichlet Principle}}, which states that the solution to the Dirichlet problem carries the probabilistic interpretation 
-\[ h_{A, B} (x) =\mathbbm{P} (X_{\tau_{A \cup B}} \in A|X_0 = x) \]
-where $\tau_S \triangleq \inf \{ t \geqslant 0 : X_t \in S \}$.  That is, $h_{A, B} (x)$ is the probability for $X$ to hit $A$ first before hitting $B$ if we start the process at $x$.  The Dirichlet principle is the key that connects hitting probabilities to the capacity and enables the main results of this work.
+  We will use all three of these perspectives to show our results.  
 
 
 %     _    ____  ____  _____ _   _ ____ _____  __  ____  
@@ -577,16 +562,16 @@ where $\tau_S \triangleq \inf \{ t \geqslant 0 : X_t \in S \}$.  That is, $h_{A,
 
 \section{Proof of the Main Theorem}\label{sec:proof_thm}
 
-Assume $X$ is a reversible stationary diffusion on $\Omega$ governed by Equation (\ref{equ:general_sde}).  Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$.  Let us assume the set boundaries are all smooth.  
+Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$.  We assume the set boundaries are all smooth.  
 
-Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathcal{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
+Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathcal{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of local capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
 
 \begin{lemma}  The Dirichlet form of $h_{A,B}$ can be upper-bounded in terms of the capacities:
 \[ \mathcal{E} (h_{A,B}, h_{A,B}) \leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
 \tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \]
 \end{lemma}
 \begin{proof}
-Per Proposition \ref{prop:capacitydirichlet} and the Dirichlet principle, we have that 
+We recall from Appendix \ref{sec:reversible_diffusion} that
 %
 \[
 \mathcal{E} (h_{A,B}, h_{A,B}) = \capac{A}{B^c} \leq \mathcal{E} (u,u)
@@ -605,7 +590,7 @@ c & \tmop{otherwise}
 These functions are well-suited to giving us upper bounds on $\mathcal{E} (h_{A,B}, h_{A,B})$.  Indeed:
 \begin{itemize}
 \item $u_c \in \mathcal{H}_{A, B^c}$.  Indeed, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly to in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  Thus, since we have assumed the boundaries of $\tilde A,\tilde B$ are smooth, $u_c \in \mathcal H_{A,B^c}$.  
-\item $\mathcal{E}(u_c,u_c)$ can be calculated by applying Proposition \ref{prop:capacitydirichlet} twice, yielding $\mathcal{E}(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
+\item Noting that $u_c$ is written as a piecewise combination of hitting probability functions, we see that its Dirichlet form can be calculated in terms of capacities on local regions: $\mathcal{E}(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
 \end{itemize}
 Thus the $u_c$ functions give us a practical way to calculate upper bounds: 
 \[
@@ -1040,86 +1025,231 @@ d_B), X_0 \nin \tilde{A} \cup \tilde{B})$.
 Combining these bounds, we can prove the desired result
 \hspace*{\fill}$\Box$\medskip
 
+%  ____ _____     _______ ____   ____ _____ _   _  ____ _____ 
+% |  _ \_ _\ \   / / ____|  _ \ / ___| ____| \ | |/ ___| ____|
+% | | | | | \ \ / /|  _| | |_) | |  _|  _| |  \| | |   |  _|  
+% | |_| | |  \ V / | |___|  _ <| |_| | |___| |\  | |___| |___ 
+% |____/___|  \_/  |_____|_| \_\\____|_____|_| \_|\____|_____|
+                                                            
+
+
 \section{Proof of the lemma}\label{sec:proof_lemma}
 
-\noindent\textbf{Proof of Lemma \ref{thm:capacity_lemma}\ }
-The key here is to use the divergence theorem
-\[ \int_{\Omega} \nabla \cdot F (x) \mathd x = \int_{\partial \Omega} F (x)^T
-{\textbf n} (x) \mathd S \]
-and the property of stationary reversible SDEs (Proposition \ref{prop:property_reversible_sde})
-\[ J (f (x) e^{- U (x)}) = \frac{1}{2} e^{- U (x)} a (x) \nabla f (x), \forall f \]
-and the fact that $\mathcal{L} (h_{A, \tilde{A}^c} (x)) = 0$.
+To calculate the CHop probabilities which approximate hitting probabilities, we need to be able to estimate capacities.  To this end, we employ connect the capacity to the difference between two surface integrals.  To do so, we need a version of Green's first identity:
 
-Using these, we have
-\begin{eqnarray*}
-\tmop{cap} (A, \tilde{A}) & = & \int_{\tilde{A} / A} \nabla h_{A,
-\tilde{A}^c} (x)^T a (x) \nabla h_{A, \tilde{A}^c} (x) e^{- U (x)} \mathd
-x\\
-& = & \int_{\partial \tilde{A}} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x)
-\nabla h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
-& - & \int_{\partial A} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla
-h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
-& - & \int_{\tilde{A} / A} h_{A, \tilde{A}^c} (x) \nabla \cdot [a (x)
-\nabla h_{A, \tilde{A}^c} (x) e^{- U (x)}] \mathd x\\
-& = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
-(x)]^T {\textbf n} (x) \mathd S\\
-& - & \int_{\tilde{A} / A} h_{A, \tilde{A}^c} (x) \nabla \cdot 2 J (h_{A,
-\tilde{A}^c} (x) e^{- U (x)}) \mathd x\\
-& = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
-(x)]^T {\textbf n} (x) \mathd S\\
-& - & \int_{\tilde{A} / A} h_{A, \tilde{A}^c} (x) 2 \mathcal{L}^{\ast}
-(h_{A, \tilde{A}^c} (x) e^{- U (x)}) \mathd x\\
-& = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
-(x)]^T {\textbf n} (x) \mathd S\\
-& - & 2 \int_{\tilde{A} / A} \mathcal{L} (h_{A, \tilde{A}^c} (x)) h_{A,
-\tilde{A}^c} (x) e^{- U (x)} \mathd x\\
-& = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
-(x)]^T {\textbf n} (x) \mathd S
-\end{eqnarray*}
-We further have
-\begin{eqnarray*}
-0 & = & \int_{G / A} \mathcal{L} (h_{A, \tilde{A}^c} (x)) e^{- U (x)} \mathd
-x\\
-& = & \int_{G / A} \mathcal{L}^{\ast} (h_{A, \tilde{A}^c} (x) e^{- U (x)})
-\mathd x\\
-& = & \int_{G / A} \nabla \cdot \left( \frac{1}{2} e^{- U (x)} a (x) \nabla
-f (x) \right) \mathd x\\
-& = & \frac{1}{2} \int_{\partial G} e^{- U (x)} [a (x) \nabla h_{A,
-\tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
-& - & \frac{1}{2} \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A,
-\tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
-\end{eqnarray*}
-This implies
-\begin{eqnarray*}
-&  & \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A,
-\tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
-& = & \int_{\partial G} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c} (x)]^T
-{\textbf n} (x) \mathd S\\
-\end{eqnarray*}
-which further implies
-\begin{eqnarray*}
-&  & \tmop{cap} (A, \tilde{A})\\
-& = & - \int_{\partial G} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
-(x)]^T {\textbf n} (x) \mathd S\\
-& = & \int_{\partial \tilde{G}} h_{G, \tilde{G}^c} (x) e^{- U (x)} [a (x)
-\nabla h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
-& - & \int_{\partial G} h_{G, \tilde{G}^c} (x) e^{- U (x)} [a (x) \nabla
-h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
-& = & 2 \int_{\tilde{G} / G} h_{G, \tilde{G}^c} (x) \mathcal{L}^{\ast}
-(h_{A, \tilde{A}^c} (x) e^{- U (x)}) \mathd x\\
-& + & \int_{\tilde{G} / G} \nabla h_{G, \tilde{G}^c} (x)^T a (x) \nabla
-h_{A, \tilde{A}^c} (x) e^{- U (x)} \mathd x\\
-& = & 2 \int_{\tilde{G} / G} h_{A, \tilde{A}^c} (x) \mathcal{L}^{\ast}
-(h_{G, \tilde{G}^c} (x) e^{- U (x)}) \mathd x\\
-& + & \int_{\tilde{G} / G} \nabla h_{G, \tilde{G}^c} (x)^T a (x) \nabla
-h_{A, \tilde{A}^c} (x) e^{- U (x)} \mathd x\\
-& = & \int_{\partial \tilde{G}} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x)
-\nabla h_{G, \tilde{G}^c} (x)]^T {\textbf n} (x) \mathd S\\
-& - & \int_{\partial G} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla
-h_{G, \tilde{G}^c} (x)]^T {\textbf n} (x) \mathd S
-\end{eqnarray*}
-which proves the desired result.
-\hspace*{\fill}$\Box$\medskip
+\begin{lemma}  \label{ref:greenident}Fix sets $A \subset \tilde A \subset \Omega$ with smooth boundary.  Then for any smooth functions $f,g$,
+\begin{gather*}
+\int_{\tilde A\backslash A} \nabla f(x)^T a(x) \nabla g(x) e^{-U(x)}dx \\
+= \int_{\partial (\tilde A\backslash A)} f(x) \mathbf{n}(x)^T a(x) \nabla g(x) e^{-U(x)}dS - 2\int_{\tilde A\backslash A} f(x) (\mathcal{L}g)(x)e^{-U(x)}dx
+\end{gather*}
+where $\mathbf{n}$ are the normal vectors facing out of the set $\tilde A\backslash A$ and $dS$ is the integral with respect to the $(\dimension-1)$-dimensional Hausdorff measure and 
+\[
+(\mathcal{L}f)(x) \triangleq \sum_i b_i(x) \frac{\partial f (x)}{\partial x_i} + 
+    \frac{1}{2} \sum_{ij}a_{ij}(x)\frac{\partial^2 f(x)}{\partial x_i \partial x_j} 
+\]
+\end{lemma}
+\begin{proof}
+This is in fact an elementary application of integration by parts formulas.  
+
+To fit the formulas on the page, we here adopt the notation that superscripts indicate derivatives, e.g. $f^i_j  = \partial f_j(x)/\partial x_i$.  In this notation, our goal is to prove that
+\[
+\sum_{ij} \int_{\tilde A\backslash A} f^i a_{ij} g^j e^{-U}dx 
+= \sum_{ij}\int_{\partial (\tilde A\backslash A)} f \mathbf{n}_i a_{ij} g^j e^{-U}dS - 2\int_{\tilde A\backslash A} f (\mathcal{L}g)e^{-U}dx
+\]
+This is straightforward to show.  Applying integration by parts we obtain
+    \begin{align*}
+    &\sum_{ij} \int_{\tilde A\backslash A} f^i \left[a_{ij} g^j e^{-U}\right]dx \\ 
+    =&\sum_{ij} \int_{\partial (\tilde A\backslash A)} f \left[a_{ij} g^i e^{-U}\right]dS - 
+            \sum_{ij}\int_{\tilde A\backslash A} f  \left[(a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i) e^{-U}\right]dx
+    \end{align*}
+Thus to prove this Lemma it suffices to show that $2\mathcal{L}g=\sum_{ij}a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i$.  This follows directly from substituting the reversibility constraint on $b$ from Appendix \ref{sec:reversible_diffusion} into the expression for $\mathcal{L}g$.
+\end{proof}
+
+This enables us to establish our lemma connecting capacities to fluxs:
+
+\begin{lem*}(Capacity is a difference of fluxs)  Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G \backslash G$:
+\[
+\ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS
+\]
+\end{lem*}
+\begin{proof}
+First recall that the capacity can be written as $\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c})$.
+
+Next note that $\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c}) $ can be written as the flux of $h_{A,\tilde A^c}$ entering $A$.  Indeed, from Appendix \ref{sec:reversible_diffusion} we know that hitting probability functions such as $h_{A,\tilde A^c}$ satisfy $\mathcal Lh_{A,\tilde A^c}=0$ on the interior of $\tilde A \backslash A$.  Together with Lemma \ref{ref:greenident}, this yields that 
+\begin{align*}
+\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c}) 
+    &= \int_{\tilde A \backslash A}  \nabla h_{A, \tilde{A}^c}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS \\
+    &= \int_{\partial (\tilde A \backslash A)}  h_{A, \tilde{A}^c} \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS - \cancel{2\int_{\tilde A \backslash A} h_{A,\tilde A^c}\mathcal{L}h_{A,\tilde A^c} dx}\\
+    &= \int_{\partial A}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS
+\end{align*}
+Note in the last step we used that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$.  
+
+It turns out the capacity can actually be written as a flux entering \emph{any} surface between $A$ and $\tilde A$.  To see why, apply Lemma \ref{ref:greenident} to see that the total flux of $h_{A,\tilde A^c}$ leaving any $M\subset \tilde A \backslash A$ must be identically zero:
+\begin{align*}
+\int_{\partial M} (1) \times \textbf{n}^T a  \nabla h_{A,\tilde A^C} e^{- U } dS
+    &= \int_{M} \nabla h_{A,\tilde A^C}^T  a  \cancel{\nabla (1)} e^{- U } dx=0
+\end{align*}
+In particular, the flux of $h_{A,\tilde A^c}$ leaving $G \backslash A$ (the sum of the flux entering $A$ and the flux leaving $G$) is zero.  It follows that the flux entering $A$ is the \emph{same} as the flux entering $G$.  Thus, in particular, $\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c}) = \int_{\partial G}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS$.  
+
+This flux entering $G$, in turn, can be written as a \emph{weighted flux} leaving $\tilde G \backslash G$.  The key is to use fact that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$.  This enables us to complete the proof:
+\begin{align*}
+\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c})
+    =&\int_{\partial G}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS\\
+    =& \int_{\partial (\tilde G \backslash G)}  h_{G, \tilde{G}^c}    \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS\\
+    =& \int_{\tilde G \backslash G}  \nabla h_{G, \tilde{G}^c}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dx\\
+    =&\int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c}    \textbf{n}^T a  \nabla h_{G, \tilde{G}^c} e^{- U } dS
+\end{align*}
+\end{proof}
+
+% To prove this result, it is helpful to recall an additional definition from the diffusions literature: the generator.
+% %
+% \begin{definition}  The \textbf{generator} of $X$ is the operator $\mathcal{L}$ given by 
+% \[
+% (\mathcal{L}f)(x) = \sum_i b_i(x) \frac{\partial f (x)}{\partial x_i} + 
+%     \frac{1}{2} \sum_{ij}a_{ij}(x)\frac{\partial^2 f(x)}{\partial x_i \partial x_j} 
+% \]
+% \end{definition}
+% %
+% The generator $\mathcal L$ is a differential operator which has many of the characteristics of the Laplacian.  Indeed, if the diffusion is simple Brownian motion then $\mathcal L=2\Delta$.  It is perhaps not surprising that integrals of $\mathcal{L}f$ may therefore have some special properties.  These can be understood as generalizations of ``integration by parts'' formulas and Green's identities.  
+
+% To prove these generalized results, let us start with a classical result on Sobolev spaces:
+
+% \begin{lem*} Let $A\subset \Omega$ a bounded set with smooth boundary.  Let $f$ in the the Hilbert Sobolev space of square-integrable functions with square-integrable weak derivatives.  Let $g:\ \Omega \rightarrow \mathbb{R}^\dimension$ be continuously differentiable.  Then
+% \[
+% \int_A f(x) \sum_i \frac{\partial g_i(x)}{\partial x_i} dx = \int_{\partial A} f(x) g(x)^T \mathbf{n(x)} dS
+% \]    
+% where $\mathbf{n}$ is the outward facing normal and $dS$ is the integral with respect to the $(\dimension-1)$-dimensional Hausdorff measure.
+% \end{lem*}
+% \begin{proof}
+% Section 4.3, `Traces,' from Evans.\cite{evans1991measure}
+% \end{proof}
+
+% For our purposes, we will need an equivalent to Green's first identity, as follows:
+
+% \begin{lem*} Let $A\subset \Omega$ a compact set with smooth boundary.  Let $f,g$ in the Hilbert Sobolev space $H^1$ of weakly differentiable functions in $\mathscr L^2(e^{-U})$.  If $\mathcal{L}g$ is (weakly) defined, then
+% \[
+% 2\int_A  f(x) (\mathcal L g)(x) e^{-U(x)}\mathrm{d}x = \int_A  \nabla f(x)^T a(x)\nabla g(x) e^{-U(x)}\mathrm{d}x -\int_{\partial A} f(x){\mathbf n(x)}^T a(x) \nabla g(x) e^{-U(x)}\mathrm{d}S
+% \] 
+% where $a=\sigma\sigma^T$, $\mathrm{d}S$ indicates the surface integral, and $\mathbf n(x)$ indicates the outwards-facing normal.
+% \end{lem*}
+% \begin{proof}
+% This generalization follows directly from the integration-by-parts formula
+% \[
+% \int_A \frac{\partial u}{\partial x_i}v dx = \int_{\partial A} u v \mathbf{n}_i \mathrm{d}S - \int_{A}u\frac{\partial v}{\partial x_i}dx
+% \]
+% which holds for any smooth $A$ and any $u,v \in H^1$.
+% \end{proof}
+
+
+% In light of this definition, we note that the Dirichlet problem from Appendix \ref{sec:reversible_diffusion} can be more succinctly expressed as $\mathcal{L}h=0, h(A)=1,h(B)=1$.  In particular, the Dirichlet principle from the Appendix tells us that $\mathcal (Lh_{A,B})(x)=0$ for all $x\notin A,B$.  
+
+
+% %
+% \begin{definition}
+% A function $h$ is said to be 
+% \end{definition}
+% %
+
+% For example, if $X$ is a simple Brownian motion note that $\mathcal{L}=\frac{1}{2}\Delta$; thus for Brownian motion diffusions, all hitting probability functions are harmonic (i.e. $\Delta h_{A,B}=0$).  For general diffusions, hitting probabilities may enjoy similar properties even if they are not harmonic.
+
+% For example, if $\Delta f=0$ on a set $S$, then Green's first identity tells us that
+% \[
+% \int 
+% \]
+
+% \begin{lem*}
+% Let $X$ a stationary reversible diffusion on $\Omega$ with
+% invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ and diffusion matrix
+% $a (x)=\sigma(x)\sigma(x)^T$.  Given non-empty sets $A \subset G \subset \tilde{G} \subset
+% \tilde{A}$ with smooth boundaries, the capacity
+% $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ can be calculated by
+% \begin{eqnarray*}
+% \ensuremath{\operatorname{cap}} (A, \tilde{A}) & = & \int_{\partial
+% \tilde{G}}  h_{A,
+% \tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla h_{G, \tilde{G}^c} (x)]^T \textbf{n} (x)\mathd S\\
+% &   & - \int_{\partial G}  h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla h_{G, \tilde{G}^c} (x)]^T \textbf{n} (x)\mathd S
+% \end{eqnarray*}
+% where ${\textbf{n}} (x)$ in the integral is taken as the outward-facing normal vector at point $x$ on the surface we are integrating on, and $\mathd S$ represents the surface integral.
+% \end{lem*}
+
+% \begin{proof}
+% The key here is to use the divergence theorem
+% \[ \int_{\Omega} \nabla \cdot F (x) \mathd x = \int_{\partial \Omega} F (x)^T
+% {\textbf n} (x) \mathd S \]
+% and the property of stationary reversible SDEs (Proposition \ref{prop:property_reversible_sde})
+% \[ J (f (x) e^{- U (x)}) = \frac{1}{2} e^{- U (x)} a (x) \nabla f (x), \forall f \]
+% and the fact that $\mathcal{L} (h_{A, \tilde{A}^c} (x)) = 0$.
+
+% Using these, we have
+% \begin{eqnarray*}
+% \tmop{cap} (A, \tilde{A}) & = & \int_{\tilde{A} / A} \nabla h_{A,
+% \tilde{A}^c} (x)^T a (x) \nabla h_{A, \tilde{A}^c} (x) e^{- U (x)} \mathd
+% x\\
+% & = & \int_{\partial \tilde{A}} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x)
+% \nabla h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% & - & \int_{\partial A} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla
+% h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% & - & \int_{\tilde{A} / A} h_{A, \tilde{A}^c} (x) \nabla \cdot [a (x)
+% \nabla h_{A, \tilde{A}^c} (x) e^{- U (x)}] \mathd x\\
+% & = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
+% (x)]^T {\textbf n} (x) \mathd S\\
+% & - & \int_{\tilde{A} / A} h_{A, \tilde{A}^c} (x) \nabla \cdot 2 J (h_{A,
+% \tilde{A}^c} (x) e^{- U (x)}) \mathd x\\
+% & = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
+% (x)]^T {\textbf n} (x) \mathd S\\
+% & - & \int_{\tilde{A} / A} h_{A, \tilde{A}^c} (x) 2 \mathcal{L}^{\ast}
+% (h_{A, \tilde{A}^c} (x) e^{- U (x)}) \mathd x\\
+% & = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
+% (x)]^T {\textbf n} (x) \mathd S\\
+% & - & 2 \int_{\tilde{A} / A} \mathcal{L} (h_{A, \tilde{A}^c} (x)) h_{A,
+% \tilde{A}^c} (x) e^{- U (x)} \mathd x\\
+% & = & - \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
+% (x)]^T {\textbf n} (x) \mathd S
+% \end{eqnarray*}
+% We further have
+% \begin{eqnarray*}
+% 0 & = & \int_{G / A} \mathcal{L} (h_{A, \tilde{A}^c} (x)) e^{- U (x)} \mathd
+% x\\
+% & = & \int_{G / A} \mathcal{L}^{\ast} (h_{A, \tilde{A}^c} (x) e^{- U (x)})
+% \mathd x\\
+% & = & \int_{G / A} \nabla \cdot \left( \frac{1}{2} e^{- U (x)} a (x) \nabla
+% f (x) \right) \mathd x\\
+% & = & \frac{1}{2} \int_{\partial G} e^{- U (x)} [a (x) \nabla h_{A,
+% \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% & - & \frac{1}{2} \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A,
+% \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% \end{eqnarray*}
+% This implies
+% \begin{eqnarray*}
+% &  & \int_{\partial A} e^{- U (x)} [a (x) \nabla h_{A,
+% \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% & = & \int_{\partial G} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c} (x)]^T
+% {\textbf n} (x) \mathd S\\
+% \end{eqnarray*}
+% which further implies
+% \begin{eqnarray*}
+% &  & \tmop{cap} (A, \tilde{A})\\
+% & = & - \int_{\partial G} e^{- U (x)} [a (x) \nabla h_{A, \tilde{A}^c}
+% (x)]^T {\textbf n} (x) \mathd S\\
+% & = & \int_{\partial \tilde{G}} h_{G, \tilde{G}^c} (x) e^{- U (x)} [a (x)
+% \nabla h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% & - & \int_{\partial G} h_{G, \tilde{G}^c} (x) e^{- U (x)} [a (x) \nabla
+% h_{A, \tilde{A}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% & = & 2 \int_{\tilde{G} / G} h_{G, \tilde{G}^c} (x) \mathcal{L}^{\ast}
+% (h_{A, \tilde{A}^c} (x) e^{- U (x)}) \mathd x\\
+% & + & \int_{\tilde{G} / G} \nabla h_{G, \tilde{G}^c} (x)^T a (x) \nabla
+% h_{A, \tilde{A}^c} (x) e^{- U (x)} \mathd x\\
+% & = & 2 \int_{\tilde{G} / G} h_{A, \tilde{A}^c} (x) \mathcal{L}^{\ast}
+% (h_{G, \tilde{G}^c} (x) e^{- U (x)}) \mathd x\\
+% & + & \int_{\tilde{G} / G} \nabla h_{G, \tilde{G}^c} (x)^T a (x) \nabla
+% h_{A, \tilde{A}^c} (x) e^{- U (x)} \mathd x\\
+% & = & \int_{\partial \tilde{G}} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x)
+% \nabla h_{G, \tilde{G}^c} (x)]^T {\textbf n} (x) \mathd S\\
+% & - & \int_{\partial G} h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla
+% h_{G, \tilde{G}^c} (x)]^T {\textbf n} (x) \mathd S
+% \end{eqnarray*}
+% which proves the desired result.
+% \end{proof}
 
 
 \section{Estimating Local Hitting Probabilities}\label{algorithm}
