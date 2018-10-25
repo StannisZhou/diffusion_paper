@@ -350,9 +350,9 @@ where $n_k, k=1, \cdots, N_b$ is the number of samples in $z_1, \cdots, z_{N_p}$
 % |_| \_|\___/|_|  |_|_____/_/\_\_|    
                                      
 
-\section{Numerical Experiments and Results}\label{sec:experiments}
 
-In this section we use simulations to test the limits of our theories and algorithms.  In this work we have made three claims, each of which can be we can test empirically:
+\section{Numerical Experiments and Results}\label{sec:experiments}
+In this section we use simulations to test the limits of our theories and algorithms.  In this work we have made three claims, each of which can be tested empirically:
 
 \begin{itemize}
 \item In regions with golf-course potentials the hitting probabilities are approximately constant away from the targets.
@@ -364,6 +364,9 @@ In what follows, we present experimental results with our toy model, using both 
 
 \subsection{Sanity Checks on Flat Energy Landscape}
 
+
+
+
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
     \includegraphics[width=\textwidth]{figs/results.png}
@@ -371,13 +374,27 @@ In what follows, we present experimental results with our toy model, using both 
 \end{minipage}}
 \end{figure}
 
-The first set of experiments are ``sanity checks'' designed to show that the CHop methods works in the simplest possible case.  For these sanity checks, we work with a flat energy landscape in $\mathbb{R}^5$, where quantities of interest can be obtained in closed form.  In particular, we look at the toy model with parameters \TODOTHIS
+The first set of experiments are ``sanity checks'' designed to show that the CHop methods works in the simplest possible case.  For these sanity checks, we work with a flat energy landscape in $\mathbb{R}^5$, where quantities of interest can be obtained in closed form.  In particular, we look at the toy model with parameters $d = 5$ and
+\begin{equation*}
+x_A = \begin{pmatrix}%
+0.5&0.6&0.0&0.0&0.0%
+\end{pmatrix},
+r_A = 0.02, r_{\tilde{A}} = 0.1
+\end{equation*}
+for target $A$, and
+\begin{equation*}
+x_B = \begin{pmatrix}%
+-0.7&0.0&0.0&0.0&0.0%
+\end{pmatrix},
+r_B = 0.04, r_{\tilde{B}} = 0.15
+\end{equation*}
+for target $B$. 
 
 \subsubsection{The hitting probabilities are approximately constant}
 
 The first sanity check tests the CHop idea at its most basic level: that the large flat region of a golf-course potential features constant hitting probabilities, i.e.\ $\varepsilon$-flatness.  Theorem \ref{thm:epsilon_flat} shows that this must hold in the limiting regime of small $r_A,r_B$, but it is not obvious whether the parameters we use lie in that regime.  
 
-In the toy model, we see that the $\varepsilon$-flatness condition indeed holds, with $\varepsilon \approx .05$.  We ran 2000 diffusion simulations at each of 100 randomly selected initial conditions in the ``flat region'' $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$.  A histogram of these probabilities may be found in Figure \ref{fig:results}.  From this we see that the hitting probabilities in this region do not substantially depend upon the initial condition, all falling in the range $[0.2055, 0.2480]$.
+In the toy model, we see that the $\varepsilon$-flatness condition indeed holds, with $\varepsilon \approx 0.0365$.  We ran 2000 diffusion simulations at each of 100 randomly selected initial conditions in the ``flat region'' $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$.  A histogram of these probabilities may be found in Figure \ref{fig:results}.  From this we see that the hitting probabilities in this region do not substantially depend upon the initial condition, all falling in the range $[0.0820, 0.1185]$.
 
 
 \subsubsection{The value of this constant is well-approximated using CHop probabilities}
@@ -387,21 +404,23 @@ Our second check tests whether the CHop probabilities accurately approximate the
 p_A = \frac{\frac{1}{r_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}}}{\frac{1}{r_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} + \frac{1}{r_B^{2 - \dimension} - r_{\tilde{B}}^{2 - \dimension}}}
 \end{equation}
 
-According to this formula, the CHop probability is $.2286$.  This is in good agreement with the average hitting probability $.2236$ found by direct simulation in the previous section.
+According to this formula, the CHop probability is $0.1100$.  This is in good agreement with the average hitting probability $0.0975$ found by direct simulation in the previous section.
 
 
 \subsubsection{CHop capacity estimation}
 
-Finally, we check the accuracy of the capacity estimation algorithm employed by CHop.  We can get an analytical formula for the capacities in this case.  We compare these exact values with those estimated using the method outlined in Section \ref{sec:outlinecapacest}, with parameters $m = 2, n = 4, N_p = 100, N_b = 3,N_s = 1000$ and a time-step of $10^{-6}$.  We obtain the following results:
 
-\begin{itemize}
-\item $\capac{A}{\tilde{A}}=$\TODOTHIS, and our method obtained the estimate \TODOTHIS
-\item $\capac{B}{\tilde{B}}=$\TODOTHIS, and our method obtained the estimate \TODOTHIS
-\end{itemize}
 
-These show good agreement between the truth and our estimates.
+Finally, we check the accuracy of the capacity estimation algorithm employed by CHop.  Take $r_A = 0.02, r_{\tilde{A}} = 0.1$, and $d_A = 0.05$. We can get an analytical formula for the capacities in this case.  We compare these exact values with those estimated using the method outlined in Section \ref{sec:outlinecapacest}, with parameters $
+m = 2, n = 4, 
+N_p = 100, N_b = 3,
+N_s = 1000
+$ and a time-step of $1 \times 10^{-6}$.  We obtain $\capac{A}{\tilde{A}}= 0.000637 $, and our method obtained the estimate $ 0.000553 $.  These show good agreement between the truth and our estimates.  
 
 \subsection{Results on Nontrivial Energy Landscape}
+
+
+
 
 In this section, we apply the CHop method to a model with a nontrivial energy landscape around the targets. We see that our algorithm can accurately estimate the hitting probabilities while maintaining great advantage over the direct simulations in terms of speed.
 
@@ -423,43 +442,32 @@ r_B = 0.04,
 d_B = 0.075,
 r_{\tilde{B}} = 0.15
 \end{equation*}
-for target $B$.  We refer the reader to Appendix \ref{sec:energy_function} for more details.
+for target $B$. We refer the reader to Appendix \ref{sec:energy_function} for more details.
 
 \subsubsection{The hitting probabilities are approximately constant}
 
-We again start by testing the basic idea of CHop: we use direct simulations to test the hypothesis that the hitting probabilities are relatively flat in away from the targets.  The results can be seen in Figure \ref{fig:results}.   For every initial condition we tested, we found that the hitting probability fell in the interval $[0.7980, 0.8450]$, suggesting that the $\varepsilon$-flatness condition holds with $\varepsilon \approx .05$.
+We again start by testing the basic idea of CHop: we use direct simulations to test the hypothesis that the hitting probabilities are relatively flat in away from the targets.  The results can be seen in Figure \ref{fig:results}.   For every initial condition we tested, we found that the hitting probability fell in the interval $[0.7985, 0.8460]$, suggesting that the $\varepsilon$-flatness condition holds with $\varepsilon \approx 0.0475$.
 
 
 
 \subsubsection{The value of this constant is well-approximated using CHop probabilities}
 
-Using the CHop capacity estimation procedure from Section \ref{sec:outlinecapacest}, we obtained an estimate of $0.8274$ for the CHop probability of this model.  This is in good agreement with the average hitting probability $.8180$ found in our direct simulations.  For the capacity estimation procedure, we used the parameters $m=2,N_p=5000,N_b=10,N_s=2000$ and a time-step of $10^{-7}$.  For the $A$ capacity we used $n=4$ and for the slightly larger $B$ region we used $n=5$.  
+Using the CHop capacity estimation procedure from Section \ref{sec:outlinecapacest}, we obtained an estimate of $0.8360$ for the CHop probability of this model.  This is in good agreement with the average hitting probability $0.8175$ found in our direct simulations.  For the capacity estimation procedure, we used the parameters $ m = 2, N_p = 3000, N_b = 5, N_s = 1000$ and a time-step of $1 \times 10^{-6}$.  For the $A$ capacity we used $n = 4$ and for the slightly larger $B$ region we used $n = 5$.  
 
 \subsubsection{CHop capacity estimation}
 
 In this case it is difficult to assess the accuracy of the CHop capacity algorithm.  It is not possible to obtain exact values for the capacity.  Therefore, we cannot directly test whether our algorithm is accurately estimating the capcities.  However, as the last section showed, the CHop probabilities computed from our estimated capacities do seem to accurately reflect the true hitting probabilities.  This offers some limited evidence that the estimated capacities are also accurate.
 
-We can also test the speed of CHop capacity estimation algorithm.  We compared the time it takes to estimate the hitting probabilities using direct simulations with the time our capacity estimation algorithm needs to estimate the capacities for all targets. Note that in order to make the direct simulations feasible for the $5$-dimensional toy model we are working on, we made our best effort to make the direct simulation fast.  We use an efficient walk-on-spheres method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, 24-CPU parallization, and a relatively coarse time step.  The CPU times for the direct simulations and the CHop method are shown below:
+We can also test the speed of CHop capacity estimation algorithm.  We compared the time it takes to estimate the hitting probabilities using direct simulations with the time our capacity estimation algorithm needs to estimate the capacities for all targets. Note that in order to make the direct simulations feasible for the $5$-dimensional toy model we are working on, we made our best effort to make the direct simulation fast.  We use an efficient walk-on-spheres method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallization, and a relatively coarse time step.  The CPU times for the direct simulations and the CHop method are shown below:
 
 \begin{description}
-\item[Direct simulation] 89177.87 seconds (3715.74 seconds on a cluster of 24 CPUs).  This quantity is the sum over the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of $10^{-5}$.  These direct simulations are trivial to perform in parallel, assuring us that there was no significant overhead due to the parallelization.
+\item[Direct simulation] 33340.36 seconds (4167.55 seconds on a cluster of 8 CPUs).  This quantity is the sum over the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of $1 \times 10^{-5}$.  These direct simulations are trivial to perform in parallel, assuring us that there was no significant overhead due to the parallelization.
 
-\item[CHop speed] 1055.55 seconds on a single CPU. In doing this we employed a time step which was 100 times more accurate than the one used for direct simulation (i.e.\ a timestep of $10^{-7}$). Despite this, the CHop algorithm was three times faster on a single node than the direct method run on a cluster of 24 nodes.
+\item[CHop speed] 50.31 seconds on a single CPU. In doing this we employed a much more accurate time step than the one used for direct simulation (i.e.\ a timestep of $1 \times 10^{-6}$). Despite this, the CHop algorithm was 82 times faster on a single CPU than the direct method run on a cluster of 8 CPUs.
 
 \end{description}
 
-This reflects an 85-fold acceleration.  Furthermore note that the time-consuming elements of the capacity estimation algorithm are ``embarassingly parallelizable'' and should be easy to further accelerate using parallelization.  There was no need to do so in this case because we could easily run the CHop code on our laptops.  However, larger scale problems would certainly benefit from this kind of acceleration.  
-
-The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $N_p, N_b$ and $N_s$.  For example, we performed another experiment with time step of $10^{-6}$, parameters of $ m = 2, n = 4, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $A$ capacity, and parameters of $ m = 2, n = 5, N_p = 3000, N_b = 5, N_s = 1000 $ for estimating the $B$ capacity.  The result was an estimate of $0.8420$. This still agrees well with the direct simulations (indeed, there were some initial conditions for which the direct simulation hitting probability estimates agreed with this quantity almost exactly).  Using these parameters, total computation time was reduced to 119.35 seconds, reflecting a 750-fold acceleration.
-
-
-%                       _           _                 
-%   ___ ___  _ __   ___| |_   _ ___(_) ___  _ __  ___ 
-%  / __/ _ \| '_ \ / __| | | | / __| |/ _ \| '_ \/ __|
-% | (_| (_) | | | | (__| | |_| \__ \ | (_) | | | \__ \
-%  \___\___/|_| |_|\___|_|\__,_|___/_|\___/|_| |_|___/
-                                                    
-
+This reflects a 662-fold acceleration. The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $N_p, N_b$ and $N_s$. Furthermore note that the time-consuming elements of the capacity estimation algorithm are ``embarassingly parallelizable'' and should be easy to further accelerate using parallelization.  There was no need to do so in this case because we could easily run the CHop code on our laptops.  However, larger scale problems would certainly benefit from this kind of acceleration.
 \section{Conclusions and Discussions}\label{sec:discussion}
 
 In this work, we offer new insight in the presence of entropic barriers, from a hitting-probability perspective. While lacking timing information, hitting probabilities offer more kinetic understanding than purely thermodynamic analyses, and appear as an important subproblem in various other methods. We show that hitting probabilities, in the presence of entropic barriers where targets are small, often feature an approximate invariance to initial conditions away from the targets. This invariance further imply an invariance to the energy landscape away from the targets. This means that the hitting probabilities can be calculated using only local simulations around the targets. These insights are used to produce CHop, an practical algorithm to estimate hitting probabilities of small targets in the presence of entropic barriers. Numerical experiments on a toy model with a golf-course potential demonstrate the effectiveness of CHop.
@@ -469,22 +477,6 @@ Entropic barriers, which arise because of the difficulty of reaching a small num
 Our interests in this work come from thinking about RNA folding, and we see this work as laying the foundation for a general-purpose method for the folding of RNA molecules. The central picture is that of a hierarchical golf course: each part of the configuration space that are consistent with a particular secondary structure can be thought of as a golf course; the ``holes" in this golf course are other secondary structures obtained by forming new base pairs; breaking base pairs would bring us back to a larger golf course, while forming base pairs would bring us into a smaller one. CHop would serve as a fundamental tool in this picture. This is an ambitious proposal, and opens all kinds of interesting questions involving the geometry of the configuration space and the folding dynamics. Furthremore, under this picture, in addition to hitting probabilities, CHop can provide us with more kinetic information of the system, by giving us a way to efficiently get sequences of secondary structures. These sequences can play an important role in understanding questions like important intermediates and folding pathways of non-coding RNA molecules.
 
 \newpage
-
-\appendix
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   __ _ _ __   __| |_  __
-%  / _` | '_ \ / _` \ \/ /
-% | (_| | |_) | (_| |>  < 
-%  \__,_| .__/ \__,_/_/\_\
-%       |_|               
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \appendix
 
@@ -1352,28 +1344,28 @@ h = 1.0,
 \end{equation*} and
 \begin{equation*}
 \mu^{A} = \begin{pmatrix}%
-0.512&0.597&0.009&-0.018&-0.009\\%
-0.496&0.597&0.009&0.026&-0.013\\%
-0.464&0.58&-0.018&-0.007&-0.012\\%
-0.528&0.591&-0.029&0.008&0.022\\%
-0.469&0.601&-0.022&-0.002&0.014\\%
-0.517&0.608&0.013&-0.02&0.021\\%
-0.474&0.588&0.005&0.002&0.003\\%
-0.532&0.575&0.018&0.005&0.01\\%
-0.466&0.6&0.012&0.027&-0.004\\%
-0.497&0.617&-0.006&0.019&-0.033%
+0.512&0.583&-0.013&0.013&-0.001\\%
+0.464&0.575&-0.001&0.019&-0.014\\%
+0.503&0.611&-0.012&-0.024&0.023\\%
+0.5&0.601&-0.024&0.034&0.011\\%
+0.486&0.586&0.006&0.01&0.001\\%
+0.489&0.588&-0.017&0.002&0.027\\%
+0.493&0.585&0.015&-0.001&-0.032\\%
+0.516&0.596&0.027&-0.026&0.022\\%
+0.514&0.624&0.01&0.01&-0.002\\%
+0.5&0.605&0.017&-0.016&0.004%
 \end{pmatrix}, 
 \mu^{B} = \begin{pmatrix}%
--0.749&-0.019&-0.022&0.014&0.032\\%
--0.701&0.013&0.038&0.02&0.005\\%
--0.683&-0.021&-0.024&-0.02&0.05\\%
--0.756&-0.012&0.016&-0.001&0.013\\%
--0.696&0.008&0.038&0.031&-0.037\\%
--0.68&0.023&-0.041&-0.001&-0.017\\%
--0.73&-0.022&0.031&-0.033&0.011\\%
--0.763&0.008&0.013&0.016&0.004\\%
--0.669&-0.002&-0.006&0.004&-0.033\\%
--0.709&-0.012&0.032&0.024&-0.02%
+-0.696&-0.006&0.023&-0.041&0.019\\%
+-0.731&0.021&-0.033&-0.014&0.017\\%
+-0.694&-0.034&-0.009&0.031&0.019\\%
+-0.666&-0.013&0.002&0.017&0.009\\%
+-0.68&0.058&0.007&-0.011&-0.008\\%
+-0.704&-0.022&0.034&0.003&0.026\\%
+-0.714&-0.015&0.017&0.027&0.028\\%
+-0.681&0.017&-0.046&-0.04&-0.002\\%
+-0.648&-0.009&0.002&-0.012&-0.022\\%
+-0.664&-0.04&0.05&-0.012&-0.002%
 \end{pmatrix}
 \end{equation*}
 
