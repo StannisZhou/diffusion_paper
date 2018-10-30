@@ -60,7 +60,7 @@
 \date{\today}
 
 \begin{abstract}
-	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations consitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Hitting probabilities provide valuable information in the presence of entropic barriers. CHop is based on a novel theoretical analysis of hitting probabilities in the presence of entropic barriers; we show that in many cases the hitting probabilities are approximately invariant to the initial condition, as long as the intitial condition is modestly far away from the targets.  Given this invariance, we show that the hitting probabilities must also be invariant to the energy landscape away from the target sets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities. Numerical experiments on a toy model with a golf-course potential show that CHop is nearly as accurate as naive simulations in estimating hitting probabilities, but 660 times faster.
+	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations consitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Hitting probabilities provide valuable information in the presence of entropic barriers. CHop is based on a novel theoretical analysis of hitting probabilities in the presence of entropic barriers; we show that in many cases the hitting probabilities are approximately invariant to the initial condition, as long as the intitial condition is modestly far away from the targets.  Given this invariance, we show that the hitting probabilities must also be invariant to the energy landscape away from the target sets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities. Numerical experiments on a toy model with a golf-course potential show that CHop is nearly as accurate as naive simulations in estimating hitting probabilities, but 662 times faster.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -411,11 +411,17 @@ According to this formula, the CHop probability is $0.1100$.  This is in good ag
 
 
 
-Finally, we check the accuracy of the capacity estimation algorithm employed by CHop.  Take $r_A = 0.02, r_{\tilde{A}} = 0.1$, and $d_A = 0.05$. We can get an analytical formula for the capacities in this case.  We compare these exact values with those estimated using the method outlined in Section \ref{sec:outlinecapacest}, with parameters $
-m = 2, n = 4, 
+Finally, we check the accuracy of the capacity estimation algorithm employed by CHop.  We can get an analytical formula for the capacities in this case.  We compare these exact values with those estimated using the method outlined in Section \ref{sec:outlinecapacest}, with parameters $m = 2, n = 4, 
 N_p = 100, N_b = 3,
 N_s = 1000
-$ and a time-step of $1 \times 10^{-6}$.  We obtain $\capac{A}{\tilde{A}}= 0.000637 $, and our method obtained the estimate $ 0.000553 $.  These show good agreement between the truth and our estimates.  
+$ and a time-step of $1 \times 10^{-7}$.  We obtain the following results:
+
+\begin{itemize}
+\item $\capac{A}{\tilde{A}}= 0.000637 $, and our method obtained the estimate $0.000591$ 
+\item $\capac{B}{\tilde{B}}= 0.005151 $, and our method obtained the estimate $0.004827$ 
+\end{itemize}
+
+These show good agreement between the truth and our estimates.
 
 \subsection{Results on Nontrivial Energy Landscape}
 
