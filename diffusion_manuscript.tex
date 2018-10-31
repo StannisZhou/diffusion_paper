@@ -8,10 +8,6 @@
 \usepackage{cancel}
 
 %%%%%%%%%% Start TeXmacs macros
-\catcode`\<=\active \def<{
-\fontencoding{T1}\selectfont\symbol{60}\fontencoding{\encodingdefault}}
-\catcode`\>=\active \def>{
-\fontencoding{T1}\selectfont\symbol{62}\fontencoding{\encodingdefault}}
 \newcommand{\mathd}{\mathrm{d}}
 \newcommand{\nin}{\not\in}
 \newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
@@ -34,7 +30,13 @@
 \theoremstyle{plain}
 \newtheorem{cor}[thm]{\protect\corollaryname}
 
-\global\long\def\dimension{{\mathfrak{n}}}
+\newcommand{\dimension}{{\mathfrak{n}}}
+\newcommand{\TODOTHIS}{{\huge !!!!}}
+\newcommand{\indicatorf}[1]{\mathbb{I}_{#1}}
+\newcommand{\capac}[2]{\mathrm{cap}\left(#1;#2\right)}
+\newcommand{\fnsp}{\mathscr{H}^1}
+\newcommand{\bb}[1]{\mathcal{B}\left(#1\right)}
+\newcommand{\BB}[1]{\mathcal{\bar B}\left(#1\right)}
 
 
 \usepackage{babel}
@@ -67,13 +69,6 @@
 
 \maketitle %\maketitle must follow title, authors, abstract and \pacs
 
-\global\long\def\TODOTHIS{{\huge !!!!}}
-
-\global\long\def\indicatorf#1{\mathbb{I}_{#1}}
-\global\long\def\capac#1#2{\mathrm{cap}\left(#1;#2\right)}
-\global\long\def\fnsp{\mathscr{H}^1}
-\global\long\def\bb#1{\mathcal{B}\left(#1\right)}
-\global\long\def\BB#1{\mathcal{\bar B}\left(#1\right)}
 
 \section{Introduction}
 
@@ -153,8 +148,7 @@ Note that if $M$ is $\varepsilon$-flat for $h$, then we can always find some con
 
 For the toy model, we can see how  $\varepsilon$-flatness applies to hitting probabilities.  Let us recall the notation of the toy model.  We have two sets, $A=\bb{x_A,r_A},B=\bb{x_B,r_B}$ in $d$-dimensional space.  The dynamics are governed by a potential energy which is flat outside of $\bb{x_A,d_A}\cup\bb{x_B,d_B}$, where $d_A>r_A,d_B>r_B$.  We now introduce a third layer of neighborhoods around the target regions.  We fix some $r_{\tilde A}>d_A,r_{\tilde B}>d_B$ and define $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_B,r_{\tilde B}}$.  We will show conditions such that the hitting probabilities are constant away from $\tilde A,\tilde B$.  In particular, the probabilities must be constant as long as when the targets $A, B$ are sufficiently small or the dimension is high:
 
-\begin{theorem}\label{thm:epsilon_flat}
-For any fixed value of the ambient dimension $\dimension \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(\dimension, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $\dimension \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
+\begin{theorem}\label{thm:epsilon_flat}  For any fixed value of the ambient dimension $\dimension \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(\dimension, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $\dimension \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
 \end{theorem}
 
 We defer the proof of this theorem to Appendix \ref{sec:proof_epsilon_flat}. Inspection of the proof demonstrates that the key for establishing $\varepsilon$-flatness is a proper separation of time scales: it takes a short time for the process $\{X_t\}_{t\geq 0}$ to reach local equilibrium in $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ and a long time for the process $\{X_t\}_{t\geq 0}$ to hit the targets $A$ and $B$.  Any model with these characteristics will feature $\varepsilon$-flat hitting probabilities.
@@ -168,14 +162,12 @@ In this section, we show that hitting probabilities can be determined using only
 %
 Recall that $h_{A, \tilde{A}^c}(x)$ denotes the probability that the dynamics will hit $A$ before hitting $\tilde{A}^c$, given that $X_0=x \in \tilde A\backslash A$.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for more details on capacity and the the related concept of Dirichlet form.
 
-In the presence of $\varepsilon$-flatness, these capacities are intimately related to hitting probabilities:
+In the presence of $\varepsilon$-flatness, these capacities are intimately related to hitting probabilities.  Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  If $\tilde A,\tilde B$ are disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ is $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$, then we obtain
 
-\begin{theorem}\label{thm:main_thm}  Let $\{X_t\}_{t\geq 0}$ be a reversible stationary diffusion on $\Omega$ governed by Equation (\ref{equ:general_sde}).  Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  If $\tilde A,\tilde B$ are disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ is $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$, then 
-\[ \sup_{x \in M} \left| h_{A,B} (x) - \frac{\ensuremath{\operatorname{cap}} (A,
+\begin{theorem}\label{thm:main_thm}  The hitting probabilities can be well-approximated by the capacities:
+\[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\ensuremath{\operatorname{cap}} (A,
 \tilde{A})}{\ensuremath{\operatorname{cap}} (A, \tilde{A})
-+\ensuremath{\operatorname{cap}} (B, \tilde{B})} \right| \leqslant
-\varepsilon + \sqrt{\frac{\varepsilon}{2}} \]
-for any $\varepsilon \in[0,2/9]$.
++\ensuremath{\operatorname{cap}} (B, \tilde{B})} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
 \end{theorem}
 
 We defer the proof to Appendix \ref{sec:proof_thm}. This theorem generalizes naturally to the case of multiple targets.  For a collection of targets with neighborhoods, we first define the approximate probability estimates, which we call ``CHop probabilities.''
@@ -226,19 +218,11 @@ To make the CHop method practical, we need to be able to estimate the capacities
 \subsection{Estimation of Capacities}
 
 We start our discussion on estimating the capacities with a simple lemma:
-\begin{lemma}\label{thm:capacity_lemma}
-For a stationary reversible  diffusion process $X_t$ in $\Omega$ with
-invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ and diffusion matrix
-$a (x)$, given non-empty sets $A \subset G \subset \tilde{G} \subset
-\tilde{A}$ with smooth boundaries, the capacity
-$\ensuremath{\operatorname{cap}} (A, \tilde{A})$ can be calculated by
-\begin{eqnarray*}
-\ensuremath{\operatorname{cap}} (A, \tilde{A}) & = & \int_{\partial
-\tilde{G}}  h_{A,
-\tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla h_{G, \tilde{G}^c} (x)]^T \textbf{n} (x)\mathd S\\
-&   & - \int_{\partial G}  h_{A, \tilde{A}^c} (x) e^{- U (x)} [a (x) \nabla h_{G, \tilde{G}^c} (x)]^T \textbf{n} (x)\mathd S
-\end{eqnarray*}
-where ${\textbf{n}} (x)$ in the integral is taken as the outward-facing normal vector at point $x$ on the surface we are integrating on, and $\mathd S$ represents the surface integral.
+\begin{lemma}(Capacity is a difference of fluxs) \label{lem:capacity_lemma} Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
+\begin{align*}
+\ensuremath{\operatorname{cap}} (A, \tilde{A}) &= \int_{\partial \tilde G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS \\
+&\qquad - \int_{\partial G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS 
+\end{align*}
 \end{lemma}
 
 We defer the proof of this lemma to Appendix \ref{sec:proof_lemma}. This lemma provides us with a general framework for estimating the capacities.   In particular, we can approximate the integrals in the lemma with a Monte Carlo method, as long as we can overcome three challenges:
@@ -540,14 +524,41 @@ Many of our results are based on the fact that hitting probability functions can
     \item Variational form.  Let $\mathscr{E}(f,g)\triangleq \int_\Omega \nabla f(x)^T a(x) g(x) \rho(dx)$ denote the ``Dirichlet Form.''  Let $\mathscr L^2(\bar \Omega,\rho)$ denote the Hilbert space of functions on $\bar \Omega$ which are square-integrable with respect to $\rho$.  Let $\mathcal{H}^1(\bar \Omega,\rho)=W^{1,2}(\bar \Omega,\rho) \subset \mathscr{L}^2(\bar \Omega,\rho)$ denote the corresponding once-weakly-differentiable Hilbert Sobolev space.  Let $A,B\subset \Omega$, disjoint, and let $h^\mathrm{var}_{A,B}(x)$ denote the solution to 
     \begin{align*}
     \min_{u \in \mathcal H^1} \quad & \mathscr{E}(u,u) \\
-    \mbox{subject to} \quad & u(x)=1,x\in A \\
-     & u(x)=0,x\in B
+    \mbox{subject to} \quad & u(x)\geq1,x\in A \\
+     & u(x)\leq0,x\in B
     \end{align*}
     This solution is unique and equal to $h^\mathrm{dir}$.\cite{karatson2005discrete}  We will call the value of $\mathscr{E}(h^\mathrm{var}_{A,B}(x),h^\mathrm{var}_{A,B}(x))$ the ``condensor capacity'' from $\partial A$ to $\partial B$, or just the ``capacity'' for short.  We will denote it by $\capac{A}{\Omega \backslash B}$.
 \end{enumerate}
 
 
-  We will use all three of these perspectives to show our results.  
+  We will use all three of these perspectives to show our results.  For example, consider how these different perspectives help us show the following:
+
+\begin{proposition}\label{prop:capacity}
+Let $A\subset \tilde A,B\subset \tilde B$ with $\tilde A,\tilde B$ disjoint.  Then 
+\[
+\capac{A\cup B}{\tilde A \cup \tilde B}=\capac{A}{\tilde A}+\capac{B}{\tilde B}
+\]
+\end{proposition}
+\begin{proof}
+Since $\tilde A,\tilde B$ are disjoint and $X$ is continuous, the process cannot cross from one to the other without hitting the boundary.  Thus we have $\tau_{\partial \tilde A\cup \partial \tilde B \cup \partial A \cup \partial B}=\tau_{\partial \tilde A \cup \partial A}$ as long as $X_0\in\tilde A$.  We get a symmetric result if $X_0\in \tilde B$.  If $X_0\notin \tilde A,\tilde B$, then trivially we see that $h_{A\cup B,(\tilde A \cup \tilde B)^c}(x)=0$.  It follows that
+\[
+h_{A\cup B,(\tilde A\cup\tilde B)^c}(x) = 
+    \begin{cases}
+    h_{A,\tilde A}(x) & \mbox{if }x\in \tilde A\\
+    h_{B,\tilde B}(x) & \mbox{if }x\in \tilde B\\
+    0 & \mbox{if }x\notin \tilde A\cup\tilde B
+    \end{cases}
+\]
+We can now use this probabilistic perspective to help us understand the capacity by articulating it as the Dirichlet form on the relevant hitting probability functions
+\begin{align*}
+\capac{A\cup B}{\tilde A \cup \tilde B} &= 
+        \int_{\tilde A} h_{A,\tilde A}dx
+        +\int_{\Omega\backslash \tilde A \cup \tilde B} 0 dx  
+        +\int_{\tilde B} h_{B,\tilde B}dx \\
+        &= \capac{A}{\tilde A}+\capac{B}{\tilde B}
+\end{align*}
+as desired.
+\end{proof}
 
 
 %     _    ____  ____  _____ _   _ ____ _____  __  ____  
@@ -558,7 +569,7 @@ Many of our results are based on the fact that hitting probability functions can
                                                        
 
 
-\section{Proof of the Main Theorem}\label{sec:proof_thm}
+\section{Proof of Theorem \ref{thm:main_thm}}\label{sec:proof_thm}
 
 Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$.  We assume the set boundaries are all smooth.  
 
@@ -575,7 +586,7 @@ We recall from Appendix \ref{sec:reversible_diffusion} that
 \mathcal{E} (h_{A,B}, h_{A,B}) = \capac{A}{B^c} \leq \mathcal{E} (u,u)
 \]
 %
-for any $u\in \mathcal{H}_{A, B^c}$.  Thus, to prove an upper bound it suffices to find functions $u$ for which $u\in \mathcal{H}_{A, B^c}$ and we can calculate $\mathcal{E}(u,u)$.  To this end, consider
+for any $u$ with $u(A)\geq1,u(B)\leq0$.  Thus, to prove an upper bound it suffices to find any such function for which we can calculate $\mathcal{E}(u,u)$.  To this end, consider
 %
 \[
 u_c (x) \triangleq \left\{ \begin{array}{ll}
@@ -587,7 +598,7 @@ c & \tmop{otherwise}
 %
 These functions are well-suited to giving us upper bounds on $\mathcal{E} (h_{A,B}, h_{A,B})$.  Indeed:
 \begin{itemize}
-\item $u_c \in \mathcal{H}_{A, B^c}$.  Indeed, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly to in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  Thus, since we have assumed the boundaries of $\tilde A,\tilde B$ are smooth, $u_c \in \mathcal H_{A,B^c}$.  
+\item $u_c(A)=1,u_c(B)=0$.  Indeed, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  
 \item Noting that $u_c$ is written as a piecewise combination of hitting probability functions, we see that its Dirichlet form can be calculated in terms of capacities on local regions: $\mathcal{E}(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
 \end{itemize}
 Thus the $u_c$ functions give us a practical way to calculate upper bounds: 
@@ -626,7 +637,7 @@ For example, let us focus on the $A$ case.  There are two different possibilitie
     \[
     u_A (x) \triangleq \frac{h_{A,B} (x) - m - \frac{\varepsilon}{2}}{1 - m - \frac{\varepsilon}{2}}
     \]
-    Note that $u_A \in \mathcal H_{A,\tilde A}$.  Indeed, $h_{A,B}(x)=1$ for $x \in \partial A$ and the $\varepsilon$-flatness condition shows that $h_{A,B}(x) \leq m + \frac {1}{2}$ for $x \in \partial \tilde A$.  Thus, applying the definition of the capacity, we see that $\mathcal{E}(u_A,u_A) \geq \capac{A}{\tilde A}$.  Thus we see that
+    Note that $u_A(A)\geq1,u_A(\tilde A)\leq 0$.  Indeed, $h_{A,B}(x)=1$ for $x \in \partial A$ and the $\varepsilon$-flatness condition shows that $h_{A,B}(x) \leq m + \frac {\varepsilon}{2}$ for $x \in \partial \tilde A$.  Thus, applying the definition of the capacity, we see that $\mathcal{E}(u_A,u_A) \geq \capac{A}{\tilde A}$.  Thus we see that
     %
     \begin{align*}
     \int_{\tilde A} \Vert \sigma \nabla h_{A,B}\Vert^2 dx &= \left(1 - m - \frac{\varepsilon}{2}\right)^2 \int_{\tilde A} \Vert \sigma \nabla u_{A}\Vert^2 dx\\
@@ -643,16 +654,21 @@ Applying the same ideas to the integral over $\tilde B$, we obtain our result.
 %%%%%%%%%%%
 %%%%%%%%%%%
 
+We are now in a position to prove Theorem \ref{thm:main_thm} from the main text:
 
-\begin{thm*}  The hitting probabilities can be well-approximated by the capacities:
+\begingroup
+\def\thetheorem{\ref{thm:main_thm}}
+\begin{theorem}  The hitting probabilities can be well-approximated by the capacities:
 \[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\ensuremath{\operatorname{cap}} (A,
 \tilde{A})}{\ensuremath{\operatorname{cap}} (A, \tilde{A})
 +\ensuremath{\operatorname{cap}} (B, \tilde{B})} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
-\end{thm*}
+\end{theorem}
+\addtocounter{theorem}{-1}
+\endgroup
 
 \begin{proof}
-\global\long\def\capA{\kappa_A}
-\global\long\def\capB{\kappa_B}
+\newcommand{\capA}{\kappa_A}
+\newcommand{\capB}{\kappa_B}
 
 To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tilde B}$.  Applying the previous two lemmas together, we obtain the inequality
 \[
@@ -720,14 +736,18 @@ Our final result is found by noting that all these bounds are upper-bounded by $
 % /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\  \____|
            
 
-\section{Proof of the $\varepsilon$-flatness of the Toy Model}\label{sec:proof_epsilon_flat}
+\section{Proof of Theorem \ref{thm:epsilon_flat}}\label{sec:proof_epsilon_flat}
 
-Consider the setup of the Toy Model described in Section \ref{sec:toy_model}.  A stationary reversible diffusion $X$ is trapped inside the unit $\dimension$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the csae where $X_0$ is outside of $\tilde A=\bb{x_A,d_A},\tilde B=\bb{x_A,d_B}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,d_A},\dot B=\bb{x_B,d_B}$.  
+Consider the setup of the Toy Model described in Section \ref{sec:toy_model}.  A stationary reversible diffusion $X$ is trapped inside the unit $\dimension$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the case where $X_0$ is outside of $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_A,r_{\tilde B}}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,d_A},\dot B=\bb{x_B,d_B}$.  
 
-It turns out that by taking the $\dimension$ is sufficiently high or $d_A,d_B$ are sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$:
+It turns out that by taking the $\dimension$ is sufficiently high or $d_A,d_B$ are sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$.  This is the content of Theorem \ref{thm:epsilon_flat} from the main text, which we restate here for the convenience of the reader:
 
-\begin{thm*}  For any fixed value of the ambient dimension $\dimension \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(\dimension, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $\dimension \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
-\end{thm*}
+\begingroup
+\def\thetheorem{\ref{thm:epsilon_flat}}
+\begin{theorem}  For any fixed value of the ambient dimension $\dimension \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(\dimension, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $d_{A}, d_{B} < c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.  Likewise for any fixed value of $d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon>0$, there exists a constant $c=c(d_{A}, r_{\tilde{A}}, d_{B}, r_{\tilde{B}}, \varepsilon)$ such that if $\dimension \geq c$ then $\bb {0, 1} / (\tilde{A} \cup \tilde{B})$ is $\varepsilon$-flat for the function $h_{A,B}(x)$.
+\end{theorem}
+\addtocounter{theorem}{-1}
+\endgroup
 
 \begin{proof}
 Let us assume $X_0 \notin \tilde A,\tilde B$.  There are essentially two things that must be proved:
@@ -756,15 +776,15 @@ Thus
 \end{align*}
 %
 
-\item The hitting time $\tilde \tau$ is generally long.  This is supported by Lemma \ref{lem:longtime}.  This says that if $X_0 \not\in\tilde{A} \cup \tilde{B}$ we can ensure
+\item The hitting time $\tilde \tau$ is generally long.  This is supported by Lemma \ref{lem:longtime}, which says that if $X_0 \not\in\tilde{A} \cup \tilde{B}$ we can ensure
 %
 \[
-\mathbbm{P} \left( \tilde{\tau} < \frac{8}{\varepsilon} \right) < \frac{\varepsilon}{4} 
+\mathbbm{P} \left( \tilde{\tau} \leq t \right) < \varepsilon/2
 \]
 %
-for arbitrarily small $\varepsilon$ by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
+for arbitrarily small $\varepsilon$ and arbitarily large $t$, by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
 \end{enumerate}
-Putting these two results together at $t=8/\varepsilon$ we obtain that we can make $|h_{A,B}(x) - \mathbb{E}[h_{A,B}(Z)]| \leq \varepsilon / 4 + \varepsilon/8 \leq \varepsilon$ for arbitrarily small $\varepsilon$ by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
+Putting these two results together at $t=2/\varepsilon$ we obtain that we can make $|h_{A,B}(x) - \mathbb{E}[h_{A,B}(Z)]| \leq \varepsilon / 2 + \varepsilon/2 = \varepsilon$ for arbitrarily small $\varepsilon$ by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
 \end{proof}
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -788,240 +808,137 @@ It is well-known that this one-dimensional first-exit time is characterized by a
 \end{proof}
 
 \begin{lemma}
-\label{lem:longtime}Define $\tilde{\tau}_X = \inf \{ t : X_t \in \mathcal{B}
-(x_A, d_A) \cup \mathcal{B} (x_B, d_B) \}$. For any fixed value of $d
-\geqslant 3$ and $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there
-exists a $c = c (d, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if
+\label{lem:longtime}Let $\tilde{\tau}= \inf \{ t : X_t \in \dot A \cup \dot B\}$. For any fixed value of $\dimension
+\geqslant 3$ and $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon,t > 0$, there
+exists some $c (\dimension, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon,t)$ such that if
 $d_A, d_B < c$, then
-\[ \mathbbm{P} \left( \tilde{\tau}_X < \frac{8}{\varepsilon} |X_0 \not\in
-\tilde{A} \cup \tilde{B} \right) < \frac{\varepsilon}{4} \]
+\[ \mathbbm{P} \left( \tilde{\tau} < t |X_0 \not\in\tilde{A} \cup \tilde{B} \right) < \varepsilon \]
 Likewise, for any fixed value of $d_A, r_{\tilde{A}}, d_B, r_{\tilde{B}},
-\varepsilon > 0$, there exists a $c = c (d_A, r_{\tilde{A}}, d_B,
-r_{\tilde{B}}, \varepsilon)$, such that if the dimension $d \geqslant c$
-then the same holds.
+\varepsilon,t > 0$, there exists some $c (d_A, r_{\tilde{A}}, d_B,
+r_{\tilde{B}}, \varepsilon,t)$, such that the same property holds as long as $\dimension \geqslant c$.
 \end{lemma}
 
-\noindent\textbf{Proof\ }First, observe that, for a given $t$,
-\begin{eqnarray*}
-\mathbbm{P} (\tilde{\tau}_X < t|X_0 \nin \tilde{A} \cup \tilde{B}) & = &
-\mathbbm{P} (X_{\tilde{\tau}_X} \in \mathcal{B} (x_A, d_A) |X_0 \nin
-\tilde{A} \cup \tilde{B}) \mathbbm{P} (\tilde{\tau}_X < t|X_{\tilde{\tau}_X}
-\in \mathcal{B} (x_A, d_A), X_0 \nin \tilde{A} \cup \tilde{B})\\
-& + & \mathbbm{P} (X_{\tilde{\tau}_X} \in \mathcal{B} (x_B, d_B) |X_0 \nin
-\tilde{A} \cup \tilde{B}) \mathbbm{P} (\tilde{\tau}_X < t|X_{\tilde{\tau}_X}
-\in \mathcal{B} (x_B, d_B), X_0 \nin \tilde{A} \cup \tilde{B})
-\end{eqnarray*}
-If we can establish
-\begin{eqnarray*}
-\mathbbm{P} \left( \tilde{\tau}_X < \frac{8}{\varepsilon}
-|X_{\tilde{\tau}_X} \in \mathcal{B} (x_A, d_A), X_0 \nin \tilde{A} \cup
-\tilde{B} \right) & < & \frac{\varepsilon}{4}\\
-\mathbbm{P} \left( \tilde{\tau}_X < \frac{8}{\varepsilon}
-|X_{\tilde{\tau}_X} \in \mathcal{B} (x_B, d_B), X_0 \nin \tilde{A} \cup
-\tilde{B} \right) & < & \frac{\varepsilon}{4}
-\end{eqnarray*}
-Then we have proved the original result. The proofs for these two inequalities
-are exactly the same. In what follows, we are going to prove
-\[ \mathbbm{P} \left( \tilde{\tau}_X < \frac{8}{\varepsilon}
-|X_{\tilde{\tau}_X} \in \mathcal{B} (x_A, d_A), X_0 \nin \tilde{A} \cup
-\tilde{B} \right) < \frac{\varepsilon}{4} \]
+\begin{proof}
+Our task is to show that $\tilde \tau$ is large with high probability.  Note that it suffices to show that $\tilde \tau_A \triangleq \inf\{t:\ X_t\in \dot A\}$ and $\tilde \tau_B \triangleq \inf\{t:\ X_t\in \dot B\}$ are both large with high probability and then apply a union bound.  Thus, without loss of generality we will focus on showing that $\tilde \tau_A$ is large with high probability.  For this, Chernoff's bound shows that it would be sufficient to show that we can make
+\[
+g(x)=\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}|X_0=x]
+\] 
+aribitrarily small for every $x\notin \tilde A$.  Furthermore note that for any $X_0 \notin \tilde A$, the continuity of $X$ dictates that $X$ must cross the set $S=S_{\tilde d_A}=\{x:\ |x-x_A| = \tilde d_A\}$ before $\tilde \tau_A$, as long as $\tilde d_A \in (d_A,r_{\tilde A})$.  Thus, applying the strong Markov property of $X$, we have that $g(x)\leq \sup_{y\in S_{\tilde d_A}}g(y)$ for any $x \notin \tilde A$.
 
+In summary, to prove our theorem it will suffice to show that by taking $d_A$ sufficiently small or $\dimension$ sufficiently large we can ensure that $g(x)$ is uniformly arbitrarily small on $S_{\tilde d_A}$ for some $\tilde d_A \in (d_A,r_{\tilde A})$.  To show this, we will make use of two other hitting probabilities:
+\[
+T =\inf \{t:\ X_t \notin \tilde A \backslash \dot A\} 
+\qquad
+T_1 =\inf \{t>T:\ X_t \in S\} 
+\]
+If $T\neq \tilde \tau_A$, note that the process must cross $S$ again before reaching $\dot A$ and so $T_1 \leq \tilde \tau_A$.  Thus, applying the strong Markov property we see that for any $x\in S$ we have
+\begin{align*}
+g(x) = &\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T=\tilde \tau_A}|X_0=x]+
+                    \mathbb{E}[e^{-\tilde \tau_A}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
+     = & \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T=\tilde \tau_A}|X_0=x]+
+                    \mathbb{E}[e^{-T_1}g(X_{T_1})\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
+     \leq & \mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x]+
+                    \mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\left(\sup_{y\in S} g(y)\right)
+\end{align*}
+Note furthermore that the law of $e^{-\frac{1}{2}T},\indicatorf{T=\tilde \tau_A}$ is actually the same for every $x\in S$, due to the fact that the diffusion behaves simply like a Brownian motion inside $\tilde A \backslash \dot A$ and the law of $T,\indicatorf{T=\tau_A}$ are thus functions of the one-dimensional diffusion of $|X_t-x_A|$.  In fact, Wendel\cite{Wendel1980-sj} gives explicit formulas for $\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x],\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]$ which depend only upon $|x-x_A|,r_{\tilde{A}},d_A$.  Applying this, taking the supremum over $x$ of our previous formula, and rearranging, we obtain
+\begin{align*}
+\sup_{x\in S} g(x) &\leq \frac{\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0\in S]}{1-\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0\in S]} \triangleq L(d_A,\tilde d_A,r_{\tilde A},\dimension)
+\end{align*}
+Applying Wendel's formulas, we obtain a closed form expression for $L$:
+\[
+=\frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (
+r_{\tilde{A}}) K_h ( \tilde{d}_A) - I_h ( \tilde{d}_A) K_h (
+r_{\tilde{A}}))}{
+    \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde{d}_A)} - \left(
+\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h  \right)
+K_h ( d_A) I_h ( \tilde{d}_A)+ 
+    \left( \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
+\right)^h  - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde{d}_A)} \right) I_h (d_A)K_h ( \tilde{d}_A)}\\
+\]
+where $h=(\dimension-2)/2$ and $I_h,K_h$ represent modified Bessel functions of the first and second kind of order $h$.  
+ 
+Thus, to complete our proof, it suffices to show that we can drive $L(d_A,r_{\tilde A},\dimension)$ to zero by taking $d_A$ small or $\dimension$ large:
+\begin{itemize}
+    \item When $d_A$ is small.  The numerator of $L$ converges to zero as $d_A\rightarrow 0$, because $\frac{d_A}{\tilde{d}_A}\rightarrow 0,h>0$ and the other terms are constant.  On the other hand, the denominator explodes, because as $d_A\rightarrow0$ we have
+    \begin{align*}
+    & \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde{d}_A)} - \left(\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h  \right)
+                K_h ( d_A) I_h ( \tilde{d}_A) \rightarrow +\infty \\
+    & \left( \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}\right)^h  - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde{d}_A)} \right) 
+                I_h (d_A)K_h ( \tilde{d}_A)\rightarrow 0
+    \end{align*}
+    These limits follow immediately from three properties of Bessel functions:
+    \begin{itemize}
+        \item $K_h(x)\rightarrow \infty,I_h(x)\rightarrow 0$ as $x\rightarrow 0$ for $h>0$
+        \item $K_h(x),I_h(x)>0$ for $x>0,h>0$
+        \item $\frac{I_{h}(y)}{I_{h}(x)} > \left(\frac{y}{x}\right)^{h}$ for $y>x$ and $h>0$
+    \end{itemize} 
+    The first two properties are well-known and can be found in DLMF; the second can be found in Baricz.\cite{noauthor_undated-ti,baricz2010bounds}  In conclusion, since the numerator vanishes and the denominator explodes, we have that overall $L$ vanishes.  
+    \item When $\dimension$ is large.  It is clear that the previous result holds for any value of $\tilde d_A\in (d_A, r_{\tilde A})$.  For the large-$\dimension$ case, we will be more picky: we will take $\tilde d_A=\sqrt{d_A r_{\tilde A}}$.  
 
-Intuitively, this inequality is saying that, given we start at a point outside
-$\tilde{A}, \tilde{B}$ and hit $\mathcal{B} (x_A, d_A)$ before hitting
-$\mathcal{B} (x_B, d_B)$, the probability for the hitting time to be small is
-small. To prove this, we pick an additional $\tilde{d}_A \in (d_A,
-r_{\tilde{A}})$, and consider the trajectories of $X_t$ which start at $X_0$
-and hit $\mathcal{B} (x_A, d_A)$ before hitting $\mathcal{B} (x_B, d_B)$. In
-order for $X_t $to hit $\mathcal{B} (x_A, d_A)$, it has to hit $\mathcal{B}
-(x_A, \tilde{d}_A)$ first. Once it hits $\mathcal{B} (x_A, \tilde{d}_A)$,
-there are two possibilities: either it continues to hit $\mathcal{B} (x_A,
-d_A)$, or it comes out of $\mathcal{B} (x_A, r_{\tilde{A}})$. When $d_A$
-becomes small or the dimension $d$ becomes large, the probability for the
-process to hit $\mathcal{B} (x_A, d_A)$ before coming out of $\mathcal{B}
-(x_A, r_{\tilde{A}})$ is going to zero. Therefore it would take the process a
-lot of attempts before finally hitting $\mathcal{B} (x_A, d_A)$. Each failed
-attempt is associated with a certain amount of hitting time. Because of the
-large number of failed attempts, the accumulated hitting time would be long
-with high probability.
+    Let us look at the numerator first.  Asymptotics from the DLMF give that as $h=(\dimension-2)/2 \rightarrow \infty$ we have
+    \begin{align*}
+    I_h(x) \sim x^h/2^hh! & & K_h(x) \sim 2^hh!/(2h)x^h  
+    \end{align*}
+    Here by $f_1(h)\sim f_2(h)$ we mean ``asymptotic equivalence,'' i.e.\ $\lim_{h\rightarrow\infty}f_1(h)/f_2(h)=0$.    Applying to our case:
+    \begin{align*}
+        \left(\frac{d_A}{\tilde{d}_A}\right)^h I_h (r_{\tilde{A}}) K_h ( \tilde{d}_A) &
+                \sim \left(\frac{r_{\tilde{A}} d_A}{\tilde{d}_A^2}\right)^h/2h \rightarrow 0 \\
+        \left(\frac{d_A}{\tilde{d}_A}\right)^h I_h ( \tilde{d}_A) K_h (r_{\tilde{A}}) &
+                \sim \left(\frac{ d_A}{r_{\tilde A}}\right)^h \rightarrow 0
+    \end{align*}
+    Putting these two limits together we see that the numerator of $L$ is asymptotically vanishing.
 
-Formally, we are going to look at the behaviour of $X_t$ in $\mathcal{B} (x_A,
-r_{\tilde{A}}) / \mathcal{B} (x_A, d_A)$ when we start on a point $x \in
-\partial \mathcal{B} (x_A, \tilde{d}_A)$. Define the hitting time
-\[ T = \inf \{ t : X_t \in \mathcal{B} (x_A, d_A) \cup \mathcal{B} (x_A,
-r_{\tilde{A}})^c \} \]
-We care about two conditional distributions: $T| | X_T - x_A | = d_A$ and $T|
-| X_T - x_A | = r_{\tilde{A}}$. Note that because of symmetry, the starting
-point $x$ won't affect these two distributions, as long as it's on $\partial
-\mathcal{B} (x_A, \tilde{d}_A)$. It's easy to see that, if we have a sequence
-of random variables
-\[ T^{\tmop{out}}_1, \cdots, T^{\tmop{out}}_n, \cdots \sim T| | X_T - x_A | =
-r_{\tilde{A}} \]
-a random variable
-\[ T^{\tmop{in}} \sim T| | X_T - x_A | = d_A \]
-and a random variable
-\[ N \sim \tmop{Geometric} (p), p =\mathbbm{P} (| X_T - x_A | = d_A | | X_0 -
-x_A | = \tilde{d}_A) = \frac{\tilde{d}_A^{2 - d} - r_{\tilde{A}}^{2 -
-d}}{d_A^{2 - d} - r_{\tilde{A}}^{2 - d}} \]
-all independent of each other, $\forall t > 0$, we have
-\[ \mathbbm{P} (\tilde{\tau}_X < t|X_{\tilde{\tau}_X} \in \mathcal{B} (x_A,
-d_A), X_0 \nin \tilde{A} \cup \tilde{B}) \leqslant \mathbbm{P} \left(
-\sum_{n = 0}^N T_n^{\tmop{out}} + T^{\tmop{in}} < t \right) \]
-So we only need to establish bounds for $\mathbbm{P} \left( \sum_{n = 0}^N
-T_n^{\tmop{out}} + T^{\tmop{in}} < t \right)$. For this, we note that,
-$\forall s > 0$,
-\begin{eqnarray*}
-&  & \mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N T_n^{\tmop{out}} +
-T^{\tmop{in}} \right]} \right]\\
-& = & \mathbbm{E} \left[ e^{- sT^{\tmop{in}}} \prod_{n = 0}^N e^{-
-sT_n^{\tmop{out}}} \right]\\
-& = & \mathbbm{E} [e^{- sT^{\tmop{in}}}] \mathbbm{E} [(\mathbbm{E} [e^{-
-sT^{\tmop{out}}}])^N]\\
-& = & \mathbbm{E} [e^{- sT^{\tmop{in}}}] \sum_{k = 0}^{+ \infty} p ((1 - p)
-\mathbbm{E} [e^{- sT^{\tmop{out}}}]^{})^k\\
-& = & \frac{p\mathbbm{E} [e^{- sT^{\tmop{in}}}]}{1 - (1 - p) \mathbbm{E}
-[e^{- sT^{\tmop{out}}}]}
-\end{eqnarray*}
-where $T^{\tmop{out}} \sim T| | X_T - x_A | = r_{\tilde{A}}$.
+    Now let us turn to the denominator.  First note that 
+    \begin{align*}
+     \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}\right)^h  
+                I_h (d_A)K_h ( \tilde{d}_A) &\sim \left(\frac{r_{\tilde{A}} d_A}{\tilde d_A^2}\right)^h/2h \rightarrow 0\\
+     - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde{d}_A)} 
+                I_h (d_A)K_h ( \tilde{d}_A) &\sim \left(\frac{\tilde d_A d_A}{r_{\tilde A}\tilde d_A}\right)^h \rightarrow 0
+    \end{align*}
+    So those terms are negligible.  However, the other two terms of the denominator are in fact exploding: one to positive infinity and one to negative infinity.  To understand this delicate balance, we these we turn to Lemma \ref{lem:bessel}.  Applying this Lemma and the asymptotics of the DLMF, we obtain that
+    \begin{align*}
+    \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde{d}_A)} - \left(\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h  \right)
+                K_h ( d_A) I_h ( \tilde{d}_A) 
+        &\geq \frac{r_{\tilde{A}}^h}{\cancel{I_h(\tilde{d}_A)}}\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}(h+1)!} K_h ( d_A) \cancel{I_h ( \tilde{d}_A)} \\
+        &\sim r_{\tilde{A}}^h\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}(h+1)!} \frac{2^h h!}{2hd_A^h}  \\
+        &=\left(\frac{r_{\tilde{A}}}{d_A} \right)^h \left(\frac{r_{\tilde A}^2 - \tilde d_A^2}{8h(h+1)}\right)
+    \end{align*}
+    which is indeed exploding as $h=(\dimension-2)/2 \rightarrow \infty$.  
 
-If we can bound $\mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N
-T_n^{\tmop{out}} + T^{\tmop{in}} \right]} \right]$, we would then be able to
-bound $\mathbbm{P} \left( \sum_{n = 0}^N T_n^{\tmop{out}} + T^{\tmop{in}} < t
-\right)$. To bound $\mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N
-T_n^{\tmop{out}} + T^{\tmop{in}} \right]} \right]$, we make use of the results
-in Wendel\cite{Wendel1980-sj}. Taking $n = 0$ in equation
-$(8)$ and $(9)$ in Wendel\cite{Wendel1980-sj}, we have
-\begin{eqnarray*}
-p\mathbbm{E} [e^{- sT^{\tmop{in}}}] & = & \left( \frac{d_A}{\tilde{d}_A}
-\right)^h \frac{I_h (\nu r_{\tilde{A}}) K_h (\nu \tilde{d}_A) - I_h (\nu
-\tilde{d}_A) K_h (\nu r_{\tilde{A}})}{I_h (\nu r_{\tilde{A}}) K_h (\nu d_A)
-- I_h (\nu d_A) K_h (\nu r_{\tilde{A}})}\\
-(1 - p)\mathbbm{E} [e^{- sT^{\tmop{out}}}] & = & \left(
-\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \frac{I_h (\nu d_A) K_h (\nu
-\tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu d_A)}{I_h (\nu d_A) K_h (\nu
-r_{\tilde{A}}) - I_h (\nu r_{\tilde{A}}) K_h (\nu d_A)}
-\end{eqnarray*}
-where $h = \frac{d - 2}{2}$, $\nu = \sqrt{2 s}$, and $I_h, K_h$ are the
-modified Bessel functions of the first and second kind of order $h$. Using
-these formulas, it's easy to see that
-\begin{eqnarray*}
-&  & \mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N T_n^{\tmop{out}} +
-T^{\tmop{in}} \right]} \right]\\
-& = & \frac{p\mathbbm{E} [e^{- sT^{\tmop{in}}}]}{1 - (1 - p) \mathbbm{E}
-[e^{- sT^{\tmop{out}}}]}\\
-& = & \frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (\nu
-r_{\tilde{A}}) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu
-r_{\tilde{A}}))}{(I_h (\nu r_{\tilde{A}}) K_h (\nu d_A) - I_h (\nu d_A) K_h
-(\nu r_{\tilde{A}})) + \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
-\right)^h (I_h (\nu d_A) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h
-(\nu d_A))}
-\end{eqnarray*}
-To establish the desired bounds, we need some elementary properties of the
-modified Bessel functions. We refer the reader to DLMF\cite{noauthor_undated-ti} for details. In
-particular, we have
-\begin{eqnarray*}
-\lim_{z \rightarrow 0} I_h (z) & = & 0 \text{ DLMF\cite{noauthor_undated-ti} equation 10.30.1}\\
-\lim_{z \rightarrow 0} K_h (z) & = & \infty \text{ DLMF\cite{noauthor_undated-ti} equation 10.30.2}\\
-I_h (z) & = & \left( \frac{1}{2} z \right)^h \sum_{k = 0}^{\infty}
-\frac{\left( \frac{1}{4} z^2 \right)^k}{k! \Gamma (h + k + 1)} \text{ DLMF\cite{noauthor_undated-ti}
-equation 10.25.2}\\
-I_h (z) & \sim & \frac{1}{\sqrt{2 \pi h}} \left( \frac{ez}{2 h} \right)^h
-\tmop{as} h \rightarrow \infty \text{ DLMF\cite{noauthor_undated-ti} equation 10.41.1}\\
-K_h (z) & \sim & \sqrt{\frac{\pi}{2 h}} \left( \frac{ez}{2 h} \right)^{- h}
-\tmop{as} h \rightarrow \infty \text{ DLMF\cite{noauthor_undated-ti} equation 10.41.2}
-\end{eqnarray*}
-Using these properties, and the explicit formula for $p$, we can see that,
-when $d_A \rightarrow 0$, we have
-\[ \left( \frac{d_A}{\tilde{d}_A} \right)^h \rightarrow 0,
-I_h (\nu d_A) \rightarrow 0, K_h (\nu d_A) \rightarrow \infty \]
-$I_h (\nu r_{\tilde{A}}) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h
-(\nu r_{\tilde{A}})$ would remain a constant, so the numerator
-\[ \left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (\nu r_{\tilde{A}}) K_h
-(\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu r_{\tilde{A}}))
-\rightarrow 0 \]
-For the denominator, we have
-\begin{eqnarray*}
-&  & (I_h (\nu r_{\tilde{A}}) K_h (\nu d_A) - I_h (\nu d_A) K_h (\nu
-r_{\tilde{A}})) + \left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h
-(I_h (\nu d_A) K_h (\nu \tilde{d}_A) - I_h (\nu \tilde{d}_A) K_h (\nu
-d_A))\\
-& = & \left( I_h (\nu r_{\tilde{A}}) - \left(
-\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h I_h (\nu \tilde{d}_A) \right)
-K_h (\nu d_A) + \left( \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
-\right)^h K_h (\nu \tilde{d}_A) - K_h (\nu r_{\tilde{A}}) \right) I_h (\nu
-d_A)
-\end{eqnarray*}
-Using DLMF\cite{noauthor_undated-ti} equation 10.25.2, since we picked $\tilde{d}_A < r_{\tilde{A}}$, we
-have
-\begin{eqnarray*}
-&  & I_h (\nu r_{\tilde{A}})\\
-& = & \left( \frac{1}{2} \nu r_{\tilde{A}} \right)^h \sum_{k = 0}^{\infty}
-\frac{\left( \frac{1}{4} \nu^2 r_{\tilde{A}}^2 \right)^k}{k! \Gamma (h + k +
-1)}\\
-& = & \left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \left( \frac{1}{2}
-\nu \tilde{d}_A \right)^h \sum_{k = 0}^{\infty} \left(
-\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^{2 k} \frac{\left( \frac{1}{4}
-\nu^2 \tilde{d}_A^2 \right)^k}{k! \Gamma (h + k + 1)}\\
-& > & \left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \left( \frac{1}{2}
-\nu \tilde{d}_A \right)^h \sum_{k = 0}^{\infty} \frac{\left( \frac{1}{4}
-\nu^2 \tilde{d}_A^2 \right)^k}{k! \Gamma (h + k + 1)}\\
-& = & \left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h I_h (\nu
-\tilde{d}_A)
-\end{eqnarray*}
-Since $K_h (\nu d_A) \rightarrow \infty$ and $I_h (\nu d_A) \rightarrow 0$ as
-$d_A \rightarrow 0$, we have the denominator goes to $\infty$, which implies
-\[ \lim_{d_A \rightarrow 0} \mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N
-T_n^{\tmop{out}} + T^{\tmop{in}} \right]} \right] = 0 \]
-When the dimension $d \rightarrow \infty$, we have $h = \frac{d - 2}{2}
-\rightarrow \infty$ and $\left( \frac{d_A}{\tilde{d}_A} \right)^h \rightarrow 0$.
-In this case, using DLMF\cite{noauthor_undated-ti} equations 10.41.1 and 10.41.2, we can see that
-$\mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N T_n^{\tmop{out}} +
-T^{\tmop{in}} \right]} \right]$ behaves like
-\begin{eqnarray*}
-&  & \frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h \frac{1}{2 h} \left[
-\left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h - \left(
-\frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h \right]}{\frac{1}{2 h} \left[
-\left( \frac{r_{\tilde{A}}}{d_A} \right)^h - \left(
-\frac{d_A}{r_{\tilde{A}}} \right)^h \right] + \left(
-\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \frac{1}{2 h} \left[ \left(
-\frac{d_A}{\tilde{d}_A} \right)^h - \left( \frac{\tilde{d}_A}{d_A} \right)^h
-\right]}\\
-& = & \frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h}{\frac{\left(
-\frac{r_{\tilde{A}}}{d_A} \right)^h - \left( \frac{d_A}{r_{\tilde{A}}}
-\right)^h}{\left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h - \left(
-\frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h} + \left(
-\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h \left[ \frac{\left(
-\frac{d_A}{\tilde{d}_A} \right)^h - \left( \frac{\tilde{d}_A}{d_A}
-\right)^h}{\left( \frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h - \left(
-\frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h} \right]}
-\end{eqnarray*}
-when $h$ is large. Since $d_A < \tilde{d}_A < r_{\tilde{A}}$, we have
-\begin{eqnarray*}
-\lim_{h \rightarrow \infty} \frac{\left( \frac{r_{\tilde{A}}}{d_A} \right)^h
-- \left( \frac{d_A}{r_{\tilde{A}}} \right)^h}{\left(
-\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h - \left(
-\frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h} & = & \infty\\
-\lim_{h \rightarrow \infty} \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
-\right)^h \left[ \frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h - \left(
-\frac{\tilde{d}_A}{d_A} \right)^h}{\left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
-\right)^h - \left( \frac{\tilde{d}_A}{r_{\tilde{A}}} \right)^h} \right] & =
-& 0
-\end{eqnarray*}
-This implies that
-\[ \lim_{d \rightarrow \infty} \mathbbm{E} \left[ e^{- s \left[ \sum_{n = 0}^N
-T_n^{\tmop{out}} + T^{\tmop{in}} \right]} \right] = 0 \]
-The above arguments establish the desired bounds for $\mathbbm{E} \left[ e^{-
-s \left[ \sum_{n = 0}^N T_n^{\tmop{out}} + T^{\tmop{in}} \right]} \right]$ for
-both the case of $d_A \rightarrow \infty$ and the case of $d \rightarrow
-\infty$. These bounds in turn give us bounds for
-\[ \mathbbm{P} \left( \sum_{n = 0}^N T_n^{\tmop{out}} + T^{\tmop{in}} < t
-\right) \]
-which leads to bounds for $ \mathbbm{P} (\tilde{\tau}_X < t|X_{\tilde{\tau}_X} \in \mathcal{B} (x_A, d_A), X_0 \nin \tilde{A} \cup \tilde{B}) $. 
-Using the same argument, we can also establish bounds for
-$ \mathbbm{P} (\tilde{\tau}_X < t|X_{\tilde{\tau}_X} \in \mathcal{B} (x_B,
-d_B), X_0 \nin \tilde{A} \cup \tilde{B})$. 
-Combining these bounds, we can prove the desired result
-\hspace*{\fill}$\Box$\medskip
+    In conclusion, with this choice of $\tilde d_A$, the numerator is asymptotically constant, but the denominator is asymptotically exploding.  Thus $L$ vanishes.
+\end{itemize}
+
+Let us now review our arguments to see how the vanishing of $L$ leads to our desired conclusion.  We have just shown that by taking $\dimension$ large or $d_A$ small, we can ensure that $L$ vanishes.  Thus for any $x_0\notin \tilde A$ and any $\varepsilon'>0$, we can ensure
+\begin{align*}
+\varepsilon' & \geq L \geq \sup_{y \in S} g(y) \geq g(x) \\
+            & = \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}|X_0=x]\\
+            & \geq \mathbb{P}(\tilde \tau_A < t) e^{\frac{1}{2} t}
+\end{align*}
+In particular, for any $t,\varepsilon>0$ we can ensure that $\mathbb{P}(\tilde \tau_A < t)<\varepsilon/2$ by ensuring $\varepsilon' < \varepsilon e^{-\frac{1}{2} t}/2$.  We can then ensure that $\mathbb{P}(\tilde \tau < t)<\varepsilon$ by applying the same arguments to $\tilde \tau_B$ and applying a union bound.
+
+\end{proof}
+
+\begin{lemma}\label{lem:bessel}
+If $a>b$ then
+    \[
+    \frac{I_h ( a)}{I_h (b)} - \left(\frac{a}{b} \right)^h 
+    \geq
+    \frac{a^h}{I_h(b)}\times\frac{a^{2} -b^{2}}{2^{h+2}\Gamma(h+2)}
+    \]
+\end{lemma}
+\begin{proof}
+Recall that $I_h$ may be defined as 
+\[
+I_h(x) = \sum_{m=0}^\infty \frac{x^{h+2m}}{2^{h+2m}\Gamma(m+h+1)\Gamma(m+1)}
+\]
+Thus
+\begin{align*}
+\frac{I_h ( a)}{I_h (b)} - \left(\frac{a}{b} \right)^h 
+    &= \frac{I_h(a)b^h-a^hI_h(b)}{b^hI_h(b)}  \\
+    &= \frac{a^hb^h\sum_{m=0}^\infty \frac{a^{2m} -b^{2m}}{2^{h+2m}\Gamma(m+h+1)\Gamma(m+1)}}{b^{h}I_h(b)}
+\end{align*}
+Since $a>b$, we have that $a^{2m} -b^{2m}$ is always positive.  Thus we can get a lower bound by simply taking one of the terms.  Choosing $m=1$, we get our final result.
+\end{proof}
 
 %  ____ _____     _______ ____   ____ _____ _   _  ____ _____ 
 % |  _ \_ _\ \   / / ____|  _ \ / ___| ____| \ | |/ ___| ____|
@@ -1031,11 +948,11 @@ Combining these bounds, we can prove the desired result
                                                             
 
 
-\section{Proof of the lemma}\label{sec:proof_lemma}
+\section{Proof of Lemma \ref{lem:capacity_lemma}}\label{sec:proof_lemma}
 
 To calculate the CHop probabilities which approximate hitting probabilities, we need to be able to estimate capacities.  To this end, we connect the capacity to the difference between two surface integrals.  To do so, we need a version of Green's first identity:
 
-\begin{lemma}  \label{ref:greenident}Fix some $M \subset \Omega$ with smooth boundary.  Then for any smooth functions $f,g$,
+\begin{lemma}  \label{lem:greenident}Fix some $M \subset \Omega$ with smooth boundary.  Then for any smooth functions $f,g$,
 \begin{gather*}
 \int_{M} \nabla f(x)^T a(x) \nabla g(x) e^{-U(x)}dx \\
 = \int_{\partial M} f(x) \mathbf{n}(x)^T a(x) \nabla g(x) e^{-U(x)}dS - 2\int_{M} f(x) (\mathcal{L}g)(x)e^{-U(x)}dx
@@ -1063,26 +980,47 @@ This is straightforward to show.  Applying integration by parts we obtain
 Thus to prove this Lemma it suffices to show that $2\mathcal{L}g=\sum_{ij}a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i$.  This follows directly from substituting the reversibility constraint on $b$ from Appendix \ref{sec:reversible_diffusion} into the expression for $\mathcal{L}g$.
 \end{proof}
 
-This enables us to establish our lemma connecting capacities to fluxs:
+This Lemma is of particular interest for functions with $\mathcal Lu=0$:
 
-\begin{lem*}(Capacity is a difference of fluxs)  Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G \backslash G$:
-\[
-\ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS
-\]
-\end{lem*}
+\begin{cor}\label{cor:greenident}
+Let $h,h'$ both satisfy the differential equations
+\begin{align*}
+0 &= (\mathcal{L}u)(x) ,x\in M \\
+0 &= \mathbf{n}(x)^Ta(x)\nabla u(x), x \in \partial{\Omega} \backslash (\partial M)
+\end{align*}
+then
+\begin{align*}
+\int_{M} \nabla h(x)^T a(x) \nabla h'(x) e^{-U(x)}dx 
+    &= \int_{\partial M} h(x) \mathbf{n}(x)^T a(x) \nabla h'(x) e^{-U(x)}dS \\
+    &= \int_{\partial M} h'(x) \mathbf{n}(x)^T a(x) \nabla h(x) e^{-U(x)}dS 
+\end{align*}
+\end{cor}
+
+This enables us to establish the Lemma from the main text which connects capacities to fluxs:
+
+\begingroup
+\def\thelemma{\ref{lem:capacity_lemma}}
+\begin{lemma}(Capacity is a difference of fluxs)  Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
+\begin{align*}
+\ensuremath{\operatorname{cap}} (A, \tilde{A}) &= \int_{\partial \tilde G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS \\
+&\qquad - \int_{\partial G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS 
+\end{align*}
+\end{lemma}
+\addtocounter{lemma}{-1}
+\endgroup
 \begin{proof}
 First recall that the capacity can be written as $\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c})$.
 
-Next note that $\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c}) $ can be written as the flux of $h_{A,\tilde A^c}$ entering $A$.  Indeed, from Appendix \ref{sec:reversible_diffusion} we know that hitting probability functions such as $h_{A,\tilde A^c}$ satisfy $\mathcal Lh_{A,\tilde A^c}=0$ on the interior of $\tilde A \backslash A$.  Together with Lemma \ref{ref:greenident}, this yields that 
+Next note that $\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c}) $ can be written as the flux of $h_{A,\tilde A^c}$ entering $A$.  Indeed, from Appendix \ref{sec:reversible_diffusion} we know that hitting probability functions such as $h_{A,\tilde A^c}$ satisfy $\mathcal Lh_{A,\tilde A^c}=0$ on the interior of $\tilde A \backslash A$.  Together with Corollary \ref{cor:greenident}, this yields that 
 \begin{align*}
 \mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c}) 
-    &= \int_{\tilde A \backslash A}  \nabla h_{A, \tilde{A}^c}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS \\
-    &= \int_{\partial (\tilde A \backslash A)}  h_{A, \tilde{A}^c} \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS - \cancel{2\int_{\tilde A \backslash A} h_{A,\tilde A^c}\mathcal{L}h_{A,\tilde A^c} dx}\\
+    &= \int_{\tilde A \backslash A}  \nabla h_{A, \tilde{A}^c}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS 
+    = \int_{\partial (\tilde A \backslash A)}  h_{A, \tilde{A}^c} \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS \\
     &= \int_{\partial A}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS
 \end{align*}
 Note in the last step we used that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$.  
 
-It turns out the capacity can actually be written as a flux entering \emph{any} surface between $A$ and $\tilde A$.  To see why, apply Lemma \ref{ref:greenident} to see that the total flux of $h_{A,\tilde A^c}$ leaving any $M\subset \tilde A \backslash A$ must be identically zero:
+It turns out the capacity can actually be written as a flux entering \emph{any} surface between $A$ and $\tilde A$.  To see why, apply Corollary \ref{cor:greenident} to see that the total flux of $h_{A,\tilde A^c}$ leaving any $M\subset \tilde A \backslash A$ must be identically zero:
 \begin{align*}
 \int_{\partial M} (1) \times \textbf{n}^T a  \nabla h_{A,\tilde A^C} e^{- U } dS
     &= \int_{M} \nabla h_{A,\tilde A^C}^T  a  \cancel{\nabla (1)} e^{- U } dx=0
