@@ -547,17 +547,17 @@ Since $\tilde A,\tilde B$ are disjoint and $X$ is continuous, the process cannot
 \[
 h_{A\cup B,(\tilde A\cup\tilde B)^c}(x) = 
     \begin{cases}
-    h_{A,\tilde A}(x) & \mbox{if }x\in \tilde A\\
-    h_{B,\tilde B}(x) & \mbox{if }x\in \tilde B\\
+    h_{A,\tilde A^c}(x) & \mbox{if }x\in \tilde A\\
+    h_{B,\tilde B^c}(x) & \mbox{if }x\in \tilde B\\
     0 & \mbox{if }x\notin \tilde A\cup\tilde B
     \end{cases}
 \]
 We can now use this probabilistic perspective to help us understand the capacity by articulating it as the Dirichlet form on the relevant hitting probability functions
 \begin{align*}
 \capac{A\cup B}{\tilde A \cup \tilde B} &= 
-        \int_{\tilde A} h_{A,\tilde A}dx
+        \int_{\tilde A} h_{A,\tilde A^c}dx
         +\int_{\Omega\backslash \tilde A \cup \tilde B} 0 dx  
-        +\int_{\tilde B} h_{B,\tilde B}dx \\
+        +\int_{\tilde B} h_{B,\tilde B^c}dx \\
         &= \capac{A}{\tilde A}+\capac{B}{\tilde B}
 \end{align*}
 as desired.
