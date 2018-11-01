@@ -63,7 +63,7 @@
 \date{\today}
 
 \begin{abstract}
-	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations consitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Hitting probabilities provide valuable information in the presence of entropic barriers. CHop is based on a novel theoretical analysis of hitting probabilities. We show that in the presence of entropic barriers, hitting probabilities are approximately invariant to initial conditions that are modestly far away from the targets.  Given this invariance, we show that hitting probabilities must also be invariant to the energy landscape away from the targets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities of small targets in the presence of entropic barriers. Numerical experiments on a prototypical entropic barrier, a toy model with a golf-course potential, show that CHop is nearly as accurate as direct simulations in estimating hitting probabilities, but 662 times faster.
+	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations constitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Hitting probabilities provide valuable information in the presence of entropic barriers. CHop is based on a novel theoretical analysis of hitting probabilities. We show that in the presence of entropic barriers, hitting probabilities are approximately invariant to initial conditions that are modestly far away from the targets.  Given this invariance, we show that hitting probabilities must also be invariant to the energy landscape away from the targets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities of small targets in the presence of entropic barriers. Numerical experiments on a prototypical entropic barrier, a toy model with a golf-course potential, show that CHop is nearly as accurate as direct simulations in estimating hitting probabilities, but 662 times faster.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -75,9 +75,9 @@
 
 Molecular dynamics simulations help us understand a diverse range of biomolecular processes, including the folding of macromolecules into their native configurations\cite{Scheraga2007-qw} and the conformational changes involved in their functioning.\cite{Hospital2015-ol} Since their first introduction in the 1970s,\cite{McCammon1977-kg, Warshel1976-qg} substantial increase in speed and accuracy of molecular dynamics simulations has been achieved. However, we are still severely limited in the timescale we can access. Even with specialized hardwares, we can only achieve atomic-level simulations on timescales as long as milliseconds,\cite{Dror2012-ws} while the timescales for various biomolecular processes vary widely, and can last for seconds or longer.\cite{Naganathan2005-ki, Zemora2010-lb} 
 
-Efforts have been made to extend the timescale accessible by molecular dynamics simulations from two distinct perspectives: A \emph{kinetic perspective} seeks to find ways to directly understand the dynamics and simulate them with less computational effort, usually under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}. The reaction rates are given by various methods that build on top of transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk}, including transition path sampling\cite{Dellago1998-lb, Bolhuis2002-ws}, transition interface sampling\cite{Van_Erp2005-vw}, and transition path theory\cite{E2006-fm, E2010-sr}. By constrast, a \emph{thermodynamic perspective} aims to understand and efficiently sample from the ``equilibrium distribution'' on the configuration space; simulated annealing,\cite{Kirkpatrick1983-su} genetic algorithms\cite{Goldberg1989-ko} and parallel tempering\cite{Sugita1999-vh} are representative examples of this approach. However, dynamics is destroyed in these methods, and additional work\cite{Yang2007-gn, Andrec2005-fh, Zheng2009-ow, Huang2010-uu} is needed in order to recover the kinetic information of the system.
+Efforts have been made to extend the timescale accessible by molecular dynamics simulations from two distinct perspectives: A \emph{kinetic perspective} seeks to find ways to directly understand the dynamics and simulate them with less computational effort, usually under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}. The reaction rates are given by various methods that build on top of transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk}, including transition path sampling\cite{Dellago1998-lb, Bolhuis2002-ws}, transition interface sampling\cite{Van_Erp2005-vw}, and transition path theory\cite{E2006-fm, E2010-sr}. By contrast, a \emph{thermodynamic perspective} aims to understand and efficiently sample from the ``equilibrium distribution'' on the configuration space; simulated annealing,\cite{Kirkpatrick1983-su} genetic algorithms\cite{Goldberg1989-ko} and parallel tempering\cite{Sugita1999-vh} are representative examples of this approach. However, dynamics is destroyed in these methods, and additional work\cite{Yang2007-gn, Andrec2005-fh, Zheng2009-ow, Huang2010-uu} is needed in order to recover the kinetic information of the system.
 
-In this paper we focus on the \emph{hitting probability question}: ``Given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?'' This question lies in-between the two different perspectives. Compared with the kinetic perspective, it lacks certain dynamic information: it does not tell us \emph{how long} it takes to hit each target.  Compared with the thermodynamic perspective, it adds certain dynamic information: it tells us about transitions between different states, rather than just the equilibrium distribution. Thus the hitting probability question provides valuable kinetic information.  It also appears as an important subproblem for other methods, e.g. transition probability estimation in Markov State Models, commitor function estimation in transition path theory, et cetera.
+In this paper we focus on the \emph{hitting probability question}: ``Given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?'' This question lies in-between the two different perspectives. Compared with the kinetic perspective, it lacks certain dynamic information: it does not tell us \emph{how long} it takes to hit each target.  Compared with the thermodynamic perspective, it adds certain dynamic information: it tells us about transitions between different states, rather than just the equilibrium distribution. Thus the hitting probability question provides valuable kinetic information.  It also appears as an important subproblem for other methods, e.g. transition probability estimation in Markov State Models, committor function estimation in transition path theory, et cetera.
 
 We are especially interested in the ``small-target" regime for the hitting probability question, where we try to reach small targets out of a vast number of possible configurations. This constitutes an \emph{entropic barrier}. A prototypical example is regions on the energy landscape with ``golf-course'' potentials.\cite{bicout2000entropic, Baum1986-we, Wille1987-tf}. These potentials feature a large region and several small targets within the region.  Away from the targets, the potential energy is relatively flat.  Near the targets, the potential energy may be complicated. Regions on the energy landscape with these small-target golf-course potentials are ubiquitous in biomolecular systems. Folding-like dynamics (such as the folding of RNAs and proteins) are one prominent example, where it is thought that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.''\cite{McLeish2005-dq} Experimental evidence shows that exploration of these regions with golf-course potentials forms the rate-limiting step for a variety of processes.\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv}
 
@@ -117,7 +117,7 @@ This toy model encapsulates the essential characteristics of an entropic barrier
 
 \section{Theory: $\varepsilon$-flatness and CHop Probabilities}\label{sec:model_formulation}
 
-With this toy model in mind, we now turn to the general results of this paper. We will assume the underlying biomolecular process can be modelled by a stationary reversible diffusion process $X$ trapped in the configuration space $\Omega$ by reflecting boundaries.  We assume $X$ has invariant
+With this toy model in mind, we now turn to the general results of this paper. We will assume the underlying biomolecular process can be modeled by a stationary reversible diffusion process $X$ trapped in the configuration space $\Omega$ by reflecting boundaries.  We assume $X$ has invariant
 measure ${\mu}= e^{- U (x)} \mathrm{d} x$, and the dynamics can be expressed in terms of a $m$-dimensional Brownian motion $W_t$ by the stochastic differential equation
 \begin{equation}\label{equ:general_sde}\mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \end{equation}
 where $b: \Omega \rightarrow \mathbbm{R}^\dimension$ and $\sigma :
@@ -131,7 +131,7 @@ where $\tau_S$ indicates the time when $X$ first hits a set $S$, i.e. $\tau_S \t
 Let us consider the case where the targets $A, B$ are small relative to the configuration space $\Omega$, and the potential energy $U$ is sufficiently flat away from the targets $A, B$.  In this case, intuitively, for any initial condition $x\in \Omega / (A\cup B)$ that is modestly far away from the targets $A, B$, we would reach temporary equilibrium before we hit either target.  Consequently the hitting probability $h_{A, B}(x)$ should be approximately invariant to initial conditions that are modestly far away from the targets $A, B$.  In other words, $h_{A,B}(x)$ should be approximately \emph{constant} for all initial conditions $x$ that are modestly far away from the targets $A, B$.  In addition, given this invariance of the hitting probabilities to the initial conditions, the exact internal structure of the energy landscape away from the targets $A, B$ may not be important.  We might therefore hope that we can accurately estimate the hitting probabilities using only local information around the targets $A, B$, without looking at this internal structure. In summary, it seems that
 %
 \begin{enumerate}
-    \item There should be some constant $\bar h$ such that $\bar h_{A,B} \approx h_{A,B}(x)$ for all initial conditions $x$ which are modestly far away from $A$ and $B$.
+    \item There should be some constant $\bar h$ such that $\bar h \approx h_{A,B}(x)$ for all initial conditions $x$ which are modestly far away from $A$ and $B$.
     \item It should be possible to estimate $\bar h$ using only knowledge of the dynamics in the local regions around $A,B$.  
 \end{enumerate}
 %
@@ -142,7 +142,7 @@ In what follows, we make the above intuitions rigorous.  First, for our toy mode
 In this section, we introduce the concept of $\varepsilon$-flatness to formally define what it would mean when we say the hitting probability function $h_{A, B}(x)$ is ``approximately constant'' in a given region. We establish $\varepsilon$-flatness for our toy model, and see when it holds for more general models.
 %
 \begin{definition}($\varepsilon$-flatness)\label{def:epsilon_flat}
-For any function $h$ on $\Omega$ and an $\varepsilon > 0$, a set $M\subset \Omega$ is $\varepsilon$-flat for the function $h$ iff $\sup_{x, y \in M} | h (x) - h (y) | < \varepsilon$.
+For any function $h$ on $\Omega$ and an $\varepsilon > 0$, a set $M\subset \Omega$ is $\varepsilon$-flat for the function $h$ if and only if $\sup_{x, y \in M} | h (x) - h (y) | < \varepsilon$.
 \end{definition}
 %
 Note that if $M$ is $\varepsilon$-flat for $h$, then we can always find some constant $\bar h$ so that $\sup_{x \in M}|\bar h-h(x)|<\varepsilon$ for all $x\in M$.  Simply pick $\bar h$ to be $h(x)$ for any $x\in M$.  
@@ -157,7 +157,7 @@ We defer the proof of this theorem to Appendix \ref{sec:proof_epsilon_flat}. Ins
 
 \subsection{Estimating Constant Hitting Probability Using Local Information}
 
-In this section, we show that hitting probabilities can be accurately estimated using only local information around the targets, as long as the we can establish the $\varepsilon$-flatness of suitable sets for the hitting probability function. In particular, it will be sufficient to calculate the ``capacities'' of local sets around the targets.
+In this section, we show that hitting probabilities can be accurately estimated using only local information around the targets, as long as we can establish the $\varepsilon$-flatness of suitable sets for the hitting probability function. In particular, it will be sufficient to calculate the ``capacities'' of local sets around the targets.
 
 \begin{definition}(Capacity)
 Let $X$ be a reversible stationary process governed by Equation (\ref{equ:general_sde}).  Then for $A \subset \tilde{A} \subset \Omega$, the capacity $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ for $X$ is defined as
@@ -167,7 +167,7 @@ Let $X$ be a reversible stationary process governed by Equation (\ref{equ:genera
 %
 \end{definition}
 
-Recall that $h_{A, \tilde{A}^c}(x)$ denotes the probability that $X$ will hit $A$ before hitting $\tilde{A}^c$, given $X_0=x \in \tilde A\backslash A$.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for more details on capacity and the the related concept of Dirichlet form.
+Recall that $h_{A, \tilde{A}^c}(x)$ denotes the probability that $X$ will hit $A$ before hitting $\tilde{A}^c$, given $X_0=x \in \tilde A\backslash A$.  We refer the reader to Appendix \ref{sec:reversible_diffusion} for more details on capacity and the related concept of Dirichlet form.
 
 In the presence of $\varepsilon$-flatness, these capacities are intimately related to hitting probabilities.  Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  If $\tilde A,\tilde B$ are disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ is $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$, then we obtain
 
@@ -186,8 +186,8 @@ p_{A_k} = \frac{\ensuremath{\operatorname{cap}} (A_k, \tilde{A}_k)}{\sum_{i = 1}
 
 In terms of these definitions, Theorem \ref{thm:main_thm} then yields:
 
-\begin{cor}\label{thm:main_cor} Let $u_k = h_{A_k,\cup_{i\neq k} A_i}$ denote the probability that $X$ hits $A_k$ before the other targets.  Fix any $\varepsilon \in \left( 0, \frac{2}{9} \right]$.  If $M = \Omega \backslash \bigcup_{k = 1}^n \tilde{A}_k $ is $\varepsilon$-flat for the functions $\{u_k\}_{k=1,\dots, n}$ then each $u_k$ is well-approximated by the corresponding CHop Probability:
-\[ \sup_{x \in M} \left| u_k (x) - p_{A_k} \right| \leqslant \varepsilon + \sqrt{\frac{\varepsilon}{2}}, k=1,\dots, n\]
+\begin{cor}\label{thm:main_cor} Let $u_k = h_{A_k,\cup_{i\neq k} A_i}$ denote the probability that $X$ hits $A_k$ before the other targets. If $M = \Omega \backslash \bigcup_{k = 1}^n \tilde{A}_k $ is $\varepsilon$-flat for the functions $\{u_k\}_{k=1,\dots, n}$ then each $u_k$ is well-approximated by the corresponding CHop Probability:
+\[ \sup_{x \in M} \left| u_k (x) - p_{A_k} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2}, k=1,\dots, n\]
 \end{cor}
 
 This corollary follows immediately from Theorem \ref{thm:main_thm} and additivity of the capacity (Proposition \ref{prop:capacity} in Appendix \ref{sec:reversible_diffusion}). 
@@ -199,7 +199,7 @@ Inspired by the theoretical analysis above, we introduce the CHop method as a wa
 Recall that in Section \ref{sec:model_formulation}, we made the following two key points:
 
 \begin{enumerate}[noitemsep]
-    \item We can establish $\varepsilon$-flatness in regions with golf-course potentials, and the hitting probabilities of the small targets remain approximately a constant over a large part of the flat region.
+    \item We can establish $\varepsilon$-flatness in regions with golf-course potentials, and the hitting probabilities of the small targets remain approximately a constant for initial conditions that are modestly away from the targets. 
     \item The approximately constant hitting probabilities can be accurately estimated using CHop probabilities, which depend on capacities that can be calculated solely based on local information around the targets.
 \end{enumerate}
 
@@ -223,12 +223,12 @@ To make the CHop method practical, we need to be able to estimate the capacities
 \subsection{Estimation of Capacities}
 
 We start our discussion on estimating the capacities with a simple lemma:
-
-\begin{lemma}(Capacity is a difference of fluxs) \label{lem:capacity_lemma} Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
+\begin{lemma}(Capacity is a difference of fluxes) \label{lem:capacity_lemma} Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
 \begin{align*}
 \ensuremath{\operatorname{cap}} (A, \tilde{A}) &= \int_{\partial \tilde G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS \\
 &\qquad - \int_{\partial G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS 
 \end{align*}
+where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix.
 \end{lemma}
 
 We defer the proof of this lemma to Appendix \ref{sec:proof_lemma}. This lemma provides us with a general framework for estimating the capacities.   In particular, we can approximate the integrals in the lemma with a Monte Carlo method, as long as we can overcome three challenges:
@@ -286,7 +286,7 @@ In what follows, we put all the pieces from our previous discussions together, a
 {\algorithm{\label{alg:capest}Estimating $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ for $A\subset\tilde{A}\subset \Omega$
 
 \begin{description}
-    \item[Input] $A \subset \tilde{A} \subset \Omega$ and a stationary reversible  diffusion process $\{X_t\}_{t \geq 0}$ in $\Omega$ with invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ and diffusion matrix $a(x)$
+    \item[Input] $A \subset \tilde{A} \subset \Omega$ and a stationary reversible  diffusion process $X$ in $\Omega$ with invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ and diffusion matrix $a(x)$
     \item[Output] An estimated value of $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ 
 \end{description}
 
@@ -294,7 +294,7 @@ In what follows, we put all the pieces from our previous discussions together, a
     \item Pick $G, \tilde{G}$ with smooth boundaries, s.t. $A \subset G \subset \tilde{G} \subset \tilde{A}$
     \item Estimate the surface areas $|\partial G|$ and $|\partial \tilde{G}|$
     \item Sample $y_1,y_2,\cdots y_m$ on $\partial G$ and $\tilde y_1,\tilde y_2 \cdots \tilde y_n$ on $\partial \tilde{G}$ according to the invariant measure $e^{- U(x)}\mathrm{d}x$ restricted on $\partial G, \partial \tilde{G}$, and estimate $h_{A,\tilde A^c}(y_i), i=1,\cdots, m$ and $h_{A,\tilde A^c}(\tilde y_i), i=1, \cdots, n$ using Algorithm \ref{alg:hitting_prob_estimation} in Appendix \ref{algorithm} applied to the cases $S=G$ and $S=\tilde{G}$
-    \item Estimate $\nabla h_{G, \tilde{G}^c}(y_i), {\textbf{n}} (y_i), i=1, \cdots, m$ and $\nabla h_{G, \tilde{G}^c}(\tilde{y}_i), {\textbf{n}} (\tilde{y}_i), i=1, \cdots, n$, where ${\textbf{n}} (x)$ denotes the the outward-facing normal vector at point $x$ on the corresponding surfaces
+    \item Estimate $\nabla h_{G, \tilde{G}^c}(y_i), {\textbf{n}} (y_i), i=1, \cdots, m$ and $\nabla h_{G, \tilde{G}^c}(\tilde{y}_i), {\textbf{n}} (\tilde{y}_i), i=1, \cdots, n$, where ${\textbf{n}} (x)$ denotes the outward-facing normal vector at point $x$ on the corresponding surfaces
     \item Estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ using the formula given in Equation \ref{eq:capesteq}
 \end{enumerate}
 }}
@@ -378,7 +378,7 @@ x_B = \begin{pmatrix}%
 \end{pmatrix},
 r_B = 0.04, r_{\tilde{B}} = 0.15
 \end{equation*}
-for target $B$. Note that because we are working with a flat energy landscape, the values of $d_A, d_B$ won't affect the the results.
+for target $B$. Note that because we are working with a flat energy landscape, the values of $d_A, d_B$ won't affect the results.
 
 \subsubsection{The hitting probabilities are approximately constant}
 
@@ -449,25 +449,25 @@ Using our capacity estimation algorithm from Section \ref{sec:outlinecapacest}, 
 
 \subsubsection{Capacity estimation algorithm}
 
-In this case it is difficult to assess the accuracy of our capacity estimation algorithm.  It is not possible to obtain exact values for the capacity.  Therefore, we cannot directly test whether our algorithm is accurately estimating the capcities.  However, as the last section showed, the CHop probabilities computed from our estimated capacities do seem to accurately reflect the true hitting probabilities.  This offers some limited evidence that the estimated capacities are also accurate.
+In this case it is difficult to assess the accuracy of our capacity estimation algorithm.  It is not possible to obtain exact values for the capacity.  Therefore, we cannot directly test whether our algorithm is accurately estimating the capacities.  However, as the last section showed, the CHop probabilities computed from our estimated capacities do seem to accurately reflect the true hitting probabilities.  This offers some limited evidence that the estimated capacities are also accurate.
 
-We can also test the speed of our capacity estimation algorithm.  We compared the time it takes to estimate the hitting probabilities using direct simulations with the time our capacity estimation algorithm needs to estimate the capacities for all targets. Note that in order to make the direct simulations feasible for the $5$-dimensional toy model we are working on, we made our best effort to make the direct simulation fast.  We used an efficient walk-on-spheres method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallization, and a relatively coarse time step.  The CPU times for direct simulations and the CHop method are shown below:
+We can also test the speed of our capacity estimation algorithm.  We compared the time it takes to estimate the hitting probabilities using direct simulations with the time our capacity estimation algorithm needs to estimate the capacities for all targets. Note that in order to make the direct simulations feasible for the $5$-dimensional toy model we are working on, we made our best effort to make the direct simulation fast.  We used an efficient walk-on-spheres method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and a relatively coarse time step.  The CPU times for direct simulations and the CHop method are shown below:
 
 \begin{description}
-\item[Direct simulation] 33340.36 seconds (4167.55 seconds on an c5d.2xlarge AWS EC2 instance, which has 8 CPUs).  This quantity is an average of the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of $1 \times 10^{-5}$.  These direct simulations are trivial to perform in parallel, assuring us that there was no significant overhead due to the parallelization.
+\item[Direct simulation] 33340.36 seconds (4167.55 seconds on a c5d.2xlarge AWS EC2 instance, which has 8 CPUs).  This quantity is an average of the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of $1 \times 10^{-5}$.  These direct simulations are trivial to perform in parallel, assuring us that there was no significant overhead due to the parallelization.
 
 \item[CHop speed] 50.31 seconds on a single CPU. In doing this we employed a more accurate time step than the one used for direct simulations (i.e.\ a time step of $1 \times 10^{-6}$). Despite this, the CHop method was 82 times faster on a single CPU than the direct simulations on 8 CPUs.
 
 \end{description}
 
-This reflects a 662-fold acceleration. The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $m, n, N_p, N_b$ and $N_s$, as long as they are reasonably large. Furthermore note that the time-consuming elements of our capacity estimation algorithm are ``embarassingly parallelizable'' and it should be easy to further accelerate our capacity estimation algorithm using parallelization.  There was no need to do so in this case because we could easily run the CHop method on our laptops.  However, larger scale problems would certainly benefit from this kind of additional acceleration.
+This reflects a 662-fold acceleration. The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $m, n, N_p, N_b$ and $N_s$, as long as they are reasonably large. Furthermore note that the time-consuming elements of our capacity estimation algorithm are ``embarrassingly parallelizable'' and it should be easy to further accelerate our capacity estimation algorithm using parallelization.  There was no need to do so in this case because we could easily run the CHop method on our laptops.  However, larger scale problems would certainly benefit from this kind of additional acceleration.
 \section{Conclusions and Discussions}\label{sec:discussion}
 
 In this work, we offer new insights in the presence of entropic barriers, from a hitting-probability perspective. While lacking timing information, hitting probabilities offer more kinetic understanding than purely thermodynamic analyses, and appear as an important subproblem in various other methods. We show that hitting probabilities, in the presence of entropic barriers where targets are small, often feature an approximate invariance to initial conditions away from the targets. This invariance further imply an invariance to the energy landscape away from the targets. This means that the hitting probabilities can be calculated using only local simulations around the targets. These insights are used to develop CHop, an practical algorithm to estimate hitting probabilities of small targets in the presence of entropic barriers. Numerical experiments on a prototypical entropic barrier, a toy model with a golf-course potential, demonstrate the effectiveness of CHop.
 
-Entropic barriers, which arise because of the difficulty of reaching a small number of target configurations out of a vast number of possible configurations, are in contrast to \emph{enthalpic barriers}, which arise because of the diffuculty of escaping local minima. The challenges of molecular dynamics result from the complicated energy landscapes associated with different biomolecular systems, and can largely be summarized by these two different kinds of barriers. However, careful inspection of the existing methods shows that a majority of the previous developments focus on enthalpic barriers, where the central picture consists of an energy landscape with a multitude of local minima separated by high energetic barriers. A less studied picture involves the entropic barriers, where the energy landscapes has essentially no local minima, and the main difficulty is in finding small targets. We hope this work provides valuable insights into this important but less studied picture, and that it sheds some light into the broader problem of understanding the role of entropy in the kinetics of complex biomolecular systems. 
+Entropic barriers, which arise because of the difficulty of reaching a small number of target configurations out of a vast number of possible configurations, are in contrast to \emph{enthalpic barriers}, which arise because of the difficulty of escaping local minima. The challenges of molecular dynamics result from the complicated energy landscapes associated with different biomolecular systems, and can largely be summarized by these two different kinds of barriers. However, careful inspection of the existing methods shows that a majority of the previous developments focus on enthalpic barriers, where the central picture consists of an energy landscape with a multitude of local minima separated by high energetic barriers. A less studied picture involves the entropic barriers, where the energy landscapes has essentially no local minima, and the main difficulty is in finding small targets. We hope this work provides valuable insights into this important but less studied picture, and that it sheds some light into the broader problem of understanding the role of entropy in the kinetics of complex biomolecular systems. 
 
-Our interests in this work come from thinking about RNA folding, and we see this work as laying the foundation for a general-purpose method for the folding of RNA molecules. The central picture is that of a hierarchical golf course: each part of the configuration space that are consistent with a particular secondary structure can be thought of as a golf course; the ``holes" in this golf course are other secondary structures obtained by forming new base pairs; breaking base pairs would bring us back to a larger golf course, while forming base pairs would bring us into a smaller one. CHop would serve as a fundamental tool in this picture. This is an ambitious proposal, and opens all kinds of interesting questions involving the geometry of the configuration space and the folding dynamics. Furthremore, under this picture, in addition to hitting probabilities, CHop can provide us with more kinetic information of the system, by giving us a way to efficiently get sequences of secondary structures. These sequences can play an important role in understanding questions like important intermediates and folding pathways of non-coding RNA molecules.
+Our interests in this work come from thinking about RNA folding, and we see this work as laying the foundation for a general-purpose method for the folding of RNA molecules. The central picture is that of a hierarchical golf course: each part of the configuration space that are consistent with a particular secondary structure can be thought of as a golf course; the ``holes" in this golf course are other secondary structures obtained by forming new base pairs; breaking base pairs would bring us back to a larger golf course, while forming base pairs would bring us into a smaller one. CHop would serve as a fundamental tool in this picture. This is an ambitious proposal, and opens all kinds of interesting questions involving the geometry of the configuration space and the folding dynamics. Furthermore, under this picture, in addition to hitting probabilities, CHop can provide us with more kinetic information of the system, by giving us a way to efficiently get sequences of secondary structures. These sequences can play an important role in understanding questions like important intermediates and folding pathways of non-coding RNA molecules.
 
 \newpage
 
@@ -487,7 +487,7 @@ In this section, we set notation and review known properties of stochastic diffe
 
 \subsection{Defining the process}
 
-Let $\dimension \geq 3$ and $\Omega \subset \mathbb{R}^\dimension$ be a bounded open set with smooth boundary.  Our central object of interest will be a diffusion $X$ trapped in $\Omega$ by some kind of reflecting boundaries.  The construction of such reflected diffusions is a bit of a delicate art, so we will start by taking a moment to rigorously define the process $X$.
+Let $\dimension \geq 3$ and $\Omega \subset \mathbb{R}^\dimension$ be a bounded open set with smooth boundary.  Our central object of interest will be a diffusion $X$ trapped in $\Omega$ by some kind of reflecting boundaries.  The construction of such reflected diffusions is a delicate art, so we will start by taking a moment to rigorously define the process $X$.
 
 Let $W$ denote a Brownian motion.  Let $b:\ \bar \Omega \rightarrow \mathbb{R}^\dimension,\sigma:\ \bar \Omega \rightarrow \mathbb{R}^{\dimension\times\dimension}$ smooth.  Let $\mathbf{n}$ denote the outward normal of $\partial \Omega$ and $\nu:\ \partial \Omega \rightarrow \mathbb{R}^\dimension$ a smooth vector field satisfying $\mathbf{n}^T\nu\geq c>0$. Let $x_0 \in \Omega$.  Then there is a pathwise unique continuous $W$-adapted strong Markov process $X$ and (random) measure $L$ such that 
 \begin{gather}\label{eq:SDER}
@@ -499,7 +499,7 @@ We will further assume that $X$ is reversible with respect to a measure $\rho(dx
 \[
 \int_{A}\mathbb{P}(X_{t}\in B|X_{0}=x)\rho(dx)  =\int_{B}\mathbb{P}(X_{t}\in A|X_{0}=x)\rho(dx)
 \]
-for any open sets $A,B\subset \Omega$ and any $t>0$.  Due to this condition, we are not completely free in our choice of $b,\sigma,\nu$.  A sufficient condition for reversibility is $X$ is given in Chen,\cite{chen1993reflecting} namely that
+for any open sets $A,B\subset \Omega$ and any $t>0$.  Due to this condition, we are not completely free in our choice of $b,\sigma,\nu$.  A sufficient condition for the reversibility of $X$ is given in Chen,\cite{chen1993reflecting} namely that
 \begin{align*}
 b_i(x)&=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j - \frac{1}{2}\sum_j a_{ij}(x) \partial U(x)/\partial x_j \\
 \nu(x)&= a(x) \mathbf{n}(x)
@@ -530,7 +530,7 @@ Many of our results are based on the fact that hitting probability functions can
     \mbox{subject to} \quad & u(x)\geq1,x\in A \\
      & u(x)\leq0,x\in B
     \end{align*}
-    This solution is unique and equal to $h^\mathrm{dir}$.\cite{karatson2005discrete}  We will call the value of $\mathscr{E}(h^\mathrm{var}_{A,B}(x),h^\mathrm{var}_{A,B}(x))$ the ``condensor capacity'' from $\partial A$ to $\partial B$, or just the ``capacity'' for short.  We will denote it by $\capac{A}{\Omega \backslash B}$.
+    This solution is unique and equal to $h^\mathrm{dir}$.\cite{karatson2005discrete}  We will call the value of $\mathscr{E}(h^\mathrm{var}_{A,B}(x),h^\mathrm{var}_{A,B}(x))$ the ``condenser capacity'' from $\partial A$ to $\partial B$, or just the ``capacity'' for short.  We will denote it by $\capac{A}{\Omega \backslash B}$.
 \end{enumerate}
 
 
@@ -635,7 +635,7 @@ Since the integrand is always positive, we can get a lower bound by simply ignor
 
 For example, let us focus on the $A$ case.  There are two different possibilities we must consider:
 \begin{itemize}
-\item If $m>1-\varepsilon/2$ we will simply note that the integral over the $\tilde A$ region is nonnegative.  
+\item If $m>1-\varepsilon/2$ we will simply note that the integral over the $\tilde A$ region is non-negative.  
 \item If $m\leq 1-\varepsilon/2$, then we define
     \[
     u_A (x) \triangleq \frac{h_{A,B} (x) - m - \frac{\varepsilon}{2}}{1 - m - \frac{\varepsilon}{2}}
@@ -743,7 +743,7 @@ Our final result is found by noting that all these bounds are upper-bounded by $
 
 Consider the setup of the Toy Model described in Section \ref{sec:toy_model}.  A stationary reversible diffusion $X$ is trapped inside the unit $\dimension$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the case where $X_0$ is outside of $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_A,r_{\tilde B}}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,d_A},\dot B=\bb{x_B,d_B}$.  
 
-It turns out that by taking the $\dimension$ is sufficiently high or $d_A,d_B$ are sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$.  This is the content of Theorem \ref{thm:epsilon_flat} from the main text, which we restate here for the convenience of the reader:
+It turns out that by taking $\dimension$ to be sufficiently high or $d_A,d_B$ to be sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$.  This is the content of Theorem \ref{thm:epsilon_flat} from the main text, which we restate here for the convenience of the reader:
 
 \begingroup
 \def\thetheorem{\ref{thm:epsilon_flat}}
@@ -785,7 +785,7 @@ Thus
 \mathbbm{P} \left( \tilde{\tau} \leq t \right) < \varepsilon/2
 \]
 %
-for arbitrarily small $\varepsilon$ and arbitarily large $t$, by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
+for arbitrarily small $\varepsilon$ and arbitrarily large $t$, by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
 \end{enumerate}
 Putting these two results together at $t=2/\varepsilon$ we obtain that we can make $|h_{A,B}(x) - \mathbb{E}[h_{A,B}(Z)]| \leq \varepsilon / 2 + \varepsilon/2 = \varepsilon$ for arbitrarily small $\varepsilon$ by taking $\dimension$ sufficiently high or $d_A,d_B$ sufficiently small.
 \end{proof}
@@ -826,7 +826,7 @@ Our task is to show that $\tilde \tau$ is large with high probability.  Note tha
 \[
 g(x)=\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}|X_0=x]
 \] 
-aribitrarily small for every $x\notin \tilde A$.  Furthermore note that for any $X_0 \notin \tilde A$, the continuity of $X$ dictates that $X$ must cross the set $S=S_{\tilde d_A}=\{x:\ |x-x_A| = \tilde d_A\}$ before $\tilde \tau_A$, as long as $\tilde d_A \in (d_A,r_{\tilde A})$.  Thus, applying the strong Markov property of $X$, we have that $g(x)\leq \sup_{y\in S_{\tilde d_A}}g(y)$ for any $x \notin \tilde A$.
+arbitrarily small for every $x\notin \tilde A$.  Furthermore note that for any $X_0 \notin \tilde A$, the continuity of $X$ dictates that $X$ must cross the set $S=S_{\tilde d_A}=\{x:\ |x-x_A| = \tilde d_A\}$ before $\tilde \tau_A$, as long as $\tilde d_A \in (d_A,r_{\tilde A})$.  Thus, applying the strong Markov property of $X$, we have that $g(x)\leq \sup_{y\in S_{\tilde d_A}}g(y)$ for any $x \notin \tilde A$.
 
 In summary, to prove our theorem it will suffice to show that by taking $d_A$ sufficiently small or $\dimension$ sufficiently large we can ensure that $g(x)$ is uniformly arbitrarily small on $S_{\tilde d_A}$ for some $\tilde d_A \in (d_A,r_{\tilde A})$.  To show this, we will make use of two other hitting probabilities:
 \[
@@ -875,7 +875,7 @@ Thus, to complete our proof, it suffices to show that we can drive $L(d_A,r_{\ti
         \item $K_h(x),I_h(x)>0$ for $x>0,h>0$
         \item $\frac{I_{h}(y)}{I_{h}(x)} > \left(\frac{y}{x}\right)^{h}$ for $y>x$ and $h>0$
     \end{itemize} 
-    The first two properties are well-known and can be found in DLMF; the second can be found in Baricz.\cite{noauthor_undated-ti,baricz2010bounds}  In conclusion, since the numerator vanishes and the denominator explodes, we have that overall $L$ vanishes.  
+    The first two properties are well-known and can be found in DLMF\cite{noauthor_undated-ti}; the second can be found in Baricz.\cite{noauthor_undated-ti,baricz2010bounds}  In conclusion, since the numerator vanishes and the denominator explodes, we have that overall $L$ vanishes.  
     \item When $\dimension$ is large.  It is clear that the previous result holds for any value of $\tilde d_A\in (d_A, r_{\tilde A})$.  For the large-$\dimension$ case, we will be more picky: we will take $\tilde d_A=\sqrt{d_A r_{\tilde A}}$.  
 
     Let us look at the numerator first.  Asymptotics from the DLMF give that as $h=(\dimension-2)/2 \rightarrow \infty$ we have
@@ -999,11 +999,11 @@ then
 \end{align*}
 \end{cor}
 
-This enables us to establish the Lemma from the main text which connects capacities to fluxs:
+This enables us to establish the Lemma from the main text which connects capacities to fluxes
 
 \begingroup
 \def\thelemma{\ref{lem:capacity_lemma}}
-\begin{lemma}(Capacity is a difference of fluxs)  Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
+\begin{lemma}(Capacity is a difference of fluxes)  Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
 \begin{align*}
 \ensuremath{\operatorname{cap}} (A, \tilde{A}) &= \int_{\partial \tilde G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS \\
 &\qquad - \int_{\partial G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS 
@@ -1053,7 +1053,7 @@ This flux entering $G$, in turn, can be written as a \emph{weighted flux} leavin
 
 % To prove these generalized results, let us start with a classical result on Sobolev spaces:
 
-% \begin{lem*} Let $A\subset \Omega$ a bounded set with smooth boundary.  Let $f$ in the the Hilbert Sobolev space of square-integrable functions with square-integrable weak derivatives.  Let $g:\ \Omega \rightarrow \mathbb{R}^\dimension$ be continuously differentiable.  Then
+% \begin{lem*} Let $A\subset \Omega$ a bounded set with smooth boundary.  Let $f$ in the Hilbert Sobolev space of square-integrable functions with square-integrable weak derivatives.  Let $g:\ \Omega \rightarrow \mathbb{R}^\dimension$ be continuously differentiable.  Then
 % \[
 % \int_A f(x) \sum_i \frac{\partial g_i(x)}{\partial x_i} dx = \int_{\partial A} f(x) g(x)^T \mathbf{n(x)} dS
 % \]    
@@ -1273,7 +1273,7 @@ To make sure the energy function is continuous, and the different components of 
 \begin{equation}
 F_m(x|x_0, r) = exp(-\frac{r}{r - ||x - x_0||_2^{20}})
 \end{equation}
-where $x_0=x_A, r=d_A$ or $x_0=x_B, r=d_B$, depending on which target we are working with, and a rescaling of the random componet, which is given by $0.1 * d_w$ if we are perturbing the well component, and $0.1 * (d_c + h)$ if we are perturbing the crater component.
+where $x_0=x_A, r=d_A$ or $x_0=x_B, r=d_B$, depending on which target we are working with, and a rescaling of the random component, which is given by $0.1 * d_w$ if we are perturbing the well component, and $0.1 * (d_c + h)$ if we are perturbing the crater component.
 
 Intuitively, for the well component, we use a $4$th order polynomial to get a well-like energy landscape around the target that is continuous and differentiable at the boundary. Similarly, for the crater component, we use a $6$th order polynomial to get a crater-like energy landscape around the target that is also continuous and differentiable at the boundary. For the random component, we are essentially placing a number of Gaussian bumps around the target. And for the mollifier, we are designing the function such that it's almost exactly 1 around the target, until it comes to the outer boundary, when it transitions smoothly and swiftly to 0.
 To summarize, given parameters $d_w, d_c, h$ and random bumps $\mu_{A}, \mu_{B}$ with $\mu^{A}_i\in \dot{A} \setminus A, i=1, \cdots, m_A, \mu^{B}_i \in \dot{B} \setminus B, i=1, \cdots, m_B$, and the corresponding standard deviations $\sigma^{A}, \sigma^{B}$ with $\sigma^{A}_{i j}, i=1,\cdots, m_A, j=1, \cdots, d, \sigma^{B}_{i j}, i=1, \cdots, m_B, j=1, \cdots, d$, the energy function we used in the experiments is given by
