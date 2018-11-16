@@ -561,7 +561,7 @@ h_{A\cup B,(\tilde A\cup\tilde B)^c}(x) =
 We can now use this probabilistic perspective to help us understand the capacity by articulating it as the Dirichlet form on the relevant hitting probability functions
 \begin{align*}
 \capac{A\cup B}{\tilde A \cup \tilde B} 
-        &= \int_{\tilde A\cup \tilde A \backslash A\cup B} \Vert \sigma \nabla h_{A\cup B,(\tilde A \cup \tilde B)^c}\Vert^2\rho(dx) \\
+        &= \int_{\tilde A\cup \tilde B \backslash (A\cup B)} \Vert \sigma \nabla h_{A\cup B,(\tilde A \cup \tilde B)^c}\Vert^2\rho(dx) \\
         &= \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,\tilde A^c}\Vert^2\rho(dx)
             +\int_{\tilde B \backslash B} \Vert \sigma \nabla h_{B,\tilde B^c}\Vert^2 \rho(dx) \\
         &= \capac{A}{\tilde A}+\capac{B}{\tilde B}
@@ -886,7 +886,7 @@ Thus, to complete our proof, it suffices to show that we can drive $L(d_A,r_{\ti
 
     Let us look at the numerator first.  Asymptotics from the DLMF give that as $h=(\dimension-2)/2 \rightarrow \infty$ we have
     \begin{align*}
-    I_h(x) \sim x^h/2^hh! & & K_h(x) \sim 2^hh!/(2h)x^h  
+    I_h(x) \sim x^h/2^h\Gamma(h+1) & & K_h(x) \sim 2^h\Gamma(h+1)/(2h)x^h  
     \end{align*}
     Here by $f_1(h)\sim f_2(h)$ we mean ``asymptotic equivalence,'' i.e.\ $\lim_{h\rightarrow\infty}f_1(h)/f_2(h)=0$.    Applying to our case:
     \begin{align*}
@@ -908,8 +908,8 @@ Thus, to complete our proof, it suffices to show that we can drive $L(d_A,r_{\ti
     \begin{align*}
     \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde{d}_A)} - \left(\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h  \right)
                 K_h ( d_A) I_h ( \tilde{d}_A) 
-        &\geq \frac{r_{\tilde{A}}^h}{\cancel{I_h(\tilde{d}_A)}}\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}(h+1)!} K_h ( d_A) \cancel{I_h ( \tilde{d}_A)} \\
-        &\sim r_{\tilde{A}}^h\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}(h+1)!} \frac{2^h h!}{2hd_A^h}  \\
+        &\geq \frac{r_{\tilde{A}}^h}{\cancel{I_h(\tilde{d}_A)}}\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}\Gamma(h+2)} K_h ( d_A) \cancel{I_h ( \tilde{d}_A)} \\
+        &\sim r_{\tilde{A}}^h\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}\Gamma(h+2)} \frac{2^h \Gamma(h+1)}{2hd_A^h}  \\
         &=\left(\frac{r_{\tilde{A}}}{d_A} \right)^h \left(\frac{r_{\tilde A}^2 - \tilde d_A^2}{8h(h+1)}\right)
     \end{align*}
     which is indeed exploding as $h=(\dimension-2)/2 \rightarrow \infty$.  
