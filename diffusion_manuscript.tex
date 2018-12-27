@@ -490,7 +490,7 @@ In this section, we set notation and review known properties of stochastic diffe
 
 Let $\dimension \geq 3$ and $\Omega \subset \mathbb{R}^\dimension$ be a bounded open set with smooth boundary.  Let $\bar \Omega$ denote the closure of $\Omega$ and in general let $\bar S$ denote the closure of any set $S\subset \bar \Omega$.  Our central object of interest will be a diffusion $X$ trapped in $\bar \Omega$ by some kind of reflecting boundaries.  The construction of such reflected diffusions is a delicate art, so we will start by taking a moment to rigorously define the process $X$.
 
-Let $W$ denote a Brownian motion.  Let $b:\ \bar \Omega \rightarrow \mathbb{R}^\dimension,\sigma:\ \bar \Omega \rightarrow \mathbb{R}^{\dimension\times\dimension}$ smooth.  Let $\mathbf{n}$ denote the outward normal of $\partial \Omega$ and $\nu:\ \partial \Omega \rightarrow \mathbb{R}^\dimension$ a smooth vector field satisfying $\mathbf{n}^T\nu\geq c>0$. Let $x_0 \in \Omega$.  Then there is a pathwise unique continuous $W$-adapted strong Markov process $X$ and (random) measure $L$ such that 
+Let $W$ denote a Brownian motion.  Assume $b:\ \bar \Omega \rightarrow \mathbb{R}^\dimension,\sigma:\ \bar \Omega \rightarrow \mathbb{R}^{\dimension\times\dimension}$ are smooth.  Let $\mathbf{n}$ denote the outward normal of $\partial \Omega$ and $\nu:\ \partial \Omega \rightarrow \mathbb{R}^\dimension$ a smooth vector field satisfying $\mathbf{n}^T\nu\geq c>0$. Let $x_0 \in \Omega$.  Then there is a pathwise unique continuous $W$-adapted strong Markov process $X$ and (random) measure $L$ such that 
 \begin{gather}\label{eq:SDER}
 X_t = x_0 + \int_0^t b(X_s)ds + \int_0^t \sigma(X_s)dW_s - \int_0^t \nu(X_s) L(ds)
 \end{gather}
@@ -509,20 +509,20 @@ where $a=\sigma\sigma^T$ is uniformly elliptic.  Specifically, Chen shows that u
 
 \subsection{Three perspectives on hitting probabilities}
 
-Many of our results are based on the fact that hitting probability functions can actually be seen from three distinct perspectives.  Let $A,B\subset \Omega$, disjoint, open with smooth boundary.  
+Many of our results are based on the fact that hitting probabilities can actually be seen from three distinct perspectives.  Let $A,B\subset \Omega$, disjoint, open with smooth boundary.  
 
 \begin{enumerate}
     \item Hitting probabilities.  Let $\tau_S \triangleq \inf\{t:\ X_t \in S\}$ for any set $S$ and $h_{A,B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in \partial A)$.
     
     \item Elliptic equation.  Let $h^\mathrm{dir}_{A,B}(x)$ denote the solution to the partial differential equation:
-    \begin{align*}
+	    \begin{align}\label{eq:pde}
     0 &= \sum_{i = 1}^\dimension b_i (x) \frac{\partial u
         (x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^\dimension \sum_{j = 1}^\dimension a_{ij} (x)
         \frac{\partial^2 u (x)}{\partial x_i \partial x_j}\quad x\notin \bar A,\bar B\\
-    1 &= u(x),x\in A \\ 
-    0 &= u(x) ,x\in B \\
-    0 &= \mathbf{n}(x)^Ta(x)\nabla u(x), x \in \partial{\Omega} \backslash (\partial A \cup \partial B)
-    \end{align*}
+    1 &= u(x),x\in A \nonumber \\ 
+    0 &= u(x) ,x\in B \nonumber \\
+    0 &= \mathbf{n}(x)^Ta(x)\nabla u(x), x \in \partial{\Omega} \backslash (\partial A \cup \partial B) \nonumber
+    \end{align}
     This solution is unique and smooth.\cite{lieberman1986mixed}  What's more, it is equal to the hitting probability function: $h^\mathrm{dir}_{A,B}(x)=h_{A,B}(x)$ (cf.\ Section 6.7 of Chen\cite{chen2012symmetric}).
 
     \item Variational form.  For any open set $S\subset \Omega$ let $\mathscr{E}_{S}(f,g)\triangleq \int_S \nabla f(x)^T a(x) \nabla g(x) \rho(dx)$ denote the ``Dirichlet Form'' of $f,g$ on the domain $S$.  Let $\mathscr L^2(S,\rho)$ denote the Hilbert space of functions on $S$ which are square-integrable with respect to $\rho$.  Let $\mathcal{H}^1(S,\rho)=W^{1,2}(S) \subset \mathscr{L}^2(S)$ denote the corresponding once-weakly-differentiable Hilbert Sobolev space.  We define $h^\mathrm{var}_{A,B}(x)$ as the solution to 
@@ -582,20 +582,20 @@ as desired.
 
 Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$.  We assume the set boundaries are all smooth.  
 
-Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathcal{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of local capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
+Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathscr{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of local capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
 
 \begin{lemma}  Let $S=\Omega \backslash (A\cup B)$.  The Dirichlet form of $h_{A,B}$ on $S$ can be upper-bounded in terms of the capacities:
-\[ \mathcal{E}_S(h_{A,B}, h_{A,B}) \leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
+\[ \mathscr{E}_S(h_{A,B}, h_{A,B}) \leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
 \tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \]
 \end{lemma}
 \begin{proof}
 We recall from Appendix \ref{sec:reversible_diffusion} that
 %
 \[
-\mathcal{E}_S(h_{A,B}, h_{A,B}) = \capac{A}{B^c} \leq \mathcal{E}_S (u,u)
+\mathscr{E}_S(h_{A,B}, h_{A,B}) = \capac{A}{\Omega \backslash B} \leq \mathscr{E}_S (u,u)
 \]
 %
-for any $u$ with $u(\partial A)\geq1,u(\partial B)\leq0$.  Thus, to prove an upper bound it suffices to find any such function for which we can calculate $\mathcal{E}(u,u)$.  To this end, consider
+for any $u$ with $u(\partial A) = 1,u(\partial B) = 0$.  Thus, to prove an upper bound it suffices to find any such function for which we can calculate $\mathscr{E}(u,u)$.  To this end, consider
 %
 \[
 u_c (x) \triangleq \left\{ \begin{array}{ll}
@@ -605,14 +605,14 @@ c & \mbox{otherwise}
 \end{array} \right. 
 \]
 %
-These functions are well-suited to giving us upper bounds on $\mathcal{E}_S (h_{A,B}, h_{A,B})$.  Indeed:
+These functions are well-suited to giving us upper bounds on $\mathscr{E}_S (h_{A,B}, h_{A,B})$.  Indeed:
 \begin{itemize}
-\item $u_c(\partial A)=1,u_c(\partial B)=0$.  Indeed, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  
-\item Noting that $u_c$ is written as a piecewise combination of hitting probability functions, we see that its Dirichlet form can be calculated in terms of capacities on local regions: $\mathcal{E}_S(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
+\item $u_c(\partial A)=1,u_c(\partial B)=0$.  In fact, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  
+\item Noting that $u_c$ is written as a piecewise combination of hitting probability functions, we see that its Dirichlet form can be calculated in terms of capacities on local regions: $\mathscr{E}_S(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
 \end{itemize}
 Thus the $u_c$ functions give us a practical way to calculate upper bounds: 
 \[
-\mathcal{E}_S(h_{A,B}, h_{A,B})\leq (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})
+\mathscr{E}_S(h_{A,B}, h_{A,B})\leq (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})
 \]
 This inequality holds for any value of $c$.  To get the best bound, we can take derivatives to minimize the right hand side with respect to $c$.  The result is 
 \[
@@ -625,15 +625,15 @@ Plugging this into the previous equation, we obtain our final result.
 %%%%%%%%%%%
 
 \begin{lemma}  Let $S=\Omega \backslash (A\cup B)$.  Let $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  The Dirichlet form of $h_{A,B}$ can be lower-bounded in terms of $m$ and the capacities:
-\[\mathcal{E}_S (h_{A,B}, h_{A,B}) \geq  
+\[\mathscr{E}_S (h_{A,B}, h_{A,B}) \geq  
    \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
    \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\indicatorf{m\geq \frac{\varepsilon}{2}} 
 \]
 \end{lemma}
 \begin{proof}
-Recall that $\mathcal{E}_S(h_{A,B}, h_{A,B})$ can be expressed as an integral over $S$.  We decompose this into three integrals: one over $\tilde A$, one over $\Omega \backslash \tilde A,\tilde B$, and one over $\tilde B$.  
+Recall that $\mathscr{E}_S(h_{A,B}, h_{A,B})$ can be expressed as an integral over $S$.  We decompose this into three integrals: one over $\tilde A$, one over $\Omega \backslash \tilde A,\tilde B$, and one over $\tilde B$.  
 \[
-\mathcal{E} (h_{A,B}, h_{A,B}) = \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
+\mathscr{E}_S (h_{A,B}, h_{A,B}) = \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
                                  + \int_{\tilde B \backslash B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
                                  + \int_{\Omega \backslash \tilde A,\tilde B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
 \]
@@ -649,13 +649,13 @@ For example, let us focus on the $A$ integral.  There are two different possibil
     Note that  $h_{A,B}(x)=1$ for $x \in \partial A$ and the $\varepsilon$-flatness condition shows that $h_{A,B}(x) \leq m + \frac {\varepsilon}{2}$ for $x \in \partial \tilde A$.  Thus $u_A(\partial A)\geq1,u_A(\partial \tilde A)\leq 0$.  Lemma \ref{lem:inequalityboundaryvar} from Appendix \ref{sec:inequalityboundaryvar} may then be applied to yield that $\mathscr{E}_{\tilde A \backslash A}(u_A,u_A) \geq \capac{A}{\tilde A}$.  We can thus obtain the bound
     \begin{align*}
     \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) 
-         &= \left(1 - m - \frac{\varepsilon}{2}\right)^2 \mathscr{E}(u_A,u_A)\\
+	 &= \left(1 - m - \frac{\varepsilon}{2}\right)^2 \mathscr{E}_{\tilde{A} \backslash A}(u_A,u_A)\\
          &\geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}
     \end{align*}
 \end{itemize}
 Putting these two possibilities together, we obtain
 \[
-\int_{\tilde A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) \geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}\indicatorf{m\leq 1-\frac{\varepsilon}{2}}
+\int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) \geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}\indicatorf{m\leq 1-\frac{\varepsilon}{2}}
 \]
 Applying the same ideas to the integral over $\tilde B$, we obtain our result.
 \end{proof}
@@ -682,7 +682,7 @@ We are now in a position to prove Theorem \ref{thm:main_thm} from the main text:
 To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tilde B}$.  Applying the previous two lemmas together, we obtain the inequality
 \[
 \frac{\capA \capB}{\capA +\capB}
-\geq \mathcal{E}(h_{A,B},h_{A,B}) \geq
+\geq \mathscr{E}(h_{A,B},h_{A,B}) \geq
 \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
    \left( m- \frac{\varepsilon}{2} \right)^2 \capB \indicatorf{m\geq \frac{\varepsilon}{2}} 
 \]
@@ -769,12 +769,10 @@ Let us assume $X_0 \notin \tilde A,\tilde B$.  There are essentially two things 
 %
 where $Z$ is distributed according to the uniform distribution on $\Omega$ and $M$ is a Brownian motion trapped in $\Omega$ by normally reflecting boundaries.  
 
-To connect this result on $M$ to our object of interest $h_{A,B}$, note that without loss of generality we may assume $X,M$ are on the same probability space and $M_t=X_t$ for $t<\tilde\tau \triangleq \inf \{t:\ X_t \in \partial \dot A \cup \partial \dot B\}$.  Moreover, noting that $\tilde\tau\wedge t$ is a stopping time and applying the Strong Markov property, we observe that 
+To connect this result on $M$ to our object of interest $h_{A,B}$, note that without loss of generality we may assume $X,M$ are on the same probability space and $M_t=X_t$ for $t<\tilde\tau \triangleq \inf \{t:\ X_t \in \partial \dot A \cup \partial \dot B\}$.  Moreover, note that $\forall t \geq 0$, $\tilde\tau\wedge t$ is a stopping time with finite expectation, and $h_{A,B}$ is a solution to the elliptic equation \ref{eq:pde}. Applying Dynkin's formula, we observe that 
 %
 \[
-h_{A,B}(x) = \mathbb{E} [\indicatorf{X_{t\wedge\tilde\tau} \in \partial A}] 
-        = \mathbb{E} [\mathbb{E}[\indicatorf{X_{t\wedge\tilde\tau} \in \partial A} | X_{t\wedge\tilde\tau}]]
-        = \mathbb{E} [h_{A,B}(X_{t\wedge\tilde\tau})] = \mathbb{E} [h_{A,B}(M_{t\wedge\tilde\tau})]
+h_{A,B}(x) = \mathbb{E} [h_{A,B}(X_{t\wedge\tilde\tau})] = \mathbb{E} [h_{A,B}(M_{t\wedge\tilde\tau})]
 \]
 %
 Thus
@@ -832,26 +830,25 @@ Our task is to show that $\tilde \tau$ is large with high probability.  Note tha
 \[
 g(x)=\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}|X_0=x]
 \] 
-arbitrarily small for every $x\notin \tilde A$.  Furthermore note that for any $X_0 \notin \tilde A$, the continuity of $X$ dictates that $X$ must cross the set $S=S_{\tilde d_A}=\{x:\ |x-x_A| = \tilde d_A\}$ before $\tilde \tau_A$, as long as $\tilde d_A \in (d_A,r_{\tilde A})$.  Thus, applying the strong Markov property of $X$, we have that $g(x)\leq \sup_{y\in S_{\tilde d_A}}g(y)$ for any $x \notin \tilde A$.
-
-In summary, to prove our theorem it will suffice to show that by taking $d_A$ sufficiently small or $\dimension$ sufficiently large we can ensure that $g(x)$ is uniformly arbitrarily small on $S_{\tilde d_A}$ for some $\tilde d_A \in (d_A,r_{\tilde A})$.  To show this, we will make use of two other hitting probabilities:
+arbitrarily small for every $x\notin \tilde A$. We note that $\forall X_0 \notin \tilde A$, the continuity of $X$ dictates that $X$ would have to cross the set $S_{\tilde d_A}=\{x:\ |x-x_A| = \tilde d_A\}$ before $\tilde \tau_A$, as long as $\tilde d_A \in (d_A,r_{\tilde A})$.  Applying the strong Markov property of $X$, we obtain $g(x)\leq \sup_{y\in S_{\tilde d_A}}g(y), \forall x \notin \tilde A$. As a result, to prove our theorem it will suffice to show that by taking $d_A$ sufficiently small or $\dimension$ sufficiently large we can ensure that $g(x)$ is uniformly arbitrarily small on $S_{\tilde d_A}$ for some $\tilde d_A \in (d_A,r_{\tilde A})$.  To show this, we will make use of two other hitting times:
 \[
 T =\inf \{t:\ X_t \notin \tilde A \backslash \dot A\} 
 \qquad
-T_1 =\inf \{t>T:\ X_t \in S\} 
+T_1 =\inf \{t\geq T:\ X_t \in S_{\tilde d_A}\} 
 \]
-If $T\neq \tilde \tau_A$, note that the process must cross $S$ again before reaching $\dot A$ and so $T_1 \leq \tilde \tau_A$.  Thus, applying the strong Markov property we see that for any $x\in S$ we have
+$\forall X_0 \in S_{\tilde d_A}$, if $X_T\notin \partial\dot A$, then the process exits $\tilde A \backslash \dot A$ at $\partial \tilde A$, and would have to cross $S_{\tilde d_A}$ again before reaching $\dot A$. In this case, we have $T_1 \leq \tilde \tau_A$.  Applying the strong Markov property, we see that $\forall x\in S_{\tilde d_A}$
 \begin{align*}
-g(x) = &\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T=\tilde \tau_A}|X_0=x]+
-                    \mathbb{E}[e^{-\tilde \tau_A}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
+	g(x) = &\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{X_T \in\partial\dot A}|X_0=x]+ \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{X_T \in\partial\tilde A}|X_0=x]\\
+	       &\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T=\tilde \tau_A}|X_0=x]+ \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
      = & \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T=\tilde \tau_A}|X_0=x]+
-                    \mathbb{E}[e^{-T_1}g(X_{T_1})\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
+     \mathbb{E}[e^{-\frac{1}{2}T_1}g(X_{T_1})\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
      \leq & \mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x]+
-                    \mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\left(\sup_{y\in S} g(y)\right)
+                    \mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\left(\sup_{y\in 
+		   S_{\tilde d_A}} g(y)\right)
 \end{align*}
-Note furthermore that the law of $e^{-\frac{1}{2}T},\indicatorf{T=\tilde \tau_A}$ is actually the same for every $x\in S$, due to the fact that the diffusion behaves simply like a Brownian motion inside $\tilde A \backslash \dot A$ and the law of $T,\indicatorf{T=\tau_A}$ are thus functions of the one-dimensional diffusion of $|X_t-x_A|$.  In fact, Wendel\cite{Wendel1980-sj} gives explicit formulas for $\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x],\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]$ which depend only upon $|x-x_A|,r_{\tilde{A}},d_A$.  Applying this, taking the supremum over $x$ of our previous formula, and rearranging, we obtain
+Note furthermore that the law of $e^{-\frac{1}{2}T},\indicatorf{T=\tilde \tau_A}$ is actually the same for every $x\in S_{\tilde d_A}$, due to the fact that the diffusion behaves simply like a Brownian motion inside $\tilde A \backslash \dot A$ and the law of $T,\indicatorf{T=\tau_A}$ are thus functions of the one-dimensional diffusion of $|X_t-x_A|$.  In fact, Wendel\cite{Wendel1980-sj} gives explicit formulas for $\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x],\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]$ which depend only upon $|x-x_A|,r_{\tilde{A}},d_A$.  Applying this, taking the supremum over $x$ of our previous formula, and rearranging, we obtain
 \begin{align*}
-\sup_{x\in S} g(x) &\leq \frac{\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0\in S]}{1-\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0\in S]} \triangleq L(d_A,\tilde d_A,r_{\tilde A},\dimension)
+\sup_{x\in S_{\tilde d_A}} g(x) &\leq \frac{\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0\in S_{\tilde d_A}]}{1-\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0\in S_{\tilde d_A}]} \triangleq L(d_A,\tilde d_A,r_{\tilde A},\dimension)
 \end{align*}
 Applying Wendel's formulas, we obtain a closed form expression for $L$:
 \[
@@ -866,7 +863,7 @@ K_h ( d_A) I_h ( \tilde{d}_A)+
 \]
 where $h=(\dimension-2)/2$ and $I_h,K_h$ represent modified Bessel functions of the first and second kind of order $h$.  
  
-Thus, to complete our proof, it suffices to show that we can drive $L(d_A,r_{\tilde A},\dimension)$ to zero by taking $d_A$ small or $\dimension$ large:
+Thus, to complete our proof, it suffices to show that we can drive $L(d_A, \tilde d_A, r_{\tilde A},\dimension)$ to zero by taking $d_A$ small or $\dimension$ large:
 \begin{itemize}
     \item When $d_A$ is small.  The numerator of $L$ converges to zero as $d_A\rightarrow 0$, because $\frac{d_A}{\tilde{d}_A}\rightarrow 0,h>0$ and the other terms are constant.  On the other hand, the denominator explodes, because as $d_A\rightarrow0$ we have
     \begin{align*}
@@ -886,23 +883,23 @@ Thus, to complete our proof, it suffices to show that we can drive $L(d_A,r_{\ti
 
     Let us look at the numerator first.  Asymptotics from the DLMF give that as $h=(\dimension-2)/2 \rightarrow \infty$ we have
     \begin{align*}
-    I_h(x) \sim x^h/2^h\Gamma(h+1) & & K_h(x) \sim 2^h\Gamma(h+1)/(2h)x^h  
+    I_h(x) \sim \frac{x^h}{2^h\Gamma(h+1)} & & K_h(x) \sim \frac{2^h\Gamma(h+1)}{(2h)x^h}  
     \end{align*}
-    Here by $f_1(h)\sim f_2(h)$ we mean ``asymptotic equivalence,'' i.e.\ $\lim_{h\rightarrow\infty}f_1(h)/f_2(h)=0$.    Applying to our case:
+    Here by $f_1(h)\sim f_2(h)$ we mean ``asymptotic equivalence,'' i.e.\ $\lim_{h\rightarrow\infty}f_1(h)/f_2(h)=1$. Applying to our case:
     \begin{align*}
         \left(\frac{d_A}{\tilde{d}_A}\right)^h I_h (r_{\tilde{A}}) K_h ( \tilde{d}_A) &
-                \sim \left(\frac{r_{\tilde{A}} d_A}{\tilde{d}_A^2}\right)^h/2h \rightarrow 0 \\
+	\sim \frac{1}{2h}\left(\frac{r_{\tilde{A}} d_A}{\tilde{d}_A^2}\right)^h = \frac{1}{2h} \rightarrow 0 \\
         \left(\frac{d_A}{\tilde{d}_A}\right)^h I_h ( \tilde{d}_A) K_h (r_{\tilde{A}}) &
-                \sim \left(\frac{ d_A}{r_{\tilde A}}\right)^h \rightarrow 0
+	\sim \frac{1}{2h}\left(\frac{ d_A}{r_{\tilde A}}\right)^h \rightarrow 0
     \end{align*}
     Putting these two limits together we see that the numerator of $L$ is asymptotically vanishing.
 
     Now let us turn to the denominator.  First note that 
     \begin{align*}
      \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}\right)^h  
-                I_h (d_A)K_h ( \tilde{d}_A) &\sim \left(\frac{r_{\tilde{A}} d_A}{\tilde d_A^2}\right)^h/2h \rightarrow 0\\
+	    I_h (d_A)K_h ( \tilde{d}_A) &\sim \frac{1}{2h}\left(\frac{r_{\tilde{A}} d_A}{\tilde d_A^2}\right)^h = \frac{1}{2h} \rightarrow 0\\
      - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde{d}_A)} 
-                I_h (d_A)K_h ( \tilde{d}_A) &\sim -\left(\frac{\tilde d_A d_A}{r_{\tilde A}\tilde d_A}\right)^h /2h\rightarrow 0
+	    I_h (d_A)K_h ( \tilde{d}_A) &\sim -\frac{1}{2h}\left(\frac{d_A}{r_{\tilde A}}\right)^h \rightarrow 0
     \end{align*}
     So those terms are negligible.  However, the other two terms of the denominator are in fact exploding: one to positive infinity and one to negative infinity.  To understand this delicate balance, we these we turn to Lemma \ref{lem:bessel}.  Applying this Lemma and the asymptotics of the DLMF, we obtain that
     \begin{align*}
@@ -914,12 +911,12 @@ Thus, to complete our proof, it suffices to show that we can drive $L(d_A,r_{\ti
     \end{align*}
     which is indeed exploding as $h=(\dimension-2)/2 \rightarrow \infty$.  
 
-    In conclusion, with this choice of $\tilde d_A$, the numerator is asymptotically constant, but the denominator is asymptotically exploding.  Thus $L$ vanishes.
+    In conclusion, with this choice of $\tilde d_A$, the numerator is asymptotically vanishing, but the denominator is asymptotically exploding.  Thus $L$ vanishes.
 \end{itemize}
 
 Let us now review our arguments to see how the vanishing of $L$ leads to our desired conclusion.  We have just shown that by taking $\dimension$ large or $d_A$ small, we can ensure that $L$ vanishes.  Thus for any $x_0\notin \tilde A$ and any $\varepsilon'>0$, we can ensure
 \begin{align*}
-\varepsilon' & \geq L \geq \sup_{y \in S} g(y) \geq g(x) \\
+\varepsilon' & \geq L \geq \sup_{y \in S_{\tilde d_A}} g(y) \geq g(x) \\
             & = \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}|X_0=x]\\
             & \geq \mathbb{P}(\tilde \tau_A < t) e^{\frac{1}{2} t}
 \end{align*}
