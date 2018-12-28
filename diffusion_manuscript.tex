@@ -575,173 +575,6 @@ as desired.
                                                        
 
 
-\section{Proof of Theorem \ref{thm:main_thm}}\label{sec:proof_thm}
-
-Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$.  We assume the set boundaries are all smooth.  
-
-Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathscr{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of local capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
-
-\begin{lemma}  Let $S=\Omega \backslash (A\cup B)$.  The Dirichlet form of $h_{A,B}$ on $S$ can be upper-bounded in terms of the capacities:
-\[ \mathscr{E}_S(h_{A,B}, h_{A,B}) \leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
-\tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \]
-\end{lemma}
-\begin{proof}
-We recall from Appendix \ref{sec:reversible_diffusion} that
-%
-\[
-\mathscr{E}_S(h_{A,B}, h_{A,B}) = \capac{A}{\Omega \backslash B} \leq \mathscr{E}_S (u,u)
-\]
-%
-for any $u$ with $u(\partial A) = 1,u(\partial B) = 0$.  Thus, to prove an upper bound it suffices to find any such function for which we can calculate $\mathscr{E}(u,u)$.  To this end, consider
-%
-\[
-u_c (x) \triangleq \left\{ \begin{array}{ll}
-(1 - c) h_{A, \widetilde{A}^c} (x) + c & \tmop{if} x \in \tilde{A} \\
-c (1 - h_{B, \widetilde{B}^c} (x)) & \tmop{if} x \in \tilde{B} \\
-c & \mbox{otherwise}
-\end{array} \right. 
-\]
-%
-These functions are well-suited to giving us upper bounds on $\mathscr{E}_S (h_{A,B}, h_{A,B})$.  Indeed:
-\begin{itemize}
-\item $u_c(\partial A)=1,u_c(\partial B)=0$.  In fact, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  
-\item Noting that $u_c$ is written as a piecewise combination of hitting probability functions, we see that its Dirichlet form can be calculated in terms of capacities on local regions: $\mathscr{E}_S(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
-\end{itemize}
-Thus the $u_c$ functions give us a practical way to calculate upper bounds: 
-\[
-\mathscr{E}_S(h_{A,B}, h_{A,B})\leq (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})
-\]
-This inequality holds for any value of $c$.  To get the best bound, we can take derivatives to minimize the right hand side with respect to $c$.  The result is 
-\[
-c^* = \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}
-\]
-Plugging this into the previous equation, we obtain our final result.
-\end{proof}
-
-%%%%%%%%%%%
-%%%%%%%%%%%
-
-\begin{lemma}  Let $S=\Omega \backslash (A\cup B)$.  Let $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  The Dirichlet form of $h_{A,B}$ can be lower-bounded in terms of $m$ and the capacities:
-\[\mathscr{E}_S (h_{A,B}, h_{A,B}) \geq  
-   \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
-   \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\indicatorf{m\geq \frac{\varepsilon}{2}} 
-\]
-\end{lemma}
-\begin{proof}
-Recall that $\mathscr{E}_S(h_{A,B}, h_{A,B})$ can be expressed as an integral over $S$.  We decompose this into three integrals: one over $\tilde A$, one over $\Omega \backslash \tilde A,\tilde B$, and one over $\tilde B$.  
-\[
-\mathscr{E}_S (h_{A,B}, h_{A,B}) = \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
-                                 + \int_{\tilde B \backslash B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
-                                 + \int_{\Omega \backslash \tilde A,\tilde B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
-\]
-Since the integrand is always positive, we can get a lower bound by simply ignoring the integral over $\Omega \backslash \tilde A,\tilde B$ and focusing on the integrals over $\tilde A,\tilde B$.  The $\tilde A,\tilde B$ integrals can be lower-bounded using capacities.  
-
-For example, let us focus on the $A$ integral.  There are two different possibilities we must consider:
-\begin{itemize}
-\item If $m>1-\varepsilon/2$ we will simply note that the integral over the $\tilde A$ region is non-negative.  
-\item If $m\leq 1-\varepsilon/2$, then we define
-    \[
-    u_A (x) \triangleq \frac{h_{A,B} (x) - m - \frac{\varepsilon}{2}}{1 - m - \frac{\varepsilon}{2}}
-    \]
-    Note that  $h_{A,B}(x)=1$ for $x \in \partial A$ and the $\varepsilon$-flatness condition shows that $h_{A,B}(x) \leq m + \frac {\varepsilon}{2}$ for $x \in \partial \tilde A$.  Thus $u_A(\partial A)\geq1,u_A(\partial \tilde A)\leq 0$.  Lemma \ref{lem:inequalityboundaryvar} from Appendix \ref{sec:inequalityboundaryvar} may then be applied to yield that $\mathscr{E}_{\tilde A \backslash A}(u_A,u_A) \geq \capac{A}{\tilde A}$.  We can thus obtain the bound
-    \begin{align*}
-    \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) 
-	 &= \left(1 - m - \frac{\varepsilon}{2}\right)^2 \mathscr{E}_{\tilde{A} \backslash A}(u_A,u_A)\\
-         &\geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}
-    \end{align*}
-\end{itemize}
-Putting these two possibilities together, we obtain
-\[
-\int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) \geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}\indicatorf{m\leq 1-\frac{\varepsilon}{2}}
-\]
-Applying the same ideas to the integral over $\tilde B$, we obtain our result.
-\end{proof}
-
-%%%%%%%%%%%
-%%%%%%%%%%%
-
-We are now in a position to prove Theorem \ref{thm:main_thm} from the main text:
-
-\begingroup
-\def\thetheorem{\ref{thm:main_thm}}
-\begin{theorem}  The hitting probabilities can be well-approximated by the capacities:
-\[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\ensuremath{\operatorname{cap}} (A,
-\tilde{A})}{\ensuremath{\operatorname{cap}} (A, \tilde{A})
-+\ensuremath{\operatorname{cap}} (B, \tilde{B})} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
-\end{theorem}
-\addtocounter{theorem}{-1}
-\endgroup
-
-\begin{proof}
-\newcommand{\capA}{\kappa_A}
-\newcommand{\capB}{\kappa_B}
-
-To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tilde B}$.  Applying the previous two lemmas together, we obtain the inequality
-\[
-\frac{\capA \capB}{\capA +\capB}
-\geq \mathscr{E}(h_{A,B},h_{A,B}) \geq
-\left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
-   \left( m- \frac{\varepsilon}{2} \right)^2 \capB \indicatorf{m\geq \frac{\varepsilon}{2}} 
-\]
-where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  In analyzing this inequality, there are three possibilities to consider.  
-\begin{itemize}
-    \item If $m \in (\epsilon/2,1-\epsilon/2)$, the quadratic formula yields
-    \begin{eqnarray*}
-    m & \geqslant & \frac{\capA}{\capA + \capB} + \frac{
-    \frac{\varepsilon}{2}(\capB - \capA) - 
-    \sqrt{\capA \capB \varepsilon( 2 - \varepsilon)}}{\capA+\capB}\\
-    m & \leqslant & \frac{\capA}{\capA + \capB} + \frac{
-    \frac{\varepsilon}{2}(\capB - \capA) +
-    \sqrt{\capA \capB \varepsilon( 2 - \varepsilon)}}{\capA+\capB}
-    \end{eqnarray*}
-    Applying $\left|\frac{\capB - \capA}{\capA + \capB}\right| \leq 1$ and the fact that the geometric mean $\sqrt{\capA \capB}$ never exceeds the arithmetic mean $(\capA+\capB) / 2$, it follows that
-    \[
-    \left|m -  \frac{\capA}{\capA + \capB}\right| \leq \frac{\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
-    \]
-    Applying the fact that $m$ was designed so that $|h_{A,B}(x) - m| <\varepsilon/2$ for all $x \notin \tilde A,\tilde B$, we obtain
-    \[
-    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq \frac{2\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
-    \]
-
-    \item If $m<\varepsilon/2$, our equations become 
-    \[
-    \frac{\cancel{\capA} \capB}{\capA +\capB}
-    \geq
-    \left( 1-m- \frac{\varepsilon}{2} \right)^2 \cancel{\capA} 
-    \]
-    Our assumption that $m \leq \varepsilon/2$ indicates that $(1- m- \varepsilon/2)^2 \geq (1-\varepsilon)^2$, thus in fact we have 
-    \[
-    \frac{\capB}{\capA +\capB}
-    \geq
-    \left( 1- \varepsilon \right)^2  = 1 + \varepsilon^2 - 2\varepsilon
-    \]
-    which means that $\capA/(\capA +\capB)
-    \leq
-    2\varepsilon - \varepsilon^2 \leq 2\varepsilon$.  
-    Thus we assumed $m\in[0,\varepsilon/2]$ and showed that $\capA/(\capA+\capB)\in[0,2\varepsilon-\varepsilon^2]$, so it follows that 
-    \[
-    \left|m -  \frac{\capA}{\capA + \capB}\right| \leq 2\varepsilon -\varepsilon^2
-    \]
-    and so for any $x\notin \tilde A,\tilde B$, we have 
-    \[
-    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
-    \]
-    
-    \item If $m>1-\varepsilon/2$, the same bound can be achieved by arguments which are symmetric to those employed in $m<\varepsilon/2$:
-    \[
-    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
-    \]
-\end{itemize}
-Our final result is found by noting that all these bounds are upper-bounded by $\varepsilon + \sqrt{\varepsilon/2}$.
-\end{proof}
-
-%     _    ____  ____  _____ _   _ ____ _____  __   ____ 
-%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ /  / ___|
-%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  | |    
-%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \  | |___ 
-% /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\  \____|
-           
-
 \section{Proof of Theorem \ref{thm:epsilon_flat}}\label{sec:proof_epsilon_flat}
 
 Consider the setup of the Toy Model described in Section \ref{sec:toy_model}.  A stationary reversible diffusion $X$ is trapped inside the unit $\dimension$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the case where $X_0$ is outside of $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_A,r_{\tilde B}}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,d_A},\dot B=\bb{x_B,d_B}$.  
@@ -951,6 +784,173 @@ Since $a>b$, we have that $a^{2m} -b^{2m}$ is always positive.  Thus we can get 
                                                             
 
 
+\section{Proof of Theorem \ref{thm:main_thm}}\label{sec:proof_thm}
+
+Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and $\Omega \backslash (\tilde A \cup \tilde B)$ $\varepsilon$-flat for the hitting probabilities $h_{A,B}(x)$.  We assume the set boundaries are all smooth.  
+
+Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathscr{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of local capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
+
+\begin{lemma}  Let $S=\Omega \backslash (A\cup B)$.  The Dirichlet form of $h_{A,B}$ on $S$ can be upper-bounded in terms of the capacities:
+\[ \mathscr{E}_S(h_{A,B}, h_{A,B}) \leqslant \frac{\tmop{cap} (A, \tilde{A}) \tmop{cap} (B,
+\tilde{B})}{\tmop{cap} (A, \tilde{A}) + \tmop{cap} (B, \tilde{B})} \]
+\end{lemma}
+\begin{proof}
+We recall from Appendix \ref{sec:reversible_diffusion} that
+%
+\[
+\mathscr{E}_S(h_{A,B}, h_{A,B}) = \capac{A}{\Omega \backslash B} \leq \mathscr{E}_S (u,u)
+\]
+%
+for any $u$ with $u(\partial A) = 1,u(\partial B) = 0$.  Thus, to prove an upper bound it suffices to find any such function for which we can calculate $\mathscr{E}(u,u)$.  To this end, consider
+%
+\[
+u_c (x) \triangleq \left\{ \begin{array}{ll}
+(1 - c) h_{A, \widetilde{A}^c} (x) + c & \tmop{if} x \in \tilde{A} \\
+c (1 - h_{B, \widetilde{B}^c} (x)) & \tmop{if} x \in \tilde{B} \\
+c & \mbox{otherwise}
+\end{array} \right. 
+\]
+%
+These functions are well-suited to giving us upper bounds on $\mathscr{E}_S (h_{A,B}, h_{A,B})$.  Indeed:
+\begin{itemize}
+\item $u_c(\partial A)=1,u_c(\partial B)=0$.  In fact, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  
+\item Noting that $u_c$ is written as a piecewise combination of hitting probability functions, we see that its Dirichlet form can be calculated in terms of capacities on local regions: $\mathscr{E}_S(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
+\end{itemize}
+Thus the $u_c$ functions give us a practical way to calculate upper bounds: 
+\[
+\mathscr{E}_S(h_{A,B}, h_{A,B})\leq (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})
+\]
+This inequality holds for any value of $c$.  To get the best bound, we can take derivatives to minimize the right hand side with respect to $c$.  The result is 
+\[
+c^* = \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}
+\]
+Plugging this into the previous equation, we obtain our final result.
+\end{proof}
+
+%%%%%%%%%%%
+%%%%%%%%%%%
+
+\begin{lemma}  Let $S=\Omega \backslash (A\cup B)$.  Let $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  The Dirichlet form of $h_{A,B}$ can be lower-bounded in terms of $m$ and the capacities:
+\[\mathscr{E}_S (h_{A,B}, h_{A,B}) \geq  
+   \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
+   \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\indicatorf{m\geq \frac{\varepsilon}{2}} 
+\]
+\end{lemma}
+\begin{proof}
+Recall that $\mathscr{E}_S(h_{A,B}, h_{A,B})$ can be expressed as an integral over $S$.  We decompose this into three integrals: one over $\tilde A$, one over $\Omega \backslash \tilde A,\tilde B$, and one over $\tilde B$.  
+\[
+\mathscr{E}_S (h_{A,B}, h_{A,B}) = \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
+                                 + \int_{\tilde B \backslash B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
+                                 + \int_{\Omega \backslash \tilde A,\tilde B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
+\]
+Since the integrand is always positive, we can get a lower bound by simply ignoring the integral over $\Omega \backslash \tilde A,\tilde B$ and focusing on the integrals over $\tilde A,\tilde B$.  The $\tilde A,\tilde B$ integrals can be lower-bounded using capacities.  
+
+For example, let us focus on the $A$ integral.  There are two different possibilities we must consider:
+\begin{itemize}
+\item If $m>1-\varepsilon/2$ we will simply note that the integral over the $\tilde A$ region is non-negative.  
+\item If $m\leq 1-\varepsilon/2$, then we define
+    \[
+    u_A (x) \triangleq \frac{h_{A,B} (x) - m - \frac{\varepsilon}{2}}{1 - m - \frac{\varepsilon}{2}}
+    \]
+    Note that  $h_{A,B}(x)=1$ for $x \in \partial A$ and the $\varepsilon$-flatness condition shows that $h_{A,B}(x) \leq m + \frac {\varepsilon}{2}$ for $x \in \partial \tilde A$.  Thus $u_A(\partial A)\geq1,u_A(\partial \tilde A)\leq 0$.  Lemma \ref{lem:inequalityboundaryvar} from Appendix \ref{sec:inequalityboundaryvar} may then be applied to yield that $\mathscr{E}_{\tilde A \backslash A}(u_A,u_A) \geq \capac{A}{\tilde A}$.  We can thus obtain the bound
+    \begin{align*}
+    \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) 
+	 &= \left(1 - m - \frac{\varepsilon}{2}\right)^2 \mathscr{E}_{\tilde{A} \backslash A}(u_A,u_A)\\
+         &\geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}
+    \end{align*}
+\end{itemize}
+Putting these two possibilities together, we obtain
+\[
+\int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) \geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}\indicatorf{m\leq 1-\frac{\varepsilon}{2}}
+\]
+Applying the same ideas to the integral over $\tilde B$, we obtain our result.
+\end{proof}
+
+%%%%%%%%%%%
+%%%%%%%%%%%
+
+We are now in a position to prove Theorem \ref{thm:main_thm} from the main text:
+
+\begingroup
+\def\thetheorem{\ref{thm:main_thm}}
+\begin{theorem}  The hitting probabilities can be well-approximated by the capacities:
+\[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\ensuremath{\operatorname{cap}} (A,
+\tilde{A})}{\ensuremath{\operatorname{cap}} (A, \tilde{A})
++\ensuremath{\operatorname{cap}} (B, \tilde{B})} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
+\end{theorem}
+\addtocounter{theorem}{-1}
+\endgroup
+
+\begin{proof}
+\newcommand{\capA}{\kappa_A}
+\newcommand{\capB}{\kappa_B}
+
+To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tilde B}$.  Applying the previous two lemmas together, we obtain the inequality
+\[
+\frac{\capA \capB}{\capA +\capB}
+\geq \mathscr{E}(h_{A,B},h_{A,B}) \geq
+\left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
+   \left( m- \frac{\varepsilon}{2} \right)^2 \capB \indicatorf{m\geq \frac{\varepsilon}{2}} 
+\]
+where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  In analyzing this inequality, there are three possibilities to consider.  
+\begin{itemize}
+    \item If $m \in (\epsilon/2,1-\epsilon/2)$, the quadratic formula yields
+    \begin{eqnarray*}
+    m & \geqslant & \frac{\capA}{\capA + \capB} + \frac{
+    \frac{\varepsilon}{2}(\capB - \capA) - 
+    \sqrt{\capA \capB \varepsilon( 2 - \varepsilon)}}{\capA+\capB}\\
+    m & \leqslant & \frac{\capA}{\capA + \capB} + \frac{
+    \frac{\varepsilon}{2}(\capB - \capA) +
+    \sqrt{\capA \capB \varepsilon( 2 - \varepsilon)}}{\capA+\capB}
+    \end{eqnarray*}
+    Applying $\left|\frac{\capB - \capA}{\capA + \capB}\right| \leq 1$ and the fact that the geometric mean $\sqrt{\capA \capB}$ never exceeds the arithmetic mean $(\capA+\capB) / 2$, it follows that
+    \[
+    \left|m -  \frac{\capA}{\capA + \capB}\right| \leq \frac{\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
+    \]
+    Applying the fact that $m$ was designed so that $|h_{A,B}(x) - m| <\varepsilon/2$ for all $x \notin \tilde A,\tilde B$, we obtain
+    \[
+    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq \frac{2\epsilon +\sqrt{\epsilon (2-\epsilon)}}{2}
+    \]
+
+    \item If $m<\varepsilon/2$, our equations become 
+    \[
+    \frac{\cancel{\capA} \capB}{\capA +\capB}
+    \geq
+    \left( 1-m- \frac{\varepsilon}{2} \right)^2 \cancel{\capA} 
+    \]
+    Our assumption that $m \leq \varepsilon/2$ indicates that $(1- m- \varepsilon/2)^2 \geq (1-\varepsilon)^2$, thus in fact we have 
+    \[
+    \frac{\capB}{\capA +\capB}
+    \geq
+    \left( 1- \varepsilon \right)^2  = 1 + \varepsilon^2 - 2\varepsilon
+    \]
+    which means that $\capA/(\capA +\capB)
+    \leq
+    2\varepsilon - \varepsilon^2 \leq 2\varepsilon$.  
+    Thus we assumed $m\in[0,\varepsilon/2]$ and showed that $\capA/(\capA+\capB)\in[0,2\varepsilon-\varepsilon^2]$, so it follows that 
+    \[
+    \left|m -  \frac{\capA}{\capA + \capB}\right| \leq 2\varepsilon -\varepsilon^2
+    \]
+    and so for any $x\notin \tilde A,\tilde B$, we have 
+    \[
+    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
+    \]
+    
+    \item If $m>1-\varepsilon/2$, the same bound can be achieved by arguments which are symmetric to those employed in $m<\varepsilon/2$:
+    \[
+    \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
+    \]
+\end{itemize}
+Our final result is found by noting that all these bounds are upper-bounded by $\varepsilon + \sqrt{\varepsilon/2}$.
+\end{proof}
+
+%     _    ____  ____  _____ _   _ ____ _____  __   ____ 
+%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ /  / ___|
+%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  | |    
+%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \  | |___ 
+% /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\  \____|
+           
+
 \section{Proof of Lemma \ref{lem:capacity_lemma}}\label{sec:proof_lemma}
 
 To calculate the CHop probabilities which approximate hitting probabilities, we need to be able to estimate capacities.  To this end, we connect the capacity to a surface integral. We first establish a lemma, using Green's first identity and some properties of stationary reversible SDEs:
@@ -1022,6 +1022,53 @@ Using the facts that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=
 
 \end{proof}
 
+\section{Inequality boundary conditions for the variational form}
+
+\label{sec:inequalityboundaryvar}
+
+Recall that $h_{A,B}(x)$ may be defined variationally.  We have let 
+%
+\[
+\mathscr{E}(f,g)\triangleq \int_\Omega \nabla f(x)^T a(x) \nabla g(x) \rho(dx)
+\]
+%
+denote the ``Dirichlet Form.''  Let $\Omega \subset \mathbb{R}^\dimension$ compact and open with smooth boundary.  Let $\mathscr L^2(\bar \Omega,\rho)$ denote the Hilbert space of functions on $\bar \Omega$ which are square-integrable with respect to a continuous positive measure $\rho(dx)=e^{-U}dx$.  Let $\mathcal{H}^1(\bar \Omega,\rho)=W^{1,2}(\bar \Omega,\rho) \subset \mathscr{L}^2(\bar \Omega,\rho)$ denote the corresponding once-weakly-differentiable Hilbert Sobolev space.  Let $A,B\subset \Omega$, open, disjoint, with smooth boundary, and defined $\capac{A}{\Omega \backslash B} \in \mathbb{R}$ as the minimizing value of the problem
+    \begin{align*}
+    \min_{u \in \mathcal H^1} \quad & \mathscr{E}(u,u) \\
+    \mbox{subject to} \quad & u(x)=1,x\in A \\
+     & u(x)=0,x\in B
+    \end{align*}
+
+It is natural to consider an apparently different problem, where the equality boundary conditions are replaced with inequalities.  Here we show that it is not possible to get lower than $\capac{A}{\Omega \backslash B}$ by such a relaxation.
+
+\begin{lemma} \label{lem:inequalityboundaryvar} Let $\tilde h$ satisfy $\tilde h(x)\geq 1$ on $A$ and $\tilde h(x)\leq 0$ on $B$.  Then $\mathscr{E}(\tilde h,\tilde h) \geq \capac{A}{\Omega \backslash B}$.
+\end{lemma}
+\begin{proof}
+Let $k=\mathtt{clamp}(\tilde h,0,1)$, i.e.
+\[
+k(x)=
+\begin{cases}
+\tilde h(x) & \tilde h(x)\in[0,1] \\
+0 & \tilde h(x)\leq 0 \\
+1 & \tilde h(x)\geq 1 \\
+\end{cases}
+\]  
+Note that $k\in \mathcal{H}^1$ and satisfies the equality boundary conditions.  Thus, by definition, $\capac{A}{\Omega \backslash B} \leq \mathscr{E}(k,k)$.  This immediately yields our result:
+\begin{align*}
+\capac{A}{\Omega \backslash B} \leq \mathscr{E}(k,k) &= \int \Vert \sigma \nabla k \Vert^2 \rho(dx) \\
+    &=\int_{x:\ \tilde h(x)\in[0,1]} \Vert \sigma \nabla \tilde h \Vert^2 \rho(dx) \\
+    &\leq \int \Vert \sigma \nabla \tilde h \Vert^2 \rho(dx) = \mathscr{E}(\tilde h,\tilde h)
+\end{align*}
+
+
+% Let us look at the properties of their difference, $k=\tilde h- h$.
+% \begin{itemize}
+%     \item $\mathscr{E}(k,k)=\mathscr{E}(h,h)+\mathscr{E}(\tilde h,\tilde h)+2\mathscr{E}(h,\tilde h)$
+%     \item $k(A)\geq 0$
+%     \item $k(B)\leq 0$
+% \end{itemize}
+\end{proof}
+
 \section{Estimating Local Hitting Probabilities}\label{algorithm}
 The algorithm for estimating local hitting probabilities is outlined as follows:
 
@@ -1074,53 +1121,6 @@ $N_b$ discrete regions.
 \end{enumerate}
 }}
 
-
-\section{Inequality boundary conditions for the variational form}
-
-\label{sec:inequalityboundaryvar}
-
-Recall that $h_{A,B}(x)$ may be defined variationally.  We have let 
-%
-\[
-\mathscr{E}(f,g)\triangleq \int_\Omega \nabla f(x)^T a(x) \nabla g(x) \rho(dx)
-\]
-%
-denote the ``Dirichlet Form.''  Let $\Omega \subset \mathbb{R}^\dimension$ compact and open with smooth boundary.  Let $\mathscr L^2(\bar \Omega,\rho)$ denote the Hilbert space of functions on $\bar \Omega$ which are square-integrable with respect to a continuous positive measure $\rho(dx)=e^{-U}dx$.  Let $\mathcal{H}^1(\bar \Omega,\rho)=W^{1,2}(\bar \Omega,\rho) \subset \mathscr{L}^2(\bar \Omega,\rho)$ denote the corresponding once-weakly-differentiable Hilbert Sobolev space.  Let $A,B\subset \Omega$, open, disjoint, with smooth boundary, and defined $\capac{A}{\Omega \backslash B} \in \mathbb{R}$ as the minimizing value of the problem
-    \begin{align*}
-    \min_{u \in \mathcal H^1} \quad & \mathscr{E}(u,u) \\
-    \mbox{subject to} \quad & u(x)=1,x\in A \\
-     & u(x)=0,x\in B
-    \end{align*}
-
-It is natural to consider an apparently different problem, where the equality boundary conditions are replaced with inequalities.  Here we show that it is not possible to get lower than $\capac{A}{\Omega \backslash B}$ by such a relaxation.
-
-\begin{lemma} \label{lem:inequalityboundaryvar} Let $\tilde h$ satisfy $\tilde h(x)\geq 1$ on $A$ and $\tilde h(x)\leq 0$ on $B$.  Then $\mathscr{E}(\tilde h,\tilde h) \geq \capac{A}{\Omega \backslash B}$.
-\end{lemma}
-\begin{proof}
-Let $k=\mathtt{clamp}(\tilde h,0,1)$, i.e.
-\[
-k(x)=
-\begin{cases}
-\tilde h(x) & \tilde h(x)\in[0,1] \\
-0 & \tilde h(x)\leq 0 \\
-1 & \tilde h(x)\geq 1 \\
-\end{cases}
-\]  
-Note that $k\in \mathcal{H}^1$ and satisfies the equality boundary conditions.  Thus, by definition, $\capac{A}{\Omega \backslash B} \leq \mathscr{E}(k,k)$.  This immediately yields our result:
-\begin{align*}
-\capac{A}{\Omega \backslash B} \leq \mathscr{E}(k,k) &= \int \Vert \sigma \nabla k \Vert^2 \rho(dx) \\
-    &=\int_{x:\ \tilde h(x)\in[0,1]} \Vert \sigma \nabla \tilde h \Vert^2 \rho(dx) \\
-    &\leq \int \Vert \sigma \nabla \tilde h \Vert^2 \rho(dx) = \mathscr{E}(\tilde h,\tilde h)
-\end{align*}
-
-
-% Let us look at the properties of their difference, $k=\tilde h- h$.
-% \begin{itemize}
-%     \item $\mathscr{E}(k,k)=\mathscr{E}(h,h)+\mathscr{E}(\tilde h,\tilde h)+2\mathscr{E}(h,\tilde h)$
-%     \item $k(A)\geq 0$
-%     \item $k(B)\leq 0$
-% \end{itemize}
-\end{proof}
 
 \section{Details on Energy Function} \label{sec:energy_function}
 
