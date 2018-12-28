@@ -64,13 +64,12 @@
 \date{\today}
 
 \begin{abstract}
-	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations constitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Hitting probabilities provide valuable information in the presence of entropic barriers. CHop is based on a novel theoretical analysis of hitting probabilities. We show that in the presence of entropic barriers, hitting probabilities are approximately invariant to initial conditions that are modestly far away from the targets.  Given this invariance, we show that hitting probabilities must also be invariant to the energy landscape away from the targets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities of small targets in the presence of entropic barriers. Numerical experiments on a prototypical entropic barrier, a toy model with a golf-course potential, show that CHop is nearly as accurate as direct simulations in estimating hitting probabilities, but 662 times faster.
+	We present Capacity Hopping (CHop), a method for estimating hitting probabilities of small targets in molecular dynamics simulations. Reaching small targets out of a vast number of possible configurations constitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Hitting probabilities provide valuable information in the presence of entropic barriers. CHop is based on a novel theoretical analysis of hitting probabilities. We show that in the presence of entropic barriers, hitting probabilities are approximately invariant to initial conditions that are modestly far away from the targets.  Given this invariance, we show that hitting probabilities must also be invariant to the energy landscape away from the targets, and can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a new capacity estimation algorithm, we develop CHop, a method for estimating the approximately constant hitting probabilities of small targets in the presence of entropic barriers. Numerical experiments on a prototypical entropic barrier, a toy model with a golf-course potential, show that CHop is nearly as accurate as direct simulations in estimating hitting probabilities, but more than six hundred times faster.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
 
 \maketitle %\maketitle must follow title, authors, abstract and \pacs
-
 
 \section{Introduction}
 
@@ -163,7 +162,7 @@ In this section, we show that hitting probabilities can be accurately estimated 
 \begin{definition}(Capacity)
 Let $X$ be a reversible stationary process governed by Equation (\ref{equ:general_sde}).  Then for $A \subset \tilde{A} \subset \Omega$, the capacity $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ for $X$ is defined as
 %
-\[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) \triangleq \frac{1}{2} \int_{\tilde A \backslash A}
+\[ \ensuremath{\operatorname{cap}} (A, \tilde{A}) \triangleq \int_{\tilde A \backslash A}
 ||\sigma(x) \nabla h_{A, \tilde{A}^c}(x)||^2 e^{- U(x)} \mathrm{d} x \]
 %
 \end{definition}
@@ -224,12 +223,11 @@ To make the CHop method practical, we need to be able to estimate the capacities
 \subsection{Estimation of Capacities}
 
 We start our discussion on estimating the capacities with a simple lemma:
-\begin{lemma}(Capacity is a difference of fluxes) \label{lem:capacity_lemma} Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
-\begin{align*}
-\ensuremath{\operatorname{cap}} (A, \tilde{A}) &= \int_{\partial \tilde G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS \\
-&\qquad - \int_{\partial G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS 
-\end{align*}
-where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix.
+\begin{lemma}(Capacity can be expressed as a flux) \label{lem:capacity_lemma} Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a flux leaving $\tilde G \backslash G$:
+\begin{equation*}
+\ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} \hausdorffmeasure
+\end{equation*}
+where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ is the integral with respect to the $(\dimension-1)$-dimensional Hausdorff measure, and $\textbf{n}$ represents the outward-facing (relative to the set $\tilde G \backslash G$) normal vector on $\partial (\tilde G \backslash G)$.
 \end{lemma}
 
 We defer the proof of this lemma to Appendix \ref{sec:proof_lemma}. This lemma provides us with a general framework for estimating the capacities.   In particular, we can approximate the integrals in the lemma with a Monte Carlo method, as long as we can overcome three challenges:
@@ -247,7 +245,7 @@ With these pieces in place, using the lemma, we can approximate the capacity by
 \begin{array}{cc}
 \ensuremath{\operatorname{cap}} (A, \tilde{A}) \approx & 
 |\partial \tilde G|\frac{\sum_i^n h_{A,\tilde A^c}(\tilde y_i)[a(\tilde y_i)\nabla h_{G,\tilde G^c}(\tilde y_i)]^T \textbf{n}(\tilde y_i)}{\sum_i^n e^{U(\tilde y_i)}} \\
-& - |\partial G|\frac{\sum_i^m h_{A,\tilde A^c}(y_i)[a(y_i)\nabla h_{G,\tilde G^c}(y_i)]^T \textbf{n}(y_i)}{\sum_i^n e^{U(y_i)}} 
+& + |\partial G|\frac{\sum_i^m h_{A,\tilde A^c}(y_i)[a(y_i)\nabla h_{G,\tilde G^c}(y_i)]^T \textbf{n}(y_i)}{\sum_i^n e^{U(y_i)}} 
 \end{array}
 \end{gather}
 
@@ -295,7 +293,7 @@ In what follows, we put all the pieces from our previous discussions together, a
     \item Pick $G, \tilde{G}$ with smooth boundaries, s.t. $A \subset G \subset \tilde{G} \subset \tilde{A}$
     \item Estimate the surface areas $|\partial G|$ and $|\partial \tilde{G}|$
     \item Sample $y_1,y_2,\cdots y_m$ on $\partial G$ and $\tilde y_1,\tilde y_2 \cdots \tilde y_n$ on $\partial \tilde{G}$ according to the invariant measure $e^{- U(x)}\mathrm{d}x$ restricted on $\partial G, \partial \tilde{G}$, and estimate $h_{A,\tilde A^c}(y_i), i=1,\cdots, m$ and $h_{A,\tilde A^c}(\tilde y_i), i=1, \cdots, n$ using Algorithm \ref{alg:hitting_prob_estimation} in Appendix \ref{algorithm} applied to the cases $S=G$ and $S=\tilde{G}$
-    \item Estimate $\nabla h_{G, \tilde{G}^c}(y_i), {\textbf{n}} (y_i), i=1, \cdots, m$ and $\nabla h_{G, \tilde{G}^c}(\tilde{y}_i), {\textbf{n}} (\tilde{y}_i), i=1, \cdots, n$, where ${\textbf{n}} (x)$ denotes the outward-facing normal vector at point $x$ on the corresponding surfaces
+    \item Estimate $\nabla h_{G, \tilde{G}^c}(y_i), {\textbf{n}} (y_i), i=1, \cdots, m$ and $\nabla h_{G, \tilde{G}^c}(\tilde{y}_i), {\textbf{n}} (\tilde{y}_i), i=1, \cdots, n$, where ${\textbf{n}} (x)$ denotes the outward-facing (relative to the set $\tilde G \backslash G$) normal vector at point $x$ on the corresponding surfaces
     \item Estimate $\ensuremath{\operatorname{cap}} (A, \tilde{A})$ using the formula given in Equation \ref{eq:capesteq}
 \end{enumerate}
 }}
@@ -314,13 +312,12 @@ r_{\tilde{A}}^{2 - \dimension}} \]
 As a result, the gradient is given by
 \[ \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - \dimension}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2
    - \dimension}} \| x - x_A \|^{1 - \dimension} \frac{x - x_A}{\| x - x_A \|} \]
-Note that on both $\partial \tilde{G}$ and $\partial G$, the outward normal is
-given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, so
+Note that on $\partial \tilde{G}$, the outward-facing normal is given by ${\textbf{n}} (x) = \frac{x - x_A}{\| x - x_A \|}$, while on $\partial G$, it's given by ${\textbf{n}} (x) = -\frac{x - x_A}{\| x - x_A \|}$. As a result
 \[
-	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = \frac{2 - \dimension}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} \| x - x_A \|^{1 - d} = 
+	{\textbf{n}} (x)^T \nabla h_{G, \tilde{G}^c} (x) = 
 \begin{cases}
-	\frac{(2 - \dimension) r_{\tilde{A}}^{1 - \dimension}}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} & \text{if }x \in \partial \tilde{G}\\
-	\frac{(2 - \dimension) d_A^{1 - d}}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} & \text{if }x \in \partial G
+	\frac{2 - \dimension}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} \| x - x_A \|^{1 - d} = \frac{(2 - \dimension) r_{\tilde{A}}^{1 - \dimension}}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} & \text{if }x \in \partial \tilde{G}\\
+	-\frac{2 - \dimension}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} \| x - x_A \|^{1 - d} = -\frac{(2 - \dimension) d_A^{1 - d}}{d_A^{2 - \dimension} - r_{\tilde{A}}^{2 - \dimension}} & \text{if }x \in \partial G
 \end{cases}
 \]
 \item Finally, note that $U (x) = 0$ and $a (x) = I$ for $x
@@ -956,13 +953,12 @@ Since $a>b$, we have that $a^{2m} -b^{2m}$ is always positive.  Thus we can get 
 
 \section{Proof of Lemma \ref{lem:capacity_lemma}}\label{sec:proof_lemma}
 
-To calculate the CHop probabilities which approximate hitting probabilities, we need to be able to estimate capacities.  To this end, we connect the capacity to the difference between two surface integrals.  To do so, we need a version of Green's first identity:
+To calculate the CHop probabilities which approximate hitting probabilities, we need to be able to estimate capacities.  To this end, we connect the capacity to a surface integral. We first establish a lemma, using Green's first identity and some properties of stationary reversible SDEs:
 
-\begin{lemma}  \label{lem:greenident}Fix some $S \subset \Omega$ with smooth boundary.  Then for any smooth functions $f,g$,
-\begin{gather*}
-\int_{S} \nabla f(x)^T a(x) \nabla g(x) e^{-U(x)}dx \\
-= \int_{\partial S} f(x) \mathbf{n}(x)^T a(x) \nabla g(x) e^{-U(x)}\hausdorffmeasure - 2\int_{S} f(x) (\mathcal{L}g)(x)e^{-U(x)}dx
-\end{gather*}
+\begin{lemma}  \label{lem:greenident}Fix some $S \subset \Omega$ with smooth boundary.  Then for any smooth function $g$ that satisfies $\mathcal{L}g = 0$ and smooth function $f$,
+\begin{equation*}
+\int_{S} \nabla f(x)^T a(x) \nabla g(x) e^{-U(x)}dx = \int_{\partial S} f(x) \mathbf{n}(x)^T a(x) \nabla g(x) e^{-U(x)}\hausdorffmeasure
+\end{equation*}
 where $\mathbf{n}$ are the normal vectors facing out of the set $S$ and $\hausdorffmeasure$ is the integral with respect to the $(\dimension-1)$-dimensional Hausdorff measure and 
 \[
 (\mathcal{L}f)(x) \triangleq \sum_i b_i(x) \frac{\partial f (x)}{\partial x_i} + 
@@ -970,77 +966,60 @@ where $\mathbf{n}$ are the normal vectors facing out of the set $S$ and $\hausdo
 \]
 \end{lemma}
 \begin{proof}
-This is in fact an elementary application of integration by parts formulas.  
-
-To fit the formulas on the page, we here adopt the notation that superscripts indicate derivatives, e.g. $f^i_j  = \partial f_j(x)/\partial x_i$.  In this notation, our goal is to prove that
-\[
-\sum_{ij} \int_{S} f^i a_{ij} g^j e^{-U}dx 
-= \sum_{ij}\int_{\partial S} f \mathbf{n}_i a_{ij} g^j e^{-U}\hausdorffmeasure - 2\int_{S} f (\mathcal{L}g)e^{-U}dx
-\]
-This is straightforward to show.  Applying integration by parts we obtain
-    \begin{align*}
-    &\sum_{ij} \int_{S} f^i \left[a_{ij} g^j e^{-U}\right]dx \\ 
-    =&\sum_{ij} \int_{\partial S} f \left[a_{ij} g^i e^{-U}\right]dS - 
-            \sum_{ij}\int_{S} f  \left[(a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i) e^{-U}\right]dx
-    \end{align*}
-Thus to prove this Lemma it suffices to show that $2\mathcal{L}g=\sum_{ij}a^i_{ij} g^j +a_{ij} g^{ij} - a_{ij} g^i U^i$.  This follows directly from substituting the reversibility constraint on $b$ from Appendix \ref{sec:reversible_diffusion} into the expression for $\mathcal{L}g$.
+First, we apply Green's first identity to get
+\begin{align*}
+	 &\int_{S} \nabla f^T a \nabla g e^{-U} dx\\
+	=&\int_{\partial S}f \textbf{n}^T a \nabla g e^{-U} \hausdorffmeasure - \int_{S} f \nabla \cdot (a \nabla g e^{-U}) dx
+\end{align*}
+where
+\begin{equation*}
+	\nabla \cdot (a \nabla g e^{-U}) = \sum_{i}\frac{\partial}{\partial x_i}\left[\sum_{j}e^{-U}a_{i j}\frac{\partial g}{\partial x_j}\right]
+\end{equation*}
+Next, using the reversibility constraint on $b$ from Appendix \ref{sec:reversible_diffusion}, it's not hard to verify that $$
+\begin{equation*}
+	\nabla \cdot (a \nabla g e^{-U}) = 2e^{-U}\mathcal{L} g = 0
+\end{equation*}
+This gives us the desired result.
 \end{proof}
 
-This Lemma is of particular interest for functions with $\mathcal Lu=0$:
-
-\begin{cor}\label{cor:greenident}
-Let $h,h'$ both satisfy the differential equations
-\begin{align*}
-0 &= (\mathcal{L}u)(x) ,x\in S \\
-0 &= \mathbf{n}(x)^Ta(x)\nabla u(x), x \in \partial{\Omega} \backslash (\partial S)
-\end{align*}
-then
-\begin{align*}
-\int_{S} \nabla h(x)^T a(x) \nabla h'(x) e^{-U(x)}dx 
-    &= \int_{\partial S} h(x) \mathbf{n}(x)^T a(x) \nabla h'(x) e^{-U(x)}\hausdorffmeasure \\
-    &= \int_{\partial S} h'(x) \mathbf{n}(x)^T a(x) \nabla h(x) e^{-U(x)}\hausdorffmeasure
-\end{align*}
-\end{cor}
-
-This enables us to establish the Lemma from the main text which connects capacities to fluxes
+We can now establish the Lemma from the main text which connects capacities to fluxes
 
 \begingroup
 \def\thelemma{\ref{lem:capacity_lemma}}
-\begin{lemma}(Capacity is a difference of fluxes)  Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a weighted flux leaving $\tilde G$ minus a weighted flux entering $G$:
-\begin{align*}
-\ensuremath{\operatorname{cap}} (A, \tilde{A}) &= \int_{\partial \tilde G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS \\
-&\qquad - \int_{\partial G}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} dS 
-\end{align*}
+\begin{lemma}(Capacity can be expressed as a flux) Let $A\subset G \subset \tilde G \subset \tilde A$.  Then the capacity can be expressed as a flux leaving $\tilde G \backslash G$:
+\begin{equation*}
+\ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c} (x)   \textbf{n}(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} \hausdorffmeasure
+\end{equation*}
 \end{lemma}
 \addtocounter{lemma}{-1}
 \endgroup
 \begin{proof}
-Let $S = \tilde A \backslash A$.  Recall that the capacity can be written as $\mathscr{E}_S(h_{A,\tilde A^c},h_{A,\tilde A^c})$.
+First recall that $\mathcal{L} h_{A, \tilde{A}^c} = 0$ and
+\begin{equation*}
+	\tmop{cap}(A,\tilde A) = \int_{\tilde A \backslash A} \nabla h_{A, \tilde{A}^c} (x)^T a(x) \nabla h_{A, \tilde{A}^c} (x) e^{-U(x)} dx
+\end{equation*}
+Together with Lemma \ref{lem:greenident}, this yields that
+\begin{equation}\label{eq:lemmaproof}
+\tmop{cap}(A,\tilde A)  = \int_{\partial (\tilde A \backslash A)}  h_{A, \tilde{A}^c} \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure = \int_{\partial A}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure
+\end{equation}
+where in the last step we used $h_{A,\tilde A^c}(x)=1,x\in \partial A,h_{A,\tilde A^c}(x)=0,x\in \partial \tilde A$.  
 
-Next note that $\mathscr{E}_S(h_{A,\tilde A^c},h_{A,\tilde A^c}) $ can be written as the flux of $h_{A,\tilde A^c}$ entering $A$.  Indeed, from Appendix \ref{sec:reversible_diffusion} we know that hitting probability functions such as $h_{A,\tilde A^c}$ satisfy $\mathcal Lh_{A,\tilde A^c}=0$ on the interior of $\tilde A \backslash A$.  Together with Corollary \ref{cor:greenident}, this yields that 
+Next we apply Lemma \ref{lem:greenident} again to get
 \begin{align*}
-\mathscr{E}_S(h_{A,\tilde A^c},h_{A,\tilde A^c}) 
-    &= \int_{\tilde A \backslash A}  \nabla h_{A, \tilde{A}^c}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS 
-    = \int_{\partial (\tilde A \backslash A)}  h_{A, \tilde{A}^c} \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS \\
-    &= \int_{\partial A}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS
+	0 = \int_{G \backslash A} \cancel{\nabla (1)} a \nabla h_{A,\tilde A^c}^T e^{- U } dx = \int_{\partial (G\backslash A)} (1) \times \textbf{n}^T a  \nabla h_{A,\tilde A^c} e^{- U } \hausdorffmeasure
 \end{align*}
-Note in the last step we used that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$.  
+Combining this with Equation \ref{eq:lemmaproof} gives us
+\begin{equation*}
+\tmop{cap}(A,\tilde A)  = \int_{\partial A}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure = \int_{\partial G}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure
+\end{equation*}
+Using the facts that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$, and $\mathcal{L} h_{G, \tilde G^c} = 0$, we apply Lemma \ref{lem:greenident} two more times to obtain 
+\begin{align*}
+	\tmop{cap}(A,\tilde A)  &= \int_{\partial G}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure = \int_{\partial G}  h_{G, \tilde{G}^c} \textbf{n}^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure\\
+				&= \int_{\partial (\tilde G \backslash G)}  h_{G, \tilde{G}^c} \textbf{n}^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure \\
+				&= \int_{\tilde G \backslash G}  \nabla h_{G, \tilde{G}^c} a \nabla h_{A, \tilde{A}^c} e^{- U } dx\\
+				&= \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c}    \textbf{n}^T a  \nabla h_{G, \tilde{G}^c} e^{- U } \hausdorffmeasure
+\end{align*}
 
-It turns out the capacity can actually be written as a flux entering \emph{any} surface between $A$ and $\tilde A$.  To see why, apply Corollary \ref{cor:greenident} to see that the total flux of $h_{A,\tilde A^c}$ leaving any $M\subset S$ must be identically zero:
-\begin{align*}
-\int_{\partial M} (1) \times \textbf{n}^T a  \nabla h_{A,\tilde A^C} e^{- U } dS
-    &= \int_{M} \nabla h_{A,\tilde A^C}^T  a  \cancel{\nabla (1)} e^{- U } dx=0
-\end{align*}
-In particular, the flux of $h_{A,\tilde A^c}$ leaving $G \backslash A$ (the sum of the flux entering $A$ and the flux leaving $G$) is zero.  It follows that the flux entering $A$ is the \emph{same} as the flux entering $G$.  Thus, in particular, $\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c}) = \int_{\partial G}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS$.  
-
-This flux entering $G$, in turn, can be written as a \emph{weighted flux} leaving $\tilde G \backslash G$.  The key is to use fact that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$.  This enables us to complete the proof:
-\begin{align*}
-\mathscr{E}(h_{A,\tilde A^c},h_{A,\tilde A^c})
-    =&\int_{\partial G}  \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS\\
-    =& \int_{\partial (\tilde G \backslash G)}  h_{G, \tilde{G}^c}    \textbf{n}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dS\\
-    =& \int_{\tilde G \backslash G}  \nabla h_{G, \tilde{G}^c}^T a  \nabla h_{A, \tilde{A}^c} e^{- U } dx\\
-    =&\int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c}    \textbf{n}^T a  \nabla h_{G, \tilde{G}^c} e^{- U } dS
-\end{align*}
 \end{proof}
 
 \section{Estimating Local Hitting Probabilities}\label{algorithm}
