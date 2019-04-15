@@ -107,7 +107,7 @@ Efforts have been made to extend the timescale accessible by molecular dynamics 
 In this paper we focus on \emph{hitting probabilities}: Given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first? This question lies in-between the two perspectives. Compared with the kinetic perspective, it lacks certain dynamic information: it does not tell us \emph{how long} it takes to hit each target.  Compared with the thermodynamic perspective, it adds dynamic information.
 Namely, it informs the study of state-to-state transitions.  It also appears as an important subproblem for other methods, e.g. transition probability estimation in Markov State Models, committor function estimation in transition path theory, et cetera.
 
-We are especially interested in the ``small-target" regime for the hitting probability question---reaching targets representing a tiny fraction of a vast number of possible configurations. The multitude of configurations constitute an \emph{entropic barrier}. A prototypical examples (and a convenient metaphor) is a  ``golf-course'' potential.\cite{bicout2000entropic, Baum1986-we, Wille1987-tf}. These potentials feature several small targets in a much larger region. Away from the targets, the potential energy is relatively flat.  Near the targets, the potential energy may be complicated. Regions of the energy landscape with these small-target golf-course potentials are ubiquitous in biomolecular systems. Folding-like dynamics (such as the folding of RNAs and proteins) are one prominent example, where, quoting 
+We are especially interested in the ``small-target" regime for the hitting probability question---reaching targets representing a tiny fraction of a vast number of possible configurations. The multitude of configurations constitute an \emph{entropic barrier}. A prototypical example (and a convenient metaphor) is a  ``golf-course'' potential.\cite{bicout2000entropic, Baum1986-we, Wille1987-tf}. These potentials feature several small targets in a much larger region. Away from the targets, the potential energy is relatively flat.  Near the targets, the potential energy may be complicated. Regions of the energy landscape with these small-target golf-course potentials are ubiquitous in biomolecular systems. Folding-like dynamics (such as the folding of RNAs and proteins) are one prominent example, where, quoting 
 McLeish\cite{McLeish2005-dq}, ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.'' Indeed, experimental evidence shows that exploration of these regions with golf-course potentials is the rate-limiting step for a variety of processes.\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv}
 
 Direct simulations offer one way to estimate hitting probabilities, but perform poorly in the presence of entropic barriers. 
@@ -214,9 +214,9 @@ ${\cal M}$ is
 \section{Main theoretical results}
 \label{sec:MainResults}
 
-The key to going from an assumed flat landscape outside of the immediate neighborhoods of targets to the conclusion that first-passage probabilities depend only on certain local capacities is the intermediate conclusion that in the small-target (or large-dimension) limit, those probabilities are nearly independent of starting location, i.e. $\varepsilon$-flat relative to all of $\Omega$, excepting some small neighborhoods around the targets.
+The key to going from an assumed flat landscape outside of the immediate neighborhoods of targets to the conclusion that first-passage probabilities depend only on certain local capacities is the intermediate conclusion that in the small-target (or large-dimension) limit, those probabilities are nearly independent of starting location, i.e. $\varepsilon$-flat relative to all of $\Omega$, except some small neighborhoods around the targets.
 Sufficient conditions for this $\varepsilon$-flatness is the purpose of our first result, and the {\em assumption} of 
-$\varepsilon$-flatness is the main hypothesis of our second result, which then provides an explicit formula for the first-passage probabilities in terms terms of certain local capacities.
+$\varepsilon$-flatness is the main hypothesis of our second result, which then provides an explicit formula for the first-passage probabilities in terms of certain local capacities.
 
 The intent of the first result is two-fold: give a concrete setting in which the $\varepsilon$-flatness of first-passage probabilities can be rigorously proven, and, in the proof, establish a possible road-map for approaching the problem in other, problem-specific, settings. For these purposes, we adopt the setup laid out in \S\ref{sec:Introduction}, Equation (\ref{equ:toy_sde}) (``toy problem'').
 The second result is proven under far more general conditions.
@@ -253,7 +253,7 @@ Appendix \ref{sec:proof_epsilon_flat}, demonstrates that the key for establishin
 \label{subsec:Capacities}
 
 Assume now, more generally, that $X$ is  
-the reflected diffusion process (\ref{equ:general_sde}) in a bounded open set $\Omega \subset \mathbb{R}^n$, satisfying the reversibility conditions in (\ref{eqn:reversibility}) relative to a continuously differentiable potential $U$ on $Omega$.
+the reflected diffusion process (\ref{equ:general_sde}) in a bounded open set $\Omega \subset \mathbb{R}^n$, satisfying the reversibility conditions in (\ref{eqn:reversibility}) relative to a continuously differentiable potential $U$ on $\Omega$.
 The concentric spherical neighborhoods of the toy problem are replaced by nested sets 
 $A \subset\dA\subset\tA\subset\Omega$, and 
 $B \subset\dB\subset\tB\subset\Omega$.
@@ -272,7 +272,7 @@ For $S \subset \tilde{S} \subset \Omega$, we define the capacity of $\ensuremath
 %  
 \end{definition}
 
-We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of `capacity' in the literature.  Throughout this work, the term is used only in the sense of the above definition. 
+We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity" in the literature.  Throughout this work, the term is used only in the sense of the above definition. 
 
 In the presence of $\varepsilon$-flatness, these local capacities are intimately related to global hitting probabilities:
 
