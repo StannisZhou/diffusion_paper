@@ -90,7 +90,7 @@
 We will show that in the presence of certain entropic barriers, first-passage probabilities are approximately invariant to the initial configuration, provided that it is modestly far away from each of the targets.  We will further show that as a consequence of this 
 invariance, the first-passage distribution can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a Monte Carlo mechanism for
 approximating capacities, we provide a method for estimating the  hitting probabilities of small targets in the presence of entropic barriers. In numerical experiments with an
-idealized (``golf-course'') potential, the estimates are nearly as accurate as the results of direct simulations, but potentially far faster to compute.
+idealized (``golf-course'') potential, the estimates are as accurate as the results of direct simulations, but far faster to compute.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -102,7 +102,7 @@ idealized (``golf-course'') potential, the estimates are nearly as accurate as t
 
 Molecular dynamics simulations help us understand a diverse range of biomolecular processes, including the folding of macromolecules into their native configurations\cite{Scheraga2007-qw} and the conformational changes involved in their functioning.\cite{Hospital2015-ol} Since their first introduction in the 1970s,\cite{McCammon1977-kg, Warshel1976-qg} substantial increase in speed and accuracy of molecular dynamics simulations has been achieved. However, we are still severely limited in the timescale we can access. Even with specialized hardwares, we can only achieve atomic-level simulations on timescales as long as milliseconds,\cite{Dror2012-ws} while the timescales for various biomolecular processes vary widely, and can last for seconds or longer.\cite{Naganathan2005-ki, Zemora2010-lb} 
 
-Efforts have been made to extend the timescale accessible by molecular dynamics simulations from two distinct perspectives: A \emph{kinetic perspective} seeks to find ways to directly understand the dynamics and simulate them with less computational effort, usually under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}. The reaction rates are given by various methods that build on top of transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk}, including transition path sampling\cite{Dellago1998-lb, Bolhuis2002-ws}, transition interface sampling\cite{Van_Erp2005-vw}, and transition path theory\cite{E2006-fm, E2010-sr}. By contrast, a \emph{thermodynamic perspective} aims to understand and efficiently sample from the ``equilibrium distribution'' on the configuration space; simulated annealing,\cite{Kirkpatrick1983-su} genetic algorithms\cite{Goldberg1989-ko} and parallel tempering\cite{Sugita1999-vh} are representative examples of this approach. However, the dynamics are lost, and additional work\cite{Yang2007-gn, Andrec2005-fh, Zheng2009-ow, Huang2010-uu} is needed in order to recover the kinetic information. Besides, not everyone agrees that a true equilibrium (as opposed to something metastable) is actually reached\cite{Levinthal1968-ov, Baker1994-px}.
+Efforts have been made to extend the timescale accessible by molecular dynamics simulations from two distinct perspectives: A \emph{kinetic perspective} seeks to find ways to directly understand the dynamics and simulate them with less computational effort, usually under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}. The reaction rates are given by various methods that build on top of transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk}, including transition path sampling\cite{Dellago1998-lb, Bolhuis2002-ws}, transition interface sampling\cite{Van_Erp2005-vw}, and transition path theory\cite{E2006-fm, E2010-sr}. By contrast, a \emph{thermodynamic perspective} aims to understand and efficiently sample from the ``equilibrium distribution'' on the configuration space; simulated annealing,\cite{Kirkpatrick1983-su} genetic algorithms\cite{Goldberg1989-ko} and parallel tempering\cite{Sugita1999-vh} are representative examples of this approach. However, the dynamics are lost, and additional work\cite{Yang2007-gn, Andrec2005-fh, Zheng2009-ow, Huang2010-uu} is needed in order to recover the kinetic information. Besides, not everyone agrees that a true equilibrium (as opposed to something metastable) is always actually reached by real physical systems\cite{Levinthal1968-ov, Baker1994-px}.
 
 In this paper we focus on \emph{hitting probabilities}: Given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first? This question lies in-between the two perspectives. Compared with the kinetic perspective, it lacks certain dynamic information: it does not tell us \emph{how long} it takes to hit each target.  Compared with the thermodynamic perspective, it adds dynamic information.
 Namely, it informs the study of state-to-state transitions.  It also appears as an important subproblem for other methods, e.g. transition probability estimation in Markov State Models, committor function estimation in transition path theory, et cetera.
@@ -131,8 +131,8 @@ $U$ is a potential energy. There are only two targets,
 A &\triangleq \bb {x_A, r_A}\\
 B &\triangleq \bb {x_B, r_B}
 \end{align*}
-both completely contained in $\Omega$ and both small, in the sense that $r_A,r_B << 1$.
-Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first.  If we let $h_{A,B}(x)$ be the probability that $X_t$ reaches $A$ before reaching $B$ (``first-passage at $A$''), which depends on the starting configuration $X_0=x$, then more specifically we are interested in computing approximations to $h_{A,B}(x)$ that sidestep the entropic barrier in the special case that U is essentially flat beyond the immediate neighborhoods of $A$ and $B$.
+both completely contained in $\Omega$ and both small, in the sense that $r_A,r_B \ll 1$.
+Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first.  If we let $h_{A,B}(x)$ be the probability that $X_t$ reaches $A$ before reaching $B$ (``first-passage at $A$''), which depends on the starting configuration $X_0=x$, then more specifically we are interested in computing approximations to $h_{A,B}(x)$ that sidestep the entropic barrier in the special case that U is smooth beyond the immediate neighborhoods of $A$ and $B$.
 
 To this end, introduce neighborhoods $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $r_A<r_\dA<r_\tA$, and
 $\dB=\bb{x_B,r_\dB }$ and $\tB=\bb{x_B,r_\tB }$ such that $r_B<r_\dB<r_\tB$, and assume, in the extreme case,  that $\nabla U(x)=0$ for all $x\in\Omega\backslash (\dA\cup\dB)$
@@ -145,22 +145,22 @@ In this regard, the probabilistic interpretation of capacities can be helpful. B
 Of course there is nothing special about two targets, in any of our results. Even if there are more, the first-passage probabilities are still determined by the ratios of the target capacities. 
 
 \begin{wrapfigure}
-[17]{r}[0pt]{0.5\textwidth}
+[18]{r}[0pt]{0.5\textwidth}
 	\centering	\includegraphics[width=0.4\textwidth]{ToyModel4.png}
 	\caption{\footnotesize\linespread{1.}\selectfont{} {\bf A Toy Model.} The dynamics obey the first-order Langevin equation (\ref{equ:toy_sde}). There are two targests, $A$ and $B$, each surrounded by two neighborhoods. Outside of $\dA\cup\dB$, the energy is flat ($\nabla U=0$). If the targets are small enough or the dimension large enough then the probability of entering $A$ before entering $B$  is nearly independent of $X_0$, provided that $X_0$ is outside of $\tA\cup\tB$. What is more, this first-passage probability depends only the behavior of $U$ in $\dA\cup\dB$, which may be arbitrarily complicated.}
 \label{fig:ToyModel}
 \end{wrapfigure}
 
 We experimented with the approximate Langevin equation (\ref{equ:toy_sde}) in $n=5$ dimensions with two targets. 
-We found excellent agreement between direct simulations for computing $h_{A,B}(x)$, on the one hand, and an application of our theoretical and algorithmic tools, on the other hand. Furthermore, in that our approach to estimating capacities is based on a small number of sequential steps, each of which involves thousands of repeated and independent applications of a single stochastic procedure, it admits to almost arbitrary acceleration through parallelization.\footnote{\bf Is this a fair statement? We need to say something like this, but we were previously comparing the cost of one run of our algorithm to 2,000 simulations of the stochastic process.}
+We found excellent agreement between direct simulations for computing $h_{A,B}(x)$, on the one hand, and an application of our theoretical and algorithmic tools, on the other hand. Furthermore, in that our approach to estimating capacities is based on a small number of sequential steps, each of which involves thousands of repeated and independent applications of a single stochastic procedure, it admits to almost arbitrary acceleration through parallelization.
 
 Our results are relevant in a small-target regime. We remark that such regimes arise naturally in high-dimensional configuration spaces, since the ratio of the volume of the configuration space to the target volume grows rapidly with increasing dimension.
 The effect on dynamics can be readily seen by a simple change of variables to spherical coordinates centered, say, at the center of the target $A$. The result, in terms of the radial coordinate $R=||X-x_A||$, is an additional (radial) drift equal to $\frac{n-1}{2R}dt$. Thus in high dimensions, $n$, the entropic effect amounts to a force that pushes configurations away from small targets. 
 
-In sum, there are three contributions. The first 
+In sum, there are three contributions in this paper. The first 
 is to give a concrete example in which the probability that a particular small
 target, among many, is reached first is essentially independent of the starting location, provided that $U$ is flat outside of a neighborhood of the targets and that the starting position is sufficiently far away. The second, also an approximation result, is to show that a consequence of this (near) independence, whether or not it arises from a flat energy, is that the probability of first hitting a particular target is nearly proportional to a suitably defined local capacity.  
-And the third is a collection of tools, both analytic and numeric (Monte Carlo), for computing the relevant capacities.
+The third is a collection of tools, both analytic and numeric (Monte Carlo), for computing the relevant capacities.
 
 In the following section (\S\ref{sec:Preliminaries}, ``Preliminaries'') we will introduce a more general setting as well as the notation needed to set up the two approximation theorems, which appear in \S\ref{sec:MainResults}.
 After that, in \S\ref{sec:Estimation}, an approach to capacity estimation is developed, followed, in  \S\ref{sec:Experiments}, by computational experiments with a five-dimensional version of (\ref{equ:toy_sde}). We will close in \S\ref{sec:Discussion} with a summary, and a discussion of the prospects for 
@@ -196,7 +196,7 @@ b_i(x)&=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j - \frac{1}{2}\sum_j a
 \nu(x)&= a(x) \normal(x) 
 \end{split}
 \end{align}
-where $a(x)=\sigma(x)\sigma(x)^T$ is uniformly elliptic.\footnote{\bf You guys seemed to indicate that these conditions are in fact both sufficient and necessary. Do you want to add, say here, a footnote or comment to that effect, and maybe bring back the reference to Pavliotis?}
+where $a(x)=\sigma(x)\sigma(x)^T$ is uniformly elliptic.
 When the conditions in (\ref{eqn:reversibility}) are in force
 we will say that $X$ satisfies the reversibility conditions relative to $U$.
 
@@ -214,8 +214,8 @@ ${\cal M}$ is
 \section{Main theoretical results}
 \label{sec:MainResults}
 
-The key to going from an assumed flat landscape outside of the immediate neighborhoods of targets to the conclusion that first-passage probabilities depend only on certain local capacities is the intermediate conclusion that in the small-target (or large-dimension) limit, those probabilities are nearly independent of starting location, i.e. $\varepsilon$-flat relative to all of $\Omega$, except some small neighborhoods around the targets.
-Sufficient conditions for this $\varepsilon$-flatness is the purpose of our first result, and the {\em assumption} of 
+The key to going from an assumed smooth landscape outside of the immediate neighborhoods of targets to the conclusion that first-passage probabilities depend only on certain local capacities is the intermediate conclusion that in the small-target (or large-dimension) limit, those probabilities are nearly independent of starting location, i.e. $\varepsilon$-flat relative to all of $\Omega$, except some small neighborhoods around the targets.
+Sufficient conditions for this $\varepsilon$-flatness is the purpose of our first result, and the assumption of 
 $\varepsilon$-flatness is the main hypothesis of our second result, which then provides an explicit formula for the first-passage probabilities in terms of certain local capacities.
 
 The intent of the first result is two-fold: give a concrete setting in which the $\varepsilon$-flatness of first-passage probabilities can be rigorously proven, and, in the proof, establish a possible road-map for approaching the problem in other, problem-specific, settings. For these purposes, we adopt the setup laid out in \S\ref{sec:Introduction}, Equation (\ref{equ:toy_sde}) (``toy problem'').
@@ -225,10 +225,9 @@ The second result is proven under far more general conditions.
 \label{subsec:ApproximatelyConstant}
 
 Return to the model introduced in Equation (\ref{equ:toy_sde}).
-This toy model encapsulates the essential characteristics of an entropic barrier: if $r_A, r_B$ are small or the dimension $n$ is high, starting from an initial condition $X_0 \not\in \bb{x_A,r_\dA} \cup \bb{x_B,d_B}$, the system faces the difficulty of reaching the small targets $A$ and $B$ out of all other configurations in $\Omega$. The nontrivial energy landscapes in the immediate vicinity of $A$ and $B$ reflect the energetic interactions that are usually local in nature in biomolecular systems, and the reflecting boundary at $\partial\Omega$ captures the notion that not all configurations in biomolecular systems are sensible, because of, for example, limits on bond lengths, angles and dihedral angles in the case of RNA molecules.
+This toy model encapsulates the essential characteristics of an entropic barrier: if $r_A, r_B$ are small or the dimension $n$ is high, starting from an initial condition $X_0 \not\in \bb{x_A,r_\dA} \cup \bb{x_B,r_{\dot B}}$, the system faces the difficulty of reaching the small targets $A$ and $B$ out of all other configurations in $\Omega$. The nontrivial energy landscapes in the immediate vicinity of $A$ and $B$ reflect the energetic interactions that are usually local in nature in biomolecular systems, and the reflecting boundary at $\partial\Omega$ captures the notion that not all configurations in biomolecular systems are sensible, because of, for example, limits on bond lengths, angles and dihedral angles in the case of RNA molecules.
 
-Assume that $U$ is continuously differentiable, and interpret 
-the reflecting boundary at $\partial\Omega$ in the sense of Equation (\ref{eq:SDER}). Recall that $\Omega=\bb{0,1}$ and the targets 
+Assume that $U$ is continuously differentiable.  Recall that $\Omega=\bb{0,1}$ and the targets 
 $A=\bb{x_A,r_A }$ and $B=\bb{x_B,r_B }$ are surrounded by two levels of neighborhoods, 
 $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $A \subset \dA \subset \tA$, and 
 $\dB=\bb{x_B,r_\dB }$ and $\tB=\bb{x_B,r_\tB }$ such that
@@ -255,8 +254,8 @@ Appendix \ref{sec:proof_epsilon_flat}, demonstrates that the key for establishin
 Assume now, more generally, that $X$ is  
 the reflected diffusion process (\ref{equ:general_sde}) in a bounded open set $\Omega \subset \mathbb{R}^n$, satisfying the reversibility conditions in (\ref{eqn:reversibility}) relative to a continuously differentiable potential $U$ on $\Omega$.
 The concentric spherical neighborhoods of the toy problem are replaced by nested sets 
-$A \subset\dA\subset\tA\subset\Omega$, and 
-$B \subset\dB\subset\tB\subset\Omega$.
+$A \subset\tA\subset\Omega$, and 
+$B \subset\tB\subset\Omega$,
 all with smooth boundaries, and where $\tA\cap\tB=\emptyset$.
 
 Under the assumption that $h_{A,B}(x)$ is $\varepsilon$-flat
@@ -424,7 +423,7 @@ $\frac{1}{Z}e^{-U}\hausdorffmeasure$. After that, $S_k\ k=1,\ldots,n-1$ are chos
  $\partial S$, a byproduct is a sample from $\frac{1}{Z}e^{-U}\hausdorffmeasure$ on all of the shells $\partial S_k$, along with an estimate of $h_{R,\tilde{R}^c}$ at every sample.)
 With the choice of $A$ for $R$ and $\tilde A$ for $\tilde R$, the algorithm becomes directly applicable to the estimation of $h_{A, \tilde{A}^c}$ on $\partial G$ and $\partial\tilde{G}$, taking $S=G$ in the former case and $S=\tilde{G}$ in the latter.
  
-The shell method is closely related to milestoning\cite{West2007-cn, Bello-Rivas2015-ld, Aristoff2016-gc} and Markov state models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}, though more tailored to the problem at hand. In particular, our interest here is in computing the first-passage probabilities rather than in approximating the underlying process. Also, the discretizations of the shells are {\em adaptive}, in that they are based on clusters that are derived from an ensemble of samples, as opposed to being crafted for a particular landscape.\footnote{\bf Stannis: did I get this right? I have not looked at the referenced papers.} See Appendix \ref{sec:shell_method}.
+The shell method is closely related to milestoning\cite{West2007-cn, Bello-Rivas2015-ld, Aristoff2016-gc} and Markov state models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}, though more tailored to the problem at hand. In particular, our interest here is in computing the first-passage probabilities rather than in approximating the underlying process. Also, the discretizations of the shells are {\em adaptive}, in that they are based on clusters that are derived from an ensemble of samples, as opposed to being crafted for a particular landscape.  See Appendix \ref{sec:shell_method}.
  
 As for the required gradients, these are generally harder to estimate. Nevertheless, for the particular gradient $\nabla h_{G, \tilde{G}^c}$, the problem is substantially mitigated by noting that we are only interested in its evaluation on $\partial G$ and $\partial\tilde G$, each of which is a level set of 
 $h_{G, \tilde{G}^c}$ ($h_{G, \tilde{G}^c}=1$ on $G$ and 0 on $\tilde G$). Consequently, on each surface the gradient is in the normal direction and we need only estimate its magnitude. And for this purpose it is enough to know the values of $h_{G, \tilde{G}^c}$ on a surface close to $G$ and interior to $\tilde{G}\backslash G$ (for estimating $\nabla h_{G, \tilde{G}^c}$ on $G$) and on another surface  
@@ -450,7 +449,7 @@ $B\subset\dB\subset\tB$, which was enforced in our experiments by the choices $r
 $r_\tB=0.15$.
 Our experiments test the overall approximation to $h_{A,B}$ developed in \S\ref{sec:MainResults}-\ref{sec:Estimation} as well as each of the three components, separately: $\epsilon$-flatness, the role of capacities, and the methodology developed for estimating capacities.
 
-The experimental setup is not so big as to preclude
+The experimental setup is sufficiently simple to allow
 exhaustive simulation for approximating ground truth. In each experiment, we compare the results of using the approximations developed here to the results from an ensemble of first-passage events simulated by simply running the diffusion 2,000 times at each of 100 randomly chosen points in $\Omega\backslash (\tA,\tB)$. There are two sets of experiments: In the first (a kind of ``sanity check''), the potential $U$ is flat everywhere outside of the targets $A$ and $B$, in other words, the diffusion is Brownian motion. In the second, there are complex landscapes in the vicinities of the targets, i.e. within $\dA$ and $\dB$.
 
 Both Theorems, \ref{thm:epsilon_flat} and \ref{thm:main_thm}, are in force, and hence the first-passage probability $h_{A,B}(x)$, on $\Omega\backslash(\tA,\tB)$, is approximately a constant, and the value depends only on the two local capacities $\capac{A}{\tA}$ and
@@ -583,7 +582,7 @@ In summary, all three components of the approach performed well in the Brownian 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
     \includegraphics[width=\textwidth]{results.png}
-    \caption{\label{fig:results} \bf{Hitting probabilities: direct simulations vs. evaluation of local capacities.}  Local capacities  can accurately answers the question ``where will we go next?''  We start by designating two targets, $A$ and $B$.  For any given initial condition, the task is to determine the probability that the diffusion will hit $A$ first. We study this question in the context of two different energy landscapes. In panel (a), we study the simplest possible case, where we have a flat energy landscape and the diffusion is simply a Brownian motion.  In panel (b), we consider the case that the energy landscape becomes complicated near the targets.  In both cases we consider 100 random initial locations which are modestly far  away from either target.  For each initial location, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.  For both energy landscapes we see that the hitting probability is approximately constant for initial conditions which are modestly far away from the targets.  Furthermore, the value of this constant is very nearly proportional to the ratio of the local capacities. In summary, in these simulations first-passage probabilities are accurately estimated using only local simulations around the targets, and do not require any computations that involve the large space around $A$ and $B$.}
+    \caption{\label{fig:results} {\bf Hitting probabilities: direct simulations vs. evaluation of local capacities.}  Local capacities  can accurately answer the question ``where will we go next?''  We start by designating two targets, $A$ and $B$.  For any given initial condition, the task is to determine the probability that the diffusion will hit $A$ first. We study this question in the context of two different energy landscapes. In panel (a), we study the simplest possible case, where we have a flat energy landscape and the diffusion is simply a Brownian motion.  In panel (b), we consider the case that the energy landscape becomes complicated near the targets.  In both cases we consider 100 random initial locations which are modestly far  away from either target.  For each initial location, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.  For both energy landscapes we see that the hitting probability is approximately constant for initial conditions which are modestly far away from the targets.  Furthermore, the value of this constant is very nearly proportional to the ratio of the local capacities. In summary, in these simulations first-passage probabilities are accurately estimated using only local simulations around the targets, and do not require any computations that involve the large space around $A$ and $B$.}
 \end{minipage}}
 \end{figure}
 
@@ -610,20 +609,7 @@ As already remarked, the nontrivial energy landscape precludes a direct assessme
 
 Concerning computational efficiency, it is difficult to make a direct comparison between the capacity-estimation approach and straightforward simulation. There are many parameters and, besides, run times will depend on the dimension and details of the energies, possibly affecting the two approaches differently.
 In our experiments, for direct simulations we used the 
-``walk-on-spheres'' method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust to number of samples or the discretization parameters. Under these conditions, a single run of the diffusion took about as long as estimating the two capacities. On the other hand, the capacity estimation algorithm is trivially parallelized with minimal overhead, likely resulting in
-several orders-of-magnitude improvement.\footnote{\bf OK? Reword?}
-
-%The purpose of our approach is to circumvent direct simulation, the feasibility of which is severely challenged by large entropic barriers. To what extent, then, is the approximation more efficient? In the current experiments, we compared the time it takes to estimate the hitting probabilities using direct simulations with the time required by our approach using capacity estimation. For the comparison we made a best effort to implement a fast simulator, by using  the ``walk-on-spheres'' method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. We obtained the following CPU-time comparisons:
-%
-%\begin{description}
-%\item[Direct simulation] 33340.36 seconds (4167.55 seconds on a c5d.2xlarge AWS EC2 instance, which has 8 CPUs).  This quantity is an average of the amount of time it took to run 2000 simulations for each of the 100 different initial locations, using a relatively coarse time step of $10^{-5}$.  These direct simulations are trivial to perform in parallel, assuring us that there was no significant overhead due to the parallelization.
-%
-%\item[Capacity estimation] 50.31 seconds (on a single CPU). In doing this we employed a more accurate time step than the one used for direct simulations ($10^{-6}$ in particular). Despite this, the estimation approach was 82 times faster on a single CPU than direct simulation using 8 CPUs.
-%\end{description}
-%
-%This reflects a 662-fold acceleration. The times reported above reflect a particular choice of parameters, but we found that the accuracy of the algorithm was fairly robust to choices of $m, n, N_p, N_b$ and $N_s$, as long as they are reasonably large. Furthermore note that the time-consuming elements of the capacity estimation algorithm are ``embarrassingly parallelizable'' and it should be easy to further accelerate our capacity estimation algorithm using parallelization.  There was no need to do so in this case because we could easily run the method on a laptop.  However, larger scale problems would certainly benefit from this kind of additional acceleration.
-
-
+``walk-on-spheres'' method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust to number of samples or the discretization parameters. Under these conditions, a single run of the direct simulation took about as long as estimating the two capacities.  Thus, since  estimating the hitting probabilities from trajectories requires hundreds of simulations, this indicates that the capacity method performs several orders of magnitude faster.  
 
 \section{Discussion} 
 \label{sec:Discussion}
@@ -651,7 +637,7 @@ and to the extent that each addition involves traversing large flat regions of c
 
 \newpage
 \appendix
-\noindent {\bf APPENDIX}\footnote{\bf Seem to have broken your appendix environment. In fact, everything has gotten a little brittle---witness the huge spaces that appear without warning. The appendix needs some work. In general, I changed wording and notation in many places in the main text and didn't make the corresponding changes everywhere in the appendix. But I did make a lot of them, so definitely best to work from this copy. Things to fix: CHop isn't used in the main text and probably shouldn't be used here; I didn't systematically change all of the instances of $d_A$ and $d_B$; I DID replace the theorems and propositions so that they match the new statements in the main text, but I didn't delve into all of the proofs to make the corresponding changes.}
+\noindent {\bf APPENDIX}
 
 
 %     _    ____  ____  _____ _   _ ____ _____  __     _    
@@ -731,9 +717,9 @@ as desired.
 \section{Proof of Theorem \ref{thm:epsilon_flat}}
 \label{sec:proof_epsilon_flat}
 
-Consider the setup of the ``Toy Model'' as described in the Introduction.  A stationary reversible diffusion $X$ is trapped inside the unit $n$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the case where $X_0$ is outside of $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_A,r_{\tilde B}}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,d_A},\dot B=\bb{x_B,d_B}$.  
+Consider the setup of the ``Toy Model'' as described in the Introduction.  A stationary reversible diffusion $X$ is trapped inside the unit $n$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the case where $X_0$ is outside of $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_A,r_{\tilde B}}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,r_{\dot A}},\dot B=\bb{x_B,r_{\dot B}}$.  
 
-It turns out that by taking $n$ to be sufficiently high or $d_A,d_B$ to be sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$.  This is the content of Theorem \ref{thm:epsilon_flat} from the main text, which we restate here for the convenience of the reader:
+It turns out that by taking $n$ to be sufficiently high or $r_{\dot A},r_{\dot B}$ to be sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$.  This is the content of Theorem \ref{thm:epsilon_flat} from the main text, which we restate here for the convenience of the reader:
 
 \begingroup
 \def\thetheorem{\ref{thm:epsilon_flat}}
@@ -782,9 +768,9 @@ Thus
 \mathbbm{P} \left( \tilde{\tau} \leq t \right) < \varepsilon/2
 \]
 %
-for arbitrarily small $\varepsilon$ and arbitrarily large $t$, by taking $n$ sufficiently high or $d_A,d_B$ sufficiently small.
+for arbitrarily small $\varepsilon$ and arbitrarily large $t$, by taking $n$ sufficiently high or $r_{\dot A},r_{\dot B}$ sufficiently small.
 \end{enumerate}
-Putting these two results together at $t=2/\varepsilon$ we obtain that we can make $|h_{A,B}(x) - \mathbb{E}[h_{A,B}(Z)]| \leq \varepsilon / 2 + \varepsilon/2 = \varepsilon$ for arbitrarily small $\varepsilon$ by taking $n$ sufficiently high or $d_A,d_B$ sufficiently small.
+Putting these two results together at $t=2/\varepsilon$ we obtain that we can make $|h_{A,B}(x) - \mathbb{E}[h_{A,B}(Z)]| \leq \varepsilon / 2 + \varepsilon/2 = \varepsilon$ for arbitrarily small $\varepsilon$ by taking $n$ sufficiently high or $r_{\dot A},r_{\dot B}$ sufficiently small.
 \end{proof}
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -811,23 +797,23 @@ where $\tau$ is the first exit time of a standard Brownian motion from $[-\xi,\x
 \label{lem:longtime}Let $\tilde{\tau}= \inf \{ t : X_t \in \dot A \cup \dot B\}$. For any fixed value of $n
 \geqslant 3$ and $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon,t > 0$, there
 exists some $c (n, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon,t)$ such that if
-$d_A, d_B < c$, then
+$r_{\dot A}, r_{\dot B} < c$, then
 \[ \mathbbm{P} \left( \tilde{\tau} < t |X_0 \not\in\tilde{A} \cup \tilde{B} \right) < \varepsilon \]
-Likewise, for any fixed value of $d_A, r_{\tilde{A}}, d_B, r_{\tilde{B}},
-\varepsilon,t > 0$, there exists some $c (d_A, r_{\tilde{A}}, d_B,
+Likewise, for any fixed value of $r_{\dot A}, r_{\tilde{A}}, r_{\dot B}, r_{\tilde{B}},
+\varepsilon,t > 0$, there exists some $c (r_{\dot A}, r_{\tilde{A}}, r_{\dot B},
 r_{\tilde{B}}, \varepsilon,t)$, such that the same property holds as long as $n \geqslant c$.
 \end{lemma}\begin{proof}
 Our task is to show that $\tilde \tau$ is large with high probability.  Note that it suffices to show that $\tilde \tau_A \triangleq \inf\{t:\ X_t\in \dot A\}$ and $\tilde \tau_B \triangleq \inf\{t:\ X_t\in \dot B\}$ are both large with high probability and then apply a union bound.  Thus, without loss of generality we will focus on showing that $\tilde \tau_A$ is large with high probability.  For this, Chernoff's bound shows that it would be sufficient to show that we can make
 \[
 g(x)=\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}|X_0=x]
 \] 
-arbitrarily small for every $x\notin \tilde A$. We note that $\forall X_0 \notin \tilde A$, the continuity of $X$ dictates that $X$ would have to cross the set $S_{\tilde d_A}=\{x:\ |x-x_A| = \tilde d_A\}$ before $\tilde \tau_A$, as long as $\tilde d_A \in (d_A,r_{\tilde A})$.  Applying the strong Markov property of $X$, we obtain $g(x)\leq \sup_{y\in S_{\tilde d_A}}g(y), \forall x \notin \tilde A$. As a result, to prove our theorem it will suffice to show that by taking $d_A$ sufficiently small or $n$ sufficiently large we can ensure that $g(x)$ is uniformly arbitrarily small on $S_{\tilde d_A}$ for some $\tilde d_A \in (d_A,r_{\tilde A})$.  To show this, we will make use of two other hitting times:
+arbitrarily small for every $x\notin \tilde A$. We note that $\forall X_0 \notin \tilde A$, the continuity of $X$ dictates that $X$ would have to cross the set $S_{\tilde r_{\dot A}}=\{x:\ |x-x_A| = \tilde r_{\dot A}\}$ before $\tilde \tau_A$, as long as $\tilde r_{\dot A} \in (r_{\dot A},r_{\tilde A})$.  Applying the strong Markov property of $X$, we obtain $g(x)\leq \sup_{y\in S_{\tilde r_{\dot A}}}g(y), \forall x \notin \tilde A$. As a result, to prove our theorem it will suffice to show that by taking $r_{\dot A}$ sufficiently small or $n$ sufficiently large we can ensure that $g(x)$ is uniformly arbitrarily small on $S_{\tilde r_{\dot A}}$ for some $\tilde r_{\dot A} \in (r_{\dot A},r_{\tilde A})$.  To show this, we will make use of two other hitting times:
 \[
 T =\inf \{t:\ X_t \notin \tilde A \backslash \dot A\} 
 \qquad
-T_1 =\inf \{t\geq T:\ X_t \in S_{\tilde d_A}\} 
+T_1 =\inf \{t\geq T:\ X_t \in S_{\tilde r_{\dot A}}\} 
 \]
-$\forall X_0 \in S_{\tilde d_A}$, if $X_T\notin \partial\dot A$, then the process exits $\tilde A \backslash \dot A$ at $\partial \tilde A$, and would have to cross $S_{\tilde d_A}$ again before reaching $\dot A$. In this case, we have $T_1 \leq \tilde \tau_A$.  Applying the strong Markov property, we see that $\forall x\in S_{\tilde d_A}$
+$\forall X_0 \in S_{\tilde r_{\dot A}}$, if $X_T\notin \partial\dot A$, then the process exits $\tilde A \backslash \dot A$ at $\partial \tilde A$, and would have to cross $S_{\tilde r_{\dot A}}$ again before reaching $\dot A$. In this case, we have $T_1 \leq \tilde \tau_A$.  Applying the strong Markov property, we see that $\forall x\in S_{\tilde r_{\dot A}}$
 \begin{align*}
 	g(x) = &\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{X_T \in\partial\dot A}|X_0=x]+ \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{X_T \in\partial\tilde A}|X_0=x]\\
 	    =  &\mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T=\tilde \tau_A}|X_0=x]+ \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
@@ -835,33 +821,33 @@ $\forall X_0 \in S_{\tilde d_A}$, if $X_T\notin \partial\dot A$, then the proces
      \mathbb{E}[e^{-\frac{1}{2}T_1}g(X_{T_1})\indicatorf{T\neq\tilde \tau_A}|X_0=x]\\
      \leq & \mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x]+
                     \mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]\left(\sup_{y\in 
-		   S_{\tilde d_A}} g(y)\right)
+		   S_{\tilde r_{\dot A}}} g(y)\right)
 \end{align*}
-Note furthermore that the law of $e^{-\frac{1}{2}T},\indicatorf{T=\tilde \tau_A}$ is actually the same for every $x\in S_{\tilde d_A}$, due to the fact that the diffusion behaves simply like a Brownian motion inside $\tilde A \backslash \dot A$ and the law of $T,\indicatorf{T=\tau_A}$ are thus functions of the one-dimensional diffusion of $|X_t-x_A|$.  In fact, Wendel\cite{Wendel1980-sj} gives explicit formulas for $\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x],\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]$ which depend only upon $|x-x_A|,r_{\tilde{A}},d_A$.  Applying this, taking the supremum over $x$ of our previous formula, and rearranging, we obtain
+Note furthermore that the law of $e^{-\frac{1}{2}T},\indicatorf{T=\tilde \tau_A}$ is actually the same for every $x\in S_{\tilde r_{\dot A}}$, due to the fact that the diffusion behaves simply like a Brownian motion inside $\tilde A \backslash \dot A$ and the law of $T,\indicatorf{T=\tau_A}$ are thus functions of the one-dimensional diffusion of $|X_t-x_A|$.  In fact, Wendel\cite{Wendel1980-sj} gives explicit formulas for $\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0=x],\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0=x]$ which depend only upon $|x-x_A|,r_{\tilde{A}},r_{\dot A}$.  Applying this, taking the supremum over $x$ of our previous formula, and rearranging, we obtain
 \begin{align*}
-\sup_{x\in S_{\tilde d_A}} g(x) &\leq \frac{\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0\in S_{\tilde d_A}]}{1-\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0\in S_{\tilde d_A}]} \triangleq L(d_A,\tilde d_A,r_{\tilde A},n)
+\sup_{x\in S_{\tilde r_{\dot A}}} g(x) &\leq \frac{\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T=\tilde \tau_A}|X_0\in S_{\tilde r_{\dot A}}]}{1-\mathbb{E}[e^{-\frac{1}{2}T}\indicatorf{T\neq\tilde \tau_A}|X_0\in S_{\tilde r_{\dot A}}]} \triangleq L(r_{\dot A},\tilde r_{\dot A},r_{\tilde A},n)
 \end{align*}
 Applying Wendel's formulas, we obtain a closed form expression for $L$:
 \[
-=\frac{\left( \frac{d_A}{\tilde{d}_A} \right)^h (I_h (
-r_{\tilde{A}}) K_h ( \tilde{d}_A) - I_h ( \tilde{d}_A) K_h (
+=\frac{\left( \frac{r_{\dot A}}{\tilde r_{\dot A}} \right)^h (I_h (
+r_{\tilde{A}}) K_h ( \tilde r_{\dot A}) - I_h ( \tilde r_{\dot A}) K_h (
 r_{\tilde{A}}))}{
-    \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde{d}_A)} - \left(
-\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h  \right)
-K_h ( d_A) I_h ( \tilde{d}_A)+ 
-    \left( \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}
-\right)^h  - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde{d}_A)} \right) I_h (d_A)K_h ( \tilde{d}_A)}\\
+    \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde r_{\dot A})} - \left(
+\frac{r_{\tilde{A}}}{\tilde r_{\dot A}} \right)^h  \right)
+K_h ( r_{\dot A}) I_h ( \tilde r_{\dot A})+ 
+    \left( \left( \frac{r_{\tilde{A}}}{\tilde r_{\dot A}}
+\right)^h  - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde r_{\dot A})} \right) I_h (r_{\dot A})K_h ( \tilde r_{\dot A})}\\
 \]
 where $h=(n-2)/2$ and $I_h,K_h$ represent modified Bessel functions of the first and second kind of order $h$.  
  
-Thus, to complete our proof, it suffices to show that we can drive $L(d_A, \tilde d_A, r_{\tilde A},n)$ to zero by taking $d_A$ small or $n$ large:
+Thus, to complete our proof, it suffices to show that we can drive $L(r_{\dot A}, \tilde r_{\dot A}, r_{\tilde A},n)$ to zero by taking $r_{\dot A}$ small or $n$ large:
 \begin{itemize}
-    \item When $d_A$ is small.  The numerator of $L$ converges to zero as $d_A\rightarrow 0$, because $\frac{d_A}{\tilde{d}_A}\rightarrow 0,h>0$ and the other terms are constant.  On the other hand, the denominator explodes, because as $d_A\rightarrow0$ we have
+    \item When $r_{\dot A}$ is small.  The numerator of $L$ converges to zero as $r_{\dot A}\rightarrow 0$, because $\frac{r_{\dot A}}{\tilde r_{\dot A}}\rightarrow 0,h>0$ and the other terms are constant.  On the other hand, the denominator explodes, because as $r_{\dot A}\rightarrow0$ we have
     \begin{align*}
-    & \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde{d}_A)} - \left(\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h  \right)
-                K_h ( d_A) I_h ( \tilde{d}_A) \rightarrow +\infty \\
-    & \left( \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}\right)^h  - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde{d}_A)} \right) 
-                I_h (d_A)K_h ( \tilde{d}_A)\rightarrow 0
+    & \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde r_{\dot A})} - \left(\frac{r_{\tilde{A}}}{\tilde r_{\dot A}} \right)^h  \right)
+                K_h ( r_{\dot A}) I_h ( \tilde r_{\dot A}) \rightarrow +\infty \\
+    & \left( \left( \frac{r_{\tilde{A}}}{\tilde r_{\dot A}}\right)^h  - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde r_{\dot A})} \right) 
+                I_h (r_{\dot A})K_h ( \tilde r_{\dot A})\rightarrow 0
     \end{align*}
     These limits follow immediately from three properties of Bessel functions:
     \begin{itemize}
@@ -870,7 +856,7 @@ Thus, to complete our proof, it suffices to show that we can drive $L(d_A, \tild
         \item $\frac{I_{h}(y)}{I_{h}(x)} > \left(\frac{y}{x}\right)^{h}$ for $y>x$ and $h>0$
     \end{itemize} 
     The first two properties are well-known and can be found in DLMF\cite{noauthor_undated-ti}; the second can be found in Baricz.\cite{noauthor_undated-ti,baricz2010bounds}  In conclusion, since the numerator vanishes and the denominator explodes, we have that overall $L$ vanishes.  
-    \item When $n$ is large.  It is clear that the previous result holds for any value of $\tilde d_A\in (d_A, r_{\tilde A})$.  For the large-$n$ case, we will be more picky: we will take $\tilde d_A=\sqrt{d_A r_{\tilde A}}$.  
+    \item When $n$ is large.  It is clear that the previous result holds for any value of $\tilde r_{\dot A}\in (r_{\dot A}, r_{\tilde A})$.  For the large-$n$ case, we will be more picky: we will take $\tilde r_{\dot A}=\sqrt{r_{\dot A} r_{\tilde A}}$.  
 
     Let us look at the numerator first.  Asymptotics from the DLMF give that as $h=(n-2)/2 \rightarrow \infty$ we have
     \begin{align*}
@@ -878,36 +864,36 @@ Thus, to complete our proof, it suffices to show that we can drive $L(d_A, \tild
     \end{align*}
     Here by $f_1(h)\sim f_2(h)$ we mean ``asymptotic equivalence,'' i.e.\ $\lim_{h\rightarrow\infty}f_1(h)/f_2(h)=1$. Applying to our case:
     \begin{align*}
-        \left(\frac{d_A}{\tilde{d}_A}\right)^h I_h (r_{\tilde{A}}) K_h ( \tilde{d}_A) &
-	\sim \frac{1}{2h}\left(\frac{r_{\tilde{A}} d_A}{\tilde{d}_A^2}\right)^h = \frac{1}{2h} \rightarrow 0 \\
-        \left(\frac{d_A}{\tilde{d}_A}\right)^h I_h ( \tilde{d}_A) K_h (r_{\tilde{A}}) &
-	\sim \frac{1}{2h}\left(\frac{ d_A}{r_{\tilde A}}\right)^h \rightarrow 0
+        \left(\frac{r_{\dot A}}{\tilde r_{\dot A}}\right)^h I_h (r_{\tilde{A}}) K_h ( \tilde r_{\dot A}) &
+	\sim \frac{1}{2h}\left(\frac{r_{\tilde{A}} r_{\dot A}}{\tilde r_{\dot A}^2}\right)^h = \frac{1}{2h} \rightarrow 0 \\
+        \left(\frac{r_{\dot A}}{\tilde r_{\dot A}}\right)^h I_h ( \tilde r_{\dot A}) K_h (r_{\tilde{A}}) &
+	\sim \frac{1}{2h}\left(\frac{ r_{\dot A}}{r_{\tilde A}}\right)^h \rightarrow 0
     \end{align*}
     Putting these two limits together we see that the numerator of $L$ is asymptotically vanishing.
 
     Now let us turn to the denominator.  First note that 
     \begin{align*}
-     \left( \frac{r_{\tilde{A}}}{\tilde{d}_A}\right)^h  
-	    I_h (d_A)K_h ( \tilde{d}_A) &\sim \frac{1}{2h}\left(\frac{r_{\tilde{A}} d_A}{\tilde d_A^2}\right)^h = \frac{1}{2h} \rightarrow 0\\
-     - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde{d}_A)} 
-	    I_h (d_A)K_h ( \tilde{d}_A) &\sim -\frac{1}{2h}\left(\frac{d_A}{r_{\tilde A}}\right)^h \rightarrow 0
+     \left( \frac{r_{\tilde{A}}}{\tilde r_{\dot A}}\right)^h  
+	    I_h (r_{\dot A})K_h ( \tilde r_{\dot A}) &\sim \frac{1}{2h}\left(\frac{r_{\tilde{A}} r_{\dot A}}{\tilde r_{\dot A}^2}\right)^h = \frac{1}{2h} \rightarrow 0\\
+     - \frac{K_h ( r_{\tilde{A}})}{K_h ( \tilde r_{\dot A})} 
+	    I_h (r_{\dot A})K_h ( \tilde r_{\dot A}) &\sim -\frac{1}{2h}\left(\frac{r_{\dot A}}{r_{\tilde A}}\right)^h \rightarrow 0
     \end{align*}
     So those terms are negligible.  However, the other two terms of the denominator are in fact exploding: one to positive infinity and one to negative infinity.  To understand this delicate balance, we these we turn to Lemma \ref{lem:bessel}.  Applying this Lemma and the asymptotics of the DLMF, we obtain that
     \begin{align*}
-    \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde{d}_A)} - \left(\frac{r_{\tilde{A}}}{\tilde{d}_A} \right)^h  \right)
-                K_h ( d_A) I_h ( \tilde{d}_A) 
-        &\geq \frac{r_{\tilde{A}}^h}{\cancel{I_h(\tilde{d}_A)}}\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}\Gamma(h+2)} K_h ( d_A) \cancel{I_h ( \tilde{d}_A)} \\
-        &\sim r_{\tilde{A}}^h\times\frac{r_{\tilde{A}}^{2} -\tilde{d}_A^{2}}{2^{h+2}\Gamma(h+2)} \frac{2^h \Gamma(h+1)}{2hd_A^h}  \\
-        &=\left(\frac{r_{\tilde{A}}}{d_A} \right)^h \left(\frac{r_{\tilde A}^2 - \tilde d_A^2}{8h(h+1)}\right)
+    \left( \frac{I_h ( r_{\tilde{A}})}{I_h ( \tilde r_{\dot A})} - \left(\frac{r_{\tilde{A}}}{\tilde r_{\dot A}} \right)^h  \right)
+                K_h ( r_{\dot A}) I_h ( \tilde r_{\dot A}) 
+        &\geq \frac{r_{\tilde{A}}^h}{\cancel{I_h(\tilde r_{\dot A})}}\times\frac{r_{\tilde{A}}^{2} -\tilde r_{\dot A}^{2}}{2^{h+2}\Gamma(h+2)} K_h ( r_{\dot A}) \cancel{I_h ( \tilde r_{\dot A})} \\
+        &\sim r_{\tilde{A}}^h\times\frac{r_{\tilde{A}}^{2} -\tilde r_{\dot A}^{2}}{2^{h+2}\Gamma(h+2)} \frac{2^h \Gamma(h+1)}{2hr_{\dot A}^h}  \\
+        &=\left(\frac{r_{\tilde{A}}}{r_{\dot A}} \right)^h \left(\frac{r_{\tilde A}^2 - \tilde r_{\dot A}^2}{8h(h+1)}\right)
     \end{align*}
     which is indeed exploding as $h=(n-2)/2 \rightarrow \infty$.  
 
-    In conclusion, with this choice of $\tilde d_A$, the numerator is asymptotically vanishing, but the denominator is asymptotically exploding.  Thus $L$ vanishes.
+    In conclusion, with this choice of $\tilde r_{\dot A}$, the numerator is asymptotically vanishing, but the denominator is asymptotically exploding.  Thus $L$ vanishes.
 \end{itemize}
 
-Let us now review our arguments to see how the vanishing of $L$ leads to our desired conclusion.  We have just shown that by taking $n$ large or $d_A$ small, we can ensure that $L$ vanishes.  Thus for any $x_0\notin \tilde A$ and any $\varepsilon'>0$, we can ensure
+Let us now review our arguments to see how the vanishing of $L$ leads to our desired conclusion.  We have just shown that by taking $n$ large or $r_{\dot A}$ small, we can ensure that $L$ vanishes.  Thus for any $x_0\notin \tilde A$ and any $\varepsilon'>0$, we can ensure
 \begin{align*}
-\varepsilon' & \geq L \geq \sup_{y \in S_{\tilde d_A}} g(y) \geq g(x) \\
+\varepsilon' & \geq L \geq \sup_{y \in S_{\tilde r_{\dot A}}} g(y) \geq g(x) \\
             & = \mathbb{E}[e^{-\frac{1}{2}\tilde \tau_A}|X_0=x]\\
             & \geq \mathbb{P}(\tilde \tau_A < t) e^{\frac{1}{2} t}
 \end{align*}
@@ -1148,20 +1134,22 @@ Next, using the reversibility constraint on $b$ from Equation (\ref{eqn:reversib
 \end{equation*}
 This gives us the desired result.
 \end{proof}
+
 We are now ready to prove the Proposition:
+
+
 \begingroup
 \def\theproposition{\ref{prop:flux}}
 \begin{proposition}
 For any regions $G$ and $\tilde{G}$ having smooth boundaries and such that $A\subset G \subset \tilde G \subset \tilde A$, $\capac{A,\tA}$ can be expressed as a flux leaving $\tilde G \backslash G$:
-\begin{equation*}
+\[
 \ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c} (x)   \normal(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} \hausdorffmeasure
-\end{equation*}
+\]
 where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ is the $(n-1)$-dimensional Hausdorff measure, and $\normal$ represents the outward-facing (relative to the set $\tilde G \backslash G$) normal vector on $\partial (\tilde G \backslash G)$.
 \end{proposition}
 \addtocounter{proposition}{-1}
 \endgroup
-\begin{proof}
-First recall that $\mathcal{L} h_{A, \tilde{A}^c} = 0$ and
+\begin{proof}First recall that $\mathcal{L} h_{A, \tilde{A}^c} = 0$ and
 \begin{equation*}
 	\tmop{cap}(A,\tilde A) = \int_{\tilde A \backslash A} \nabla h_{A, \tilde{A}^c} (x)^T a(x) \nabla h_{A, \tilde{A}^c} (x) e^{-U(x)} dx
 \end{equation*}
@@ -1183,8 +1171,8 @@ Combining this with Equation \ref{eq:lemmaproof} gives us
 Using the facts that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$, and $\mathcal{L} h_{G, \tilde G^c} = 0$, we apply Lemma \ref{lem:greenident} two more times to obtain 
 \begin{align*}
 	\tmop{cap}(A,\tilde A)  &= \int_{\partial G}  \normal^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure = \int_{\partial G}  h_{G, \tilde{G}^c} \normal^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure\\
-				&= \int_{\partial (\tilde G \backslash G)}  h_{G, \tilde{G}^c} \normal^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure \\
-				&= \int_{\tilde G \backslash G}  \nabla h_{G, \tilde{G}^c} a \nabla h_{A, \tilde{A}^c} e^{- U } dx\\
+				&= \int_{\partial (\tilde G \backslash G)}  h_{G, \tilde{G}^c} \normal^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure 
+				= \int_{\tilde G \backslash G}  \nabla h_{G, \tilde{G}^c} a \nabla h_{A, \tilde{A}^c} e^{- U } dx\\
 				&= \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c}    \normal^T a  \nabla h_{G, \tilde{G}^c} e^{- U } \hausdorffmeasure
 \end{align*}
 \end{proof}
@@ -1273,7 +1261,7 @@ Note that $k\in \mathcal{H}^1$ and satisfies the equality boundary conditions.  
 
 
 
-\section{Shell Method}\footnote{\bf Stannis: I already mentioned to you some things that I found really unclear. Mostly, my problems were with b, c, and d, of part 1. I switched the order of the S's in the statement but not in the rest of it...sorry, but it was much easier to write about in section IV after I made the change. Also, I made it more general by using $R$ in place of $A$, which came in handy in the main text.} 
+\section{Shell Method\footnote{\bf Stannis: I already mentioned to you some things that I found really unclear. Mostly, my problems were with b, c, and d, of part 1. I switched the order of the S's in the statement but not in the rest of it...sorry, but it was much easier to write about in section IV after I made the change. Also, I made it more general by using $R$ in place of $A$, which came in handy in the main text.} }
 \label{sec:shell_method}
 
 The algorithm for estimating local hitting probabilities is outlined as follows:
@@ -1366,13 +1354,13 @@ To make sure the energy function is continuous, and the different components of 
 \begin{equation}
 F_m(x|x_0, r) = exp(-\frac{r}{r - ||x - x_0||_2^{20}})
 \end{equation}
-where $x_0=x_A, r=d_A$ or $x_0=x_B, r=d_B$, depending on which target we are working with, and a rescaling of the random component, which is given by $0.1 * d_w$ if we are perturbing the well component, and $0.1 * (d_c + h)$ if we are perturbing the crater component.
+where $x_0=x_A, r=r_{\dot A}$ or $x_0=x_B, r=r_{\dot B}$, depending on which target we are working with, and a rescaling of the random component, which is given by $0.1 * d_w$ if we are perturbing the well component, and $0.1 * (d_c + h)$ if we are perturbing the crater component.
 
 Intuitively, for the well component, we use a $4$th order polynomial to get a well-like energy landscape around the target that is continuous and differentiable at the boundary. Similarly, for the crater component, we use a $6$th order polynomial to get a crater-like energy landscape around the target that is also continuous and differentiable at the boundary. For the random component, we are essentially placing a number of Gaussian bumps around the target. And for the mollifier, we are designing the function such that it's almost exactly 1 around the target, until it comes to the outer boundary, when it transitions smoothly and swiftly to 0.
 To summarize, given parameters $d_w, d_c, h$ and random bumps $\mu_{A}, \mu_{B}$ with $\mu^{A}_i\in \dot{A} \setminus A, i=1, \cdots, m_A, \mu^{B}_i \in \dot{B} \setminus B, i=1, \cdots, m_B$, and the corresponding standard deviations $\sigma^{A}, \sigma^{B}$ with $\sigma^{A}_{i j}, i=1,\cdots, m_A, j=1, \cdots, d, \sigma^{B}_{i j}, i=1, \cdots, m_B, j=1, \cdots, d$, the energy function we used in the experiments is given by
 \begin{align}
-F(x) &= F_w(x|d_w, d_A) + 0.1 \times d_w \times F_m(x|x_A, d_A) + F_r(x|\mu^{A}, \sigma^{A}), \forall x \in \dot{A} \setminus A \\
-F(x) &= F_c(x|d_c, h, d_B) + 0.1 \times (d_c + h) \times F_m(x|x_B, d_B) + F_r(x|\mu^{B}, \sigma^{B}), \forall x \in \dot{B} \setminus B
+F(x) &= F_w(x|d_w, r_{\dot A}) + 0.1 \times d_w \times F_m(x|x_A, r_{\dot A}) + F_r(x|\mu^{A}, \sigma^{A}), \forall x \in \dot{A} \setminus A \\
+F(x) &= F_c(x|d_c, h, r_{\dot B}) + 0.1 \times (d_c + h) \times F_m(x|x_B, r_{\dot B}) + F_r(x|\mu^{B}, \sigma^{B}), \forall x \in \dot{B} \setminus B
 \end{align}
 
 In our actual experiments, we used
