@@ -1135,21 +1135,17 @@ Next, using the reversibility constraint on $b$ from Equation (\ref{eqn:reversib
 This gives us the desired result.
 \end{proof}
 
-We are now ready to prove the Proposition:
-
-
-\begingroup
 \def\theproposition{\ref{prop:flux}}
 \begin{proposition}
 For any regions $G$ and $\tilde{G}$ having smooth boundaries and such that $A\subset G \subset \tilde G \subset \tilde A$, $\capac{A,\tA}$ can be expressed as a flux leaving $\tilde G \backslash G$:
 \[
 \ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c} (x)   \normal(x)^T a (x) \nabla h_{G, \tilde{G}^c} (x)e^{- U (x)} \hausdorffmeasure
 \]
-where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ is the $(n-1)$-dimensional Hausdorff measure, and $\normal$ represents the outward-facing (relative to the set $\tilde G \backslash G$) normal vector on $\partial (\tilde G \backslash G)$.
+where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ is the $(n-1)$-dimensional Hausdorff measure, and $\normal$ represents the outward-facing (relative to $\tilde G \backslash G$) normal vector on $\partial (\tilde G \backslash G)$.
 \end{proposition}
 \addtocounter{proposition}{-1}
-\endgroup
-\begin{proof}First recall that $\mathcal{L} h_{A, \tilde{A}^c} = 0$ and
+\begin{proof}
+First recall that $\mathcal{L} h_{A, \tilde{A}^c} = 0$ and
 \begin{equation*}
 	\tmop{cap}(A,\tilde A) = \int_{\tilde A \backslash A} \nabla h_{A, \tilde{A}^c} (x)^T a(x) \nabla h_{A, \tilde{A}^c} (x) e^{-U(x)} dx
 \end{equation*}
@@ -1199,7 +1195,6 @@ Put $G=S$ in Equation (\ref{eqn:cor}).
 %
 %
 %
-
 \section{Inequality Boundary Conditions for the Variational Form}
 \label{sec:inequalityboundaryvar}
 
