@@ -1261,12 +1261,12 @@ Note that $k\in \mathcal{H}^1$ and satisfies the equality boundary conditions.  
 
 
 
-\section{Shell Method\footnote{\bf Stannis: I already mentioned to you some things that I found really unclear. Mostly, my problems were with b, c, and d, of part 1. I switched the order of the S's in the statement but not in the rest of it...sorry, but it was much easier to write about in section IV after I made the change. Also, I made it more general by using $R$ in place of $A$, which came in handy in the main text.} }
+\section{Shell Method}
 \label{sec:shell_method}
 
 The algorithm for estimating local hitting probabilities is outlined as follows:
 
-{\algorithm{\label{alg:hitting_prob_estimation}Estimating $h_{R,\tilde R^c}(x)$ for many values of $x$ along a shell $\partial S$
+{\algorithm{\label{alg:hitting_prob_estimation}Estimating $h_{R,\tilde R^c}(x)$ for many values of $x$ on a shell $\partial S$
 
 \begin{description}
     \item[Input] $R \subset S \subset \tilde{R} \subset \Omega$ and a stationary reversible  diffusion process $\{X_t\}_{t \geq 0}$ in $\Omega$ with invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$. We also require a series of subsets
@@ -1284,34 +1284,30 @@ The algorithm for estimating local hitting probabilities is outlined as follows:
   \item Generate an ensemble of samples $z_1, \ldots, z_{N_p}$ on $\partial S$
   according to the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted to $\partial S$. 
   
-  \item Evolve the ensemble on $\partial S$, by repeatedly taking a random
-      sample from $\{ z_1, \ldots, z_{N_p} \}$ and follow the dynamics of $\{X_t\}_{t \geq 0}$
+  \item Evolve the ensemble on $\partial S$, by repeatedly sampling an initial location from the uniform distribution on $\{ z_1, \ldots, z_{N_p} \}$ and carry out a local simulation following the dynamics of $\{X_t\}_{t \geq 0}$
   until the trajectory hits either $\partial S_{m - 1}$ or $\partial S_{m +
-  1}$. Record the hitting locations on $\partial S_{m - 1}$ and $\partial S_{m
-  + 1}$ until we have $N_p$ samples on both $\partial S_{m - 1}$ and $\partial
-  S_{m + 1}$. Store the redundant trials for future estimation of transition
-  probabilities.
+  1}$. Record the hitting locations on $\partial S_{m - 1}$ and $\partial S_{m + 1}$ until we have $N_p$ points on both $\partial S_{m - 1}$ and $\partial
+  S_{m + 1}$. In most cases, the process is more likely to hit one of $S_{m - 1}, S_{m + 1}$ than the other, and we need to run more than $2N_p$ local simulations to get at least $N_p$ samples on both shells. We store the results of the redundant local simulations for future estimation of transition probabilities.
   
-  \item Sequentially evolve the ensembles on $\partial S_{m - 1}, \ldots,
-  \partial S_2$ and on $\partial S_{m + 1}, \ldots, \partial S_{n - 2}$, until
-  we have $N_p$ samples on all of the intermediate surfaces $\partial S_1,
-  \ldots, \partial S_{n - 1}$. Store the redundant trials for future
+  \item Repeat the above process to sequentially evolve the ensembles on $\partial S_{m - 1}, \ldots,
+  \partial S_2$ and on $\partial S_{m + 1}, \ldots, \partial S_{n - 2}$, to get $N_p$ samples on all of the intermediate shells $\partial S_1,
+  \ldots, \partial S_{n - 1}$. Store the results of the redundant local simulations for future
   estimation of transition probabilities.
   
-  \item For each one of the surfaces $\partial S_1, \ldots, \partial S_{n -
-  1}$, cluster the $N_p$ samples on that surface into $N_b \,$ states. 
+  \item For each one of the shells $\partial S_1, \ldots, \partial S_{n -
+  1}$, cluster the $N_p$ samples on that shell into $N_b \,$ states. In our implementation, we use $k$-means, and represent the $N_b$ states by the $N_b$ centroids we get from the algorithm.
 \end{enumerate}
 
 The result of this step is a partitioning of each shell $\partial S_i$ into
-$N_b$ discrete regions. 
+$N_b$ regions, representing an adaptive discretization of the shells. For a point on a shell $\partial S_i$, we identify its corresponding discrete state by finding the nearest centroid.
 
-\item Estimate the transition probabilities between these states by running an additional $N_s$ local simulations for each one of the $N_b$ states on each surface. The result of this step is an estimate of the probability of transitioning from state $k$ on $\partial S_i$ to state $l$ on $\partial S_j$, which we denote by $P^{(i, j)}_{k, l}$, where $k, l \in \{ 1, \ldots, N_b \}$ and $i, j \in \{ 1, \ldots, n - 1 \}$ with $| i - j | = 1$.
+\item Estimate the transition probabilities between these discrete states by running an additional $N_s$ local simulations for each one of the $N_b$ states on each shell. The result of this step is an estimate of the probability of transitioning from state $k$ on $\partial S_i$ to state $l$ on $\partial S_j$, which we denote by $P^{(i, j)}_{k, l}$, where $k, l \in \{ 1, \ldots, N_b \}$ and $i, j \in \{ 1, \ldots, n - 1 \}$ with $| i - j | = 1$.
   
 \item Use the transition probabilities to get an estimate of the hitting probabilities for the $N_b$ states on
-  $\partial S$.  In line with related works on Markov state models,\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp} we  approximate the continuous dynamics using closed-form calculations from the discrete Markov chain we have developed in the previous two steps.  In particular, we estimate overall hitting probabilities using the standard ``one-step analysis.'' For any $k \in \{ 1, \ldots, N_b \}$ and $i \in \{ 1, \ldots, n - 1 \}$, let $u^{(i)}_k$ denote the probability of hitting $\partial R = \partial S_0$ before hitting $\partial \tilde{R} = \partial S_n$ if we start the discretized process at state $k$ on $\partial S_i$.  We can calculate our object of interest by solving the matrix difference equation \[ u^{(i)} = P^{(i, i + 1)} u^{(i + 1)} + P^{(i, i - 1)} u^{(i - 1)}, i = 1, \ldots, n - 1 \] with boundary conditions $u^{(0)} = {\mathbf{0}}, u^{(n)} = {\mathbf{1} }$, where ${\mathbf{0}}$ and ${\mathbf{1}}$ are vectors of all $0$'s and $1$'s. This gives the estimated hitting probability for each cluster.  We then estimate the hitting probability of each point $z_i$ by
+  $\partial S$.  In line with related works on Markov state models,\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp} we  approximate the continuous dynamics using closed-form calculations from the discrete Markov chain we have developed in the previous two steps.  In particular, we estimate overall hitting probabilities using the standard ``one-step analysis.'' For any $k \in \{ 1, \ldots, N_b \}$ and $i \in \{ 1, \ldots, n - 1 \}$, let $u^{(i)}_k$ denote the probability of hitting $\partial R = \partial S_0$ before hitting $\partial \tilde{R} = \partial S_n$ if we start the discretized process at state $k$ on $\partial S_i$.  We can calculate our object of interest by solving the matrix difference equation \[ u^{(i)} = P^{(i, i + 1)} u^{(i + 1)} + P^{(i, i - 1)} u^{(i - 1)}, i = 1, \ldots, n - 1 \] with boundary conditions $u^{(0)} = {\mathbf{1}}, u^{(n)} = {\mathbf{0} }$, where ${\mathbf{0}}$ and ${\mathbf{1}}$ are vectors of all $0$'s and $1$'s. This gives the estimated hitting probability for each discrete state.  We then estimate the hitting probability of each point $z_i$ by
   \begin{equation}
       \label{equ:hitprobest}
-  h_{R,\tilde R^c}(z_i) = u^{(m)}_k, z_i \in \text{cluster }k\text{ on }\partial S\end{equation}
+  h_{R,\tilde R^c}(z_i) = u^{(m)}_k, z_i \in \text{state }k\text{ on }\partial S\end{equation}
 \end{enumerate}
 }}
 
