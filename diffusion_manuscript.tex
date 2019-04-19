@@ -147,7 +147,7 @@ Of course there is nothing special about two targets, in any of our results. Eve
 \begin{wrapfigure}
 [18]{r}[0pt]{0.5\textwidth}
 	\centering	\includegraphics[width=0.4\textwidth]{ToyModel4.png}
-	\caption{\footnotesize\linespread{1.}\selectfont{} {\bf A Toy Model.} The dynamics obey the first-order Langevin equation (\ref{equ:toy_sde}). There are two targests, $A$ and $B$, each surrounded by two neighborhoods. Outside of $\dA\cup\dB$, the energy is flat ($\nabla U=0$). If the targets are small enough or the dimension large enough then the probability of entering $A$ before entering $B$  is nearly independent of $X_0$, provided that $X_0$ is outside of $\tA\cup\tB$. What is more, this first-passage probability depends only the behavior of $U$ in $\dA\cup\dB$, which may be arbitrarily complicated.}
+	\caption{\footnotesize\linespread{1.}\selectfont{} {\bf A Toy Model.} The dynamics obey the first-order Langevin equation (\ref{equ:toy_sde}). There are two targets, $A$ and $B$, each surrounded by two neighborhoods. Outside of $\dA\cup\dB$, the energy is flat ($\nabla U=0$). If the targets are small enough or the dimension large enough then the probability of entering $A$ before entering $B$  is nearly independent of $X_0$, provided that $X_0$ is outside of $\tA\cup\tB$. What is more, this first-passage probability depends only the behavior of $U$ in $\dA\cup\dB$, which may be arbitrarily complicated.}
 \label{fig:ToyModel}
 \end{wrapfigure}
 
@@ -437,8 +437,7 @@ $S=S_{n-1}$, a well-chosen inner approximation of $\tilde G$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \section{Numerical Experiments\footnote{All the experimental results can be reproduced or easily modified from open-source code, which can found, along with detailed instructions, at
-\url{https://github.com/StannisZhou/capacity_hopping}.}}
+ \section{Numerical Experiments\footnote{All the experimental results can be reproduced or easily modified from open-source code, which can found, along with detailed instructions, at \url{https://github.com/StannisZhou/capacity_hopping}.}}
 \label{sec:Experiments}
 We experimented with the two-target system discussed in \S\ref{sec:Introduction} and depicted in Figure \ref{fig:ToyModel}, with $n=5$ dimensions 
 and the particular targets $A=\bb{x_A, r_A}$,  where $x_A=(0.5,0.6,0.0,0,0,0.0)$ and $r_A=0.02$, and 
@@ -586,7 +585,7 @@ In summary, all three components of the approach performed well in the Brownian 
 \end{minipage}}
 \end{figure}
 
-\subsection{Nontrivial Landscape}
+\subsection{Nontrivial Landscape}\label{sec:nontrivial_results}
 We performed the same tests, but with a complex energy landscape in the neighborhoods of the targets, i.e. on $\dA\backslash A$ and $\dB\backslash B$. The details of the specification can be found in Appendix \ref{sec:energy_function}.
 
 \subsubsection{Are first-passage probabilities approximately constant outside of $\bm{\tA\cup\tB}$?}
@@ -607,9 +606,13 @@ Evidently, the process is much more likely to exit $\dB\backslash B$ at $\partia
 
 As already remarked, the nontrivial energy landscape precludes a direct assessment of the accuracy of the capacity estimation algorithm.  It is not possible to obtain exact values for the capacity.  Therefore, we cannot directly test whether our algorithm is accurately estimating the capacities.  However, the good agreement between the estimated value of $p_A$ and the results of straightforward simulation constitute indirect evidence supporting the approximations, and the accuracy of the shell method in particular.
 
-Concerning computational efficiency, it is difficult to make a direct comparison between the capacity-estimation approach and straightforward simulation. There are many parameters and, besides, run times will depend on the dimension and details of the energies, possibly affecting the two approaches differently.
-In our experiments, for direct simulations we used the 
-``walk-on-spheres'' method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust to number of samples or the discretization parameters. Under these conditions, a single run of the direct simulation took about as long as estimating the two capacities.  Thus, since  estimating the hitting probabilities from trajectories requires hundreds of simulations, this indicates that the capacity method performs several orders of magnitude faster.  
+Concerning computational efficiency, it is difficult to make a direct comparison between the capacity-estimation approach and straightforward simulation. There are many parameters and, besides, run times will depend on the dimension and details of the energies, possibly affecting the two approaches differently. In our experiments, for direct simulations we used the ``walk-on-spheres'' method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust to number of samples or the discretization parameters. Under these conditions, a single run of the direct simulation took about as long as estimating the two capacities.
+
+To get some crude sense of how these two approaches compare in terms of speed, we make some illuminating calculations based on the results in \S\ref{sec:nontrivial_results}. Use $p^{(i)}_A, i=1, \cdots, 100$ to denote the estimated hitting probabilities for the $100$ different initial configurations using direct simulations, and use $p_A$ to denote the estimated hitting probabilities using the capacity-estimation approach. We use
+\begin{equation*}
+	\frac{1}{100}\sum_{i=1}^{100}(p^{(i)}_A - p_A)^2\approx 0.0004
+\end{equation*}
+to quantify the uncertainty in $p_A$. Now assume we want to use direct simulations to estimate the hitting probability starting from a particular initial configuration. In the extreme case where the true hitting probability is $0.9$ (which is much larger than $0.8460$, the maximum we get in our actual experiments), using the formula for the variance of the mean of i.i.d. Bernoulli random variables, we would need approximately $\frac{0.9 \times (1 - 0.9)}{0.0004} \approx 225$ direct simulations to reach the same level of accuracy as the capacity-estimation approach. This indicates that the capacity-estimation approach is orders of magnitude faster than direct simulations.
 
 \section{Discussion} 
 \label{sec:Discussion}
