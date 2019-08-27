@@ -72,7 +72,7 @@
 
 \begin{document}
 
-\title{Capacities and the Free Passage of Entropic Barriers} %Title of paper
+\title{Efficiently Computing First Passage Probabilities Under Metastable Equilibrium} %Title of paper
 
 \author{Jackson Loper}
 \thanks{These two authors contributed equally}
@@ -87,11 +87,7 @@
 \date{\today}
 
 \begin{abstract}
-	We propose an approach for estimating the probability that a given small target, among many, will be the first to be reached in a molecular dynamics simulation. Reaching small targets out of a vast number of possible configurations constitutes an \emph{entropic barrier}. Experimental evidence suggests that entropic barriers are ubiquitous in biomolecular systems, and often characterize the rate-limiting step of biomolecular processes. Presumably for the same reasons, they often characterize the rate-limiting step in simulations. To the extent that first-passage probabilities can be computed without requiring direct simulation, the process of traversing entropic barriers can replaced by a single choice from the computed (``first-passage'') distribution.
-We will show that in the presence of certain entropic barriers, first-passage probabilities are approximately invariant to the initial configuration, provided that it is modestly far away from each of the targets.  We will further show that as a consequence of this 
-invariance, the first-passage distribution can be well-approximated in terms of ``capacities" of local sets around the targets.  Using these theoretical results and a Monte Carlo mechanism for
-approximating capacities, we provide a method for estimating the  hitting probabilities of small targets in the presence of entropic barriers. In numerical experiments with an
-idealized (``golf-course'') potential, the estimates are as accurate as the results of direct simulations, but far faster to compute.
+	A reversible stochastic differential equation is initialized at position $x_0$ -- where will it go next?  What is the probability it will reach one region before it reaches another region?  We here propose an approach for estimating the probability that a given target, among many, will be the first to be reached by a reversible stochastic differential equation.   We focus on the situation that it takes a long time to hit any target; in this case direct simulation of the hitting probabilities becomes prohibitively expensive.  We turn this curse into a blessing; if the timescales are sufficiently long the system will reach metastable equilibrium before it hits any target.  In this case we show that the hitting probabilities can be accurately approximated using only local simulations around each target, obviating the need for global simulations.  Numerical experiments on idealized energy landscape show the estimates can be nearly as accurate as direct simulations and thousands of times faster to compute.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -101,95 +97,45 @@ idealized (``golf-course'') potential, the estimates are as accurate as the resu
 \section{Introduction}
 \label{sec:Introduction}
 
-Molecular dynamics simulations help us understand a diverse range of biomolecular processes, including the folding of macromolecules into their native configurations\cite{Scheraga2007-qw} and the conformational changes involved in their functioning.\cite{Hospital2015-ol} Since their first introduction in the 1970s,\cite{McCammon1977-kg, Warshel1976-qg} substantial increase in speed and accuracy of molecular dynamics simulations has been achieved. However, we are still severely limited in the timescale we can access. Even with specialized hardwares, we can only achieve atomic-level simulations on timescales as long as milliseconds,\cite{Dror2012-ws} while the timescales for various biomolecular processes vary widely, and can last for seconds or longer.\cite{Naganathan2005-ki, Zemora2010-lb} 
+Reversible diffusions play a key role in a wide variety of physical systems.  The folding of macromolecules into their native configurations is often posed as diffusions (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can also be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through  membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   A full analytic understanding of these diffusions is usually impossible.  However, it is sometimes possible to get accurate estimations of certain aspects of these diffusion systems.
 
-Efforts have been made to extend the timescale accessible by molecular dynamics simulations from two distinct perspectives: A \emph{kinetic perspective} seeks to find ways to directly understand the dynamics and simulate them with less computational effort, usually under the framework of kinetic transition networks\cite{Noe2006-cs, Wales2006-ur} or Markov State Models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}. The reaction rates are given by various methods that build on top of transition state theory\cite{Eyring1935-ur, Chandler1978-bq, Wigner1997-kk}, including transition path sampling\cite{Dellago1998-lb, Bolhuis2002-ws}, transition interface sampling\cite{Van_Erp2005-vw}, and transition path theory\cite{E2006-fm, E2010-sr}. By contrast, a \emph{thermodynamic perspective} aims to understand and efficiently sample from the ``equilibrium distribution'' on the configuration space; simulated annealing,\cite{Kirkpatrick1983-su} genetic algorithms\cite{Goldberg1989-ko} and parallel tempering\cite{Sugita1999-vh} are representative examples of this approach. However, the dynamics are lost, and additional work\cite{Yang2007-gn, Andrec2005-fh, Zheng2009-ow, Huang2010-uu} is needed in order to recover the kinetic information. Besides, not everyone agrees that a true equilibrium (as opposed to something metastable) is always actually reached by real physical systems\cite{Levinthal1968-ov, Baker1994-px}.
+In this paper we focus on estimating first-passage hitting probabilities for reversible diffusions: given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?  The simplest way to estimate these hitting probabilities is by direct simulation of the diffusion.  However, this simulation can be prohibitively computationally expensive, and many efforts have been made to understand diffusion without direct simulations, including frameworks such as kinetic transition networks (cf.\ \cite{Noe2006-cs, Wales2006-ur}), Markov State Models (cf.\ \cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}), transition path sampling (cf.\ \cite{Dellago1998-lb, Bolhuis2002-ws}), transition interface sampling (cf.\ \cite{Van_Erp2005-vw}), and transition path theory (cf.\ \cite{E2006-fm, E2010-sr}).  
 
-In this paper we focus on \emph{hitting probabilities}: Given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first? This question lies in-between the two perspectives. Compared with the kinetic perspective, it lacks certain dynamic information: it does not tell us \emph{how long} it takes to hit each target.  Compared with the thermodynamic perspective, it adds dynamic information.
-Namely, it informs the study of state-to-state transitions.  It also appears as an important subproblem for other methods, e.g. transition probability estimation in Markov State Models, committor function estimation in transition path theory, et cetera.
+We focus particularly on the case that the first passage takes long enough that the system can reach a metastable equilibrium before either target is hit (we will make the idea of ``metastable equilibrium'' formally rigorous in Section \ref{sec:Preliminaries}).  In this case many approaches for accelerating simulation can fail \cite{Baum1986-we, Wille1987-tf, Machta2009-gh}. Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space, not much can be done to speed up their simulation without destroying the dynamics of the system'' \cite{Christen2008-ge}.  We here show an opposing viewpoint: processes in metastable equilibrium extensively sample the state-space but they are also much easier to analyze. 
 
-We are especially interested in the ``small-target" regime for the hitting probability question---reaching targets representing a tiny fraction of a vast number of possible configurations. The multitude of configurations constitute an \emph{entropic barrier}. A prototypical example (and a convenient metaphor) is a  ``golf-course'' potential.\cite{bicout2000entropic, Baum1986-we, Wille1987-tf}. These potentials feature several small targets in a much larger region. Away from the targets, the potential energy is relatively flat.  Near the targets, the potential energy may be complicated. Regions of the energy landscape with these small-target golf-course potentials are ubiquitous in biomolecular systems. Folding-like dynamics (such as the folding of RNAs and proteins) are one prominent example, where, quoting 
-McLeish\cite{McLeish2005-dq}, ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.'' Indeed, experimental evidence shows that exploration of these regions with golf-course potentials is the rate-limiting step for a variety of processes.\cite{Teschner1987-qs, Jacob1999-bs, Goldberg1999-mv, Plaxco1998-iv}
+The ``narrow escape problem'' literature has already made great strides in understanding diffusions in a metastable equilibrium.  This literature generally considers Brownian motion trapped in a set by reflecting boundaries and looks at the first passage times to asymptotically vanishing targets on the surface of the ball (cf.\ \cite{holcman2004escape,cheviakov2010asymptotic}).   This timing information usually enables estimation of the probability of hitting a particular target first.  Techniques such as matched asymptotics make it possible to obtain these timing formulas for many special cases \cite{cheviakov2010asymptotic}.  
 
-Direct simulations offer one way to estimate hitting probabilities, but perform poorly in the presence of entropic barriers. 
-Significant, if not most, computation is spent traversing large expanses of nearly flat landscape. In general, the computational efficiency of direct simulations will scale inversely with the size of the targets.
+We propose a set-capacity-based approach for estimating hitting probabilities when $X$ reaches metastable equilibrium before it hits the targets.   This capacity approach applies in high-dimensions, carries exact non-asymptotic error bounds, and can be applied to targets of any smooth shape on any smooth reversible diffusions.  The key idea is to focus on type of set capacity, which we will refer to as ``first-passage capacities.''  These capacities can be computed using only local simulations around the targets and can be used to accurately estimate the hitting probabilities.  Figure \ref{fig:ToyModel} shows several examples.  First-passage capacities allow analysis of a wider variety of problems than the extant narrow-escape results; however, these capacities are also less powerful insofar as they only estimate hitting probabilities and give no insights into timing.  
 
-Standard acceleration techniques do not always apply in the presence of entropic barriers.  For example, simulated annealing and parallel tempering work poorly in the presence of regions with golf-course potentials.\cite{Baum1986-we, Wille1987-tf, Machta2009-gh} Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space'' (which is indeed the case in the presence of entropic barriers), ``not much can be done to speed up their simulation without destroying the dynamics of the system.''\cite{Christen2008-ge}
-
-In this paper, we argue for a new point of view: the long timescales in the presence of entropic barriers can be a blessing rather than a curse.  If the targets are sufficiently small then the system may reach a ``temporary equilibrium'' before entering any of the complex landscapes found in and around them. The exact initial conditions become irrelevant as the hitting probabilities become approximately independent of where the process started.  Moreover, these hitting probabilities may be approximately \emph{invariant} to the energy landscape away from the targets, meaning we can compute the approximately constant hitting probabilities using only local simulations around the targets.
-
-
-The following idealization will help to illustrate these ideas: The configuration space,
-$\Omega$, is the unit ball in $\mathbb{R}^n$
-($\Omega = \bb{0,1}$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$). The configuration itself, $X=X_t$, is confined to $\Omega$ by a reflecting boundary at $\partial\Omega$, and within $\Omega$ the dynamics are assumed to be well approximated by the first-order (high-viscosity) Langevin equation,
-\begin{equation} 
-\label{equ:toy_sde}
-\mathrm{d} X_t = - \nabla U (X_t) \mathrm{d} t + \mathrm{d} W_t 
-\end{equation}
-where $W_t$ is an $n$-dimensional Brownian motion and 
-$U$ is a potential energy. There are only two targets, 
-\begin{align*}
-A &\triangleq \bb {x_A, r_A}\\
-B &\triangleq \bb {x_B, r_B}
-\end{align*}
-both completely contained in $\Omega$ and both small, in the sense that $r_A,r_B \ll 1$.
-Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first.  If we let $h_{A,B}(x)$ be the probability that $X_t$ reaches $A$ before reaching $B$ (``first-passage at $A$''), which depends on the starting configuration $X_0=x$, then more specifically we are interested in computing approximations to $h_{A,B}(x)$ that sidestep the entropic barrier in the special case that U is smooth beyond the immediate neighborhoods of $A$ and $B$.
-
-To this end, introduce neighborhoods $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $r_A<r_\dA<r_\tA$, and
-$\dB=\bb{x_B,r_\dB }$ and $\tB=\bb{x_B,r_\tB }$ such that $r_B<r_\dB<r_\tB$, and assume, in the extreme case,  that $\nabla U(x)=0$ for all $x\in\Omega\backslash (\dA\cup\dB)$
-(see Figure \ref{fig:ToyModel}). 
-Though $U$ may be arbitrarily complicated on $\dA \cup \dB$, we will show that the hitting probabilities $h_{A,B}(x)$ converge uniformly over $x\in \Omega \backslash (\tA\cup \tB)$ to a constant as the ``action regions'' $\dA$ and $\dB$ are made smaller.
-Furthermore, the constant itself depends only on the ratio of
-two so-called capacities, $\capac{A}{\tA}$ and $\capac{B}{\tB}$, which are well-known integrals, depending only on $U$, over the sets $\tA\backslash A$ and $\tB\backslash B$.
-At this point, then, the problem comes down to devising an efficient scheme for estimating capacities. 
-In this regard, the probabilistic interpretation of capacities can be helpful. By exploiting both points of view, the explicit integral representation of capacities and their connections to first-passage probabilities, we will provide a general Monte Carlo approach to their estimation. 
-Of course there is nothing special about two targets, in any of our results. Even if there are more, the first-passage probabilities are still determined by the ratios of the target capacities. 
-
-\begin{wrapfigure}
-[18]{r}[0pt]{0.5\textwidth}
-	\centering	\includegraphics[width=0.4\textwidth]{ToyModel4.png}
-	\caption{\footnotesize\linespread{1.}\selectfont{} {\bf A Toy Model.} The dynamics obey the first-order Langevin equation (\ref{equ:toy_sde}). There are two targets, $A$ and $B$, each surrounded by two neighborhoods. Outside of $\dA\cup\dB$, the energy is flat ($\nabla U=0$). If the targets are small enough or the dimension large enough then the probability of entering $A$ before entering $B$  is nearly independent of $X_0$, provided that $X_0$ is outside of $\tA\cup\tB$. What is more, this first-passage probability depends only the behavior of $U$ in $\dA\cup\dB$, which may be arbitrarily complicated.}
+\begin{figure}
+    \centering  \includegraphics[width=0.8\textwidth]{bigpicture.png}
+    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf First passage capacities allow efficient computation of hitting probabilities.} A reversible stochastic differential equation in an $n$-dimensional state-space is initialized at position $x_0$.  What is the probability it will reach region $A$ first before $B$?  Subject to an ``$\epsilon$-flatness'' condition, Theorem \ref{thm:main_thm} shows that this probability can be approximated to within $\sqrt{2\epsilon}$ using only ``first passage capacities.'' These capacities can be computed using local simulations in neighborhoods around the targets.  Above we show several examples of this kind of problem.  In each case, we can approximate first passage capacities using only local simulations performed in the gray areas.}
 \label{fig:ToyModel}
-\end{wrapfigure}
+\end{figure}
 
-We experimented with the approximate Langevin equation (\ref{equ:toy_sde}) in $n=5$ dimensions with two targets. 
-We found excellent agreement between direct simulations for computing $h_{A,B}(x)$, on the one hand, and an application of our theoretical and algorithmic tools, on the other hand. Furthermore, in that our approach to estimating capacities is based on a small number of sequential steps, each of which involves thousands of repeated and independent applications of a single stochastic procedure, it admits to almost arbitrary acceleration through parallelization.
+In the following section (\S\ref{sec:Preliminaries}, ``Preliminaries'') we will introduce notation, make a formal condition for ``metastable equilibrium,'' and define the first-passage capacities that are at the heart of this approach.  In \S\ref{sec:MainResults} we show that these capacities can be used to accurately estimate first-passage probabilities as long as the metastable equilibrium condition holds; we also give an example where this condition is guaranteed.  In \S\ref{sec:Estimation}, we develop an approach to computing the first passage capacities.   In \S\ref{sec:Experiments} we look at the results of computational experiments on a five-dimensional diffusion.  
 
-Our results are relevant in a small-target regime. We remark that such regimes arise naturally in high-dimensional configuration spaces, since the ratio of the volume of the configuration space to the target volume grows rapidly with increasing dimension.
-The effect on dynamics can be readily seen by a simple change of variables to spherical coordinates centered, say, at the center of the target $A$. The result, in terms of the radial coordinate $R=||X-x_A||$, is an additional (radial) drift equal to $\frac{n-1}{2R}dt$. Thus in high dimensions, $n$, the entropic effect amounts to a force that pushes configurations away from small targets. 
 
-In sum, there are three contributions in this paper. The first 
-is to give a concrete example in which the probability that a particular small
-target, among many, is reached first is essentially independent of the starting location, provided that $U$ is flat outside of a neighborhood of the targets and that the starting position is sufficiently far away. The second, also an approximation result, is to show that a consequence of this (near) independence, whether or not it arises from a flat energy, is that the probability of first hitting a particular target is nearly proportional to a suitably defined local capacity.  
-The third is a collection of tools, both analytic and numeric (Monte Carlo), for computing the relevant capacities.
 
-In the following section (\S\ref{sec:Preliminaries}, ``Preliminaries'') we will introduce a more general setting as well as the notation needed to set up the two approximation theorems, which appear in \S\ref{sec:MainResults}.
-After that, in \S\ref{sec:Estimation}, an approach to capacity estimation is developed, followed, in  \S\ref{sec:Experiments}, by computational experiments with a five-dimensional version of (\ref{equ:toy_sde}). We will close in \S\ref{sec:Discussion} with a summary, and a discussion of the prospects for 
-applying these approximations, recursively, to help illuminate folding pathways. There are many challenges. We will attempt to 
-highlight the most important of these.
 
 \section{Preliminaries}
 \label{sec:Preliminaries}
 
-In the most general setting, our results are about a diffusion process $X_t\in\mathbbm{R}^n$ confined to a bounded open set $\Omega \subset \mathbb{R}^n$ with reflecting smooth boundary $\partial\Omega$: 
+Let us first define our diffusion process.  Our results are about a diffusion process $X$ confined to an open bounded set $\Omega \subset \mathbb{R}^n$ with reflecting smooth boundary $\partial\Omega$.  We assume $X$ is driven by an $n$-dimensional standard Brownian motion $W$, i.e.
 \begin{equation}\label{equ:general_sde}\mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \end{equation}
-where $W_t$ is an $n$-dimensional standard Brownian motion, and $b: \Omega \rightarrow \mathbbm{R}^n$ and $\sigma :
-\Omega \rightarrow \mathbbm{R}^{n \times n}$ are continuously differentiable vector-valued and matrix-valued functions. 
-
-Let $\bar \Omega$ denote the closure of $\Omega$ (and in general let $\bar S$ denote the closure of any set $S\subset \bar \Omega$).  For the precise definition of the reflected process, we adopt the framework developed by Lions and Sznitman\cite{lions1984stochastic}: Let $\normal=\normal(x)$ denote the outward normal of $\partial \Omega$ and $\nu:\ \partial \Omega \rightarrow \mathbb{R}^n$ a smooth vector field satisfying $\normal^T\nu\geq c>0$, and assume that $x_0 \in \Omega$.  Then there is a unique pathwise continuous
+where $b: \Omega \rightarrow \mathbbm{R}^n$ and $\sigma :
+\Omega \rightarrow \mathbbm{R}^{n \times n}$ are continuously differentiable vector-valued and matrix-valued functions.  We further assume that $a(x)=\sigma(x)\sigma(x)^T$ is uniformly elliptic on $\Omega$, i.e. the smallest eigenvalues of $a$ are bounded away from zero.  Let $\bar \Omega$ denote the closure of $\Omega$ (and in general let $\bar S$ denote the closure of any set $S\subset \bar \Omega$).  For the precise definition of the reflected process, we adopt the framework developed by Lions and Sznitman\cite{lions1984stochastic}: Let $\normal=\normal(x)$ denote the outward normal of $\partial \Omega$ and $\nu:\ \partial \Omega \rightarrow \mathbb{R}^n$ a smooth vector field satisfying $\normal^T\nu\geq c>0$, and assume that $x_0 \in \Omega$.  Then there is a unique pathwise continuous
 and $W$-adapted strong Markov process $X_t\in\bar\Omega$, and (random) measure $L$, such that 
 \begin{gather}\label{eq:SDER}
 X_t = x_0 + \int_0^t b(X_s)ds + \int_0^t \sigma(X_s)dW_s - \int_0^t \nu(X_s) L(ds)
 \end{gather}
 and $L(\{t:\ X_t \notin \partial \Omega\})=0$. 
-For convenience, we will refer to $X$ by simply saying ``the reflected diffusion process (\ref{equ:general_sde}).'' 
-
-Assume that $U:\bar \Omega \rightarrow \mathbb{R}$ is continuously differentiable. Our interest is in a reversible process with equilibrium  
+For convenience, we will refer to $X$ by simply saying ``the reflected diffusion process (\ref{equ:general_sde}).'' We further assume that $X$ is a reversible process, with equilibrium distribution given by
 \[
 \rho(dx)\doteq \frac{1}{Z}e^{-U(x)}\ \ \
 Z=\int_{x\in\Omega}e^{-U(x)}dx
 \]
-for which, as shown by Chen\cite{chen1993reflecting}, it is sufficient that 
+where $U:\bar \Omega \rightarrow \mathbb{R}$ is continuously differentiable.  As shown by Chen\cite{chen1993reflecting}, to ensure that $X$ is reversible it is sufficient that 
 \begin{align}
 \begin{split}
 b_i(x)&=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j - \frac{1}{2}\sum_j a_{ij}(x) \partial U(x)/\partial x_j 
@@ -199,43 +145,73 @@ b_i(x)&=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j - \frac{1}{2}\sum_j a
 \end{align}
 where $a(x)=\sigma(x)\sigma(x)^T$ is uniformly elliptic.
 When the conditions in (\ref{eqn:reversibility}) are in force
-we will say that $X$ satisfies the reversibility conditions relative to $U$.
+we will say that $X$ satisfies the reversibility conditions relative to $U$.  We assume these conditions throughout the paper.
 
-Given a region $S$ in $\Omega$,  define $\tau_S \triangleq \inf \{ t \geqslant 0 : X_t \in S \}$, i.e. the time when $X$ first hits $S$. Given two targets, $A,B\subset \Omega$, and an initial condition $x\in\Omega\backslash(A\cup B)$, define the $h_{A,B}(x)$ to
-be the probability that $X_t$, starting at $x$, visits $A$ before $B$:
+The main goal of this paper is to estimate first passage hitting probabilities for $X$.  We here give a formal definition for these hitting probabilities: 
+
+\begin{definition}(First passage hitting probabilities).  Fix two disjoint sets $A,B\subset \Omega$.  The first-passage hitting probability function $h_{A,B}(x)$ indicates the probability that the process $X$ visits $A$ before $B$ if it is initialized at $X_0=x$.  Formally,
 \[ h_{A, B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in A|X_0=x)\]
-And finally, we will say that a function $f(x)$ defined on a set
-${\cal M}$ is 
-``$\varepsilon$-flat relative to $M$'' if $M\subset {\cal M}$ and
-\[
-\sup_{x, y \in M} |f(x) - f(y)| < \varepsilon
-\]
+where $\tau_{A\cup B}$ indicates the first passage time to $A\cup B$, i.e.\ $\tau_{A\cup B} \triangleq \inf \{ t \geqslant 0 : X_t \in A \cup B \}$.  Throughout this paper we will use $\tau_S$ to denote the first passage time to a set $S$ and $h_{S,S'}$ to denote the hitting probability function for targets $S,S'$. 
+\end{definition}
 
+It turns out that these hitting probabilities are much easier to estimate if the process reaches a metastable equilibrium before hitting either target.  To make this idea rigorous, we develop a condition we can use to quantify the somewhat amorphous concept of metastable equilibrium:  
+\begin{definition}(The $\varepsilon$-flatness condition)  A hitting probabiliy function $h_{A,B}(x)$ is said to be  
+``$\varepsilon$-flat relative to $M$'' whenever
+\[
+\sup_{x, y \in M} |h_{A,B}(x) - h_{A,B}(y)| < \varepsilon
+\]
+\end{definition}
+To see how this condition is related to metastable equilibrium, consider a process $X$ which achieves a metastable equilibrium in the region $M$ before it hits $A$ or $B$.  In this case, the process $X$ will have ``forgotten its starting position'' within $M$ by the time it achieves first passage.  It follows that the hitting probability function $h_{A,B}$ (which indicates the hitting probability from each possible initial conditions) will be nearly constant over the region $M$.  Thus, if the process $X$ has a very large amount of time to mix inside $M$ and thereby achieves a very well-mixed state, $h_{A,B}$ will be $\varepsilon$-flat with a very small constant.  (Note however that $h_{A,B}$ may be $\varepsilon$-flat even if $X$ is unlikely to achieve any kind of equilibrium; for example, if the target $A$ is unreachable then we will always have $h_{A,B}(x)=0$.)   
+
+The $\varepsilon$-flatness of $h_{A,B}$ is only a narrow view into the equilibrium of the process $X$.  However it is exactly the view we need; the $\varepsilon$-flatness of $h_{A,B}$ gives us a way to quantify the extent of the equilibrium with respect to what we're interested in.  As we shall see in Theorem \ref{thm:main_thm}, it is also exactly the condition we need to show that the hitting probabilities within $M$ can be well-approximated using ``first-passage capacities.''  These capacities are the last piece we must define:
+
+\begin{definition}(Capacity)
+Let $S \subset \tilde{S} \subset \Omega$ be open sets and let $X$ be a diffusion governed by the SDE in Equation (\ref{eq:SDER}) and satisfying the reversibility conditions in Equation (\ref{eqn:reversibility}).  The first-passage capacity $\ensuremath{\operatorname{cap}} (S, \tilde{S})$ for $X$ is defined as 
+%
+\[ \ensuremath{\operatorname{cap}} (S, \tilde{S}) \triangleq \int_{\tilde S \backslash S}
+||\sigma(x) \nabla h_{S, \tilde{S}^c}(x)||^2 e^{- U(x)} \mathrm{d} x \]
+%  
+\end{definition}
+
+We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity'' in the probabilistic potential theory literature, all slightly different.  Throughout this work, the term is used only in the sense of the above definition. 
 
 \section{Main theoretical results}
 \label{sec:MainResults}
 
-The key to going from an assumed smooth landscape outside of the immediate neighborhoods of targets to the conclusion that first-passage probabilities depend only on certain local capacities is the intermediate conclusion that in the small-target (or large-dimension) limit, those probabilities are nearly independent of starting location, i.e. $\varepsilon$-flat relative to all of $\Omega$, except some small neighborhoods around the targets.
-Sufficient conditions for this $\varepsilon$-flatness is the purpose of our first result, and the assumption of 
-$\varepsilon$-flatness is the main hypothesis of our second result, which then provides an explicit formula for the first-passage probabilities in terms of certain local capacities.
+Our main theorem shows that the first-passage capacities gives accurate approximations of the hitting probabilities when the hitting probabilities are themselves $\varepsilon$-flat in a region outside a neighborhood of the targets.
 
-The intent of the first result is two-fold: give a concrete setting in which the $\varepsilon$-flatness of first-passage probabilities can be rigorously proven, and, in the proof, establish a possible road-map for approaching the problem in other, problem-specific, settings. For these purposes, we adopt the setup laid out in \S\ref{sec:Introduction}, Equation (\ref{equ:toy_sde}) (``toy problem'').
-The second result is proven under far more general conditions.
+\begin{theorem}\label{thm:main_thm}  
+Let $A\subset \tilde A,B\subset \tilde B$ be open sets and assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to 
+$\Omega \backslash (\tilde A \cup \tilde B)$.
+Then the first-passage probabilities are well-approximated by the first-passage capacities:
+\[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
+\end{theorem}
 
-\subsection{Approximately Constant First-passage Probabilities}
-\label{subsec:ApproximatelyConstant}
+We defer the proof to Appendix \ref{sec:proof_thm}.  Note that the generalization to multiple targets is straightforward due to the additive property of capacities (Proposition \ref{prop:capacity} in Appendix \ref{sec:three_perspectives}); if you have $n$ targets and approximate the hitting probability to each by taking it to be proportional to the corresponding capacity, then all probabilities will be within $\varepsilon+\sqrt{\varepsilon/2}$ of the truth.
 
-Return to the model introduced in Equation (\ref{equ:toy_sde}).
-This toy model encapsulates the essential characteristics of an entropic barrier: if $r_A, r_B$ are small or the dimension $n$ is high, starting from an initial condition $X_0 \not\in \bb{x_A,r_\dA} \cup \bb{x_B,r_{\dot B}}$, the system faces the difficulty of reaching the small targets $A$ and $B$ out of all other configurations in $\Omega$. The nontrivial energy landscapes in the immediate vicinity of $A$ and $B$ reflect the energetic interactions that are usually local in nature in biomolecular systems, and the reflecting boundary at $\partial\Omega$ captures the notion that not all configurations in biomolecular systems are sensible, because of, for example, limits on bond lengths, angles and dihedral angles in the case of RNA molecules.
+When does the $\varepsilon$-flatness condition hold?  Speaking loosely, it will hold as long as $X$ achieves a metastable equilibrium in $M$ before hitting the targets; the first passage time must be long relative to the rate of ergodicity inside of $M$.  Each diffusion may require a different method to prove this property.  
 
-Assume that $U$ is continuously differentiable.  Recall that $\Omega=\bb{0,1}$ and the targets 
-$A=\bb{x_A,r_A }$ and $B=\bb{x_B,r_B }$ are surrounded by two levels of neighborhoods, 
-$\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $A \subset \dA \subset \tA$, and 
-$\dB=\bb{x_B,r_\dB }$ and $\tB=\bb{x_B,r_\tB }$ such that
-$B \subset \dB \subset \tB$. Assume that $\tA$ and $\tB$ are disjoint, and, for convenience, that $\tA$ and $\tB$ are contained entirely within $\Omega$.
+To give the reader a flavor for how the $\varepsilon$-flatness condition may be proved, we will flesh out one example in detail.  Let $\Omega$ denote any convex set with diameter 1 in $\mathbb{R}^n$, $n\geq 3$.  We will be interested in two targets:
+\begin{align*}
+A &\triangleq \bb {x_A, r_A}\\
+B &\triangleq \bb {x_B, r_B}
+\end{align*}
+where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$.  Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first.  The function $h_{A,B}(x)$ denotes the probability that $X_t$ reaches $A$ before reaching $B$, which depends on the starting configuration $X_0=x$.  Figure \ref{fig:ToyModel} may help visualize the setup.
+
+% \begin{wrapfigure}
+% [18]{r}[0pt]{0.5\textwidth}
+\begin{figure}
+    \centering  \includegraphics[width=0.4\textwidth]{ToyModel4.png}
+    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf A Toy Model.} We consider a toy example where the targets are nested balls and the energy is flat outside of $\dA\cup\dB$ (i.e. $\nabla U=0$). If the targets are small enough or the dimension large enough then the probability of entering $A$ before entering $B$ is nearly independent of $X_0$, provided that $X_0$ is outside of $\tA\cup\tB$. This first-passage probability can thus be and can be well-approximated using first-passage capacities.}
+\label{fig:ToyModel}
+% \end{wrapfigure}
+\end{figure}
+We would like to be able to estimate $h_{A,B}$ using only local simulations in a local neighborhood around the targets.  To this end, we define two sets around each target: $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $r_A<r_\dA<r_\tA$, and
+$\dB=\bb{x_B,r_\dB }$ and $\tB=\bb{x_B,r_\tB }$ such that $r_B<r_\dB<r_\tB$.  We assume that $\tA,\tB$ are completely enclosed inside of $\Omega$.  We also assume that $\nabla U(x)=0$ for all $x\in\Omega\backslash (\dA\cup\dB)$.  
+Though $U$ may be arbitrarily complicated on $\dA \cup \dB$, the hitting probabilities $h_{A,B}(x)$ converge uniformly over $x\in \Omega \backslash (\tA\cup \tB)$ to a constant as the ``action regions'' $\dA$ and $\dB$ are made smaller.  Moreover, if the dimension of the state-space is large, these action regions will always becomes small, because 
+
 \begin{theorem}\label{thm:epsilon_flat}
-If $\nabla U(x)=0$ on $x\in\Omega\backslash(\tA\cup\tB)$, then
-for any fixed value of the dimension $n \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(n, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $r_{\dA}, r_{\dB} < c$ then 
+Assume $X$ is a diffusion governed by the example model described above.  For any fixed value of the dimension $n \geq 3$ and any $r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon > 0$, there exists a constant $c=c(n, r_{\tilde{A}}, r_{\tilde{B}}, \varepsilon)$ such that if $r_{\dA}, r_{\dB} < c$ then 
 $h_{A,B}(x)$ is 
 $\varepsilon$-flat  relative to 
 $\Omega / (\tilde{A} \cup \tilde{B})$.  
@@ -245,58 +221,7 @@ $\varepsilon$-flat relative to
 $\Omega / (\tilde{A} \cup \tilde{B})$. 
 \end{theorem}
 
-The condition $\nabla U=0$ is severe and unrealistic.
-However, inspection of the proof, which we defer to 
-Appendix \ref{sec:proof_epsilon_flat}, demonstrates that the key for establishing $\varepsilon$-flatness is a proper separation of time scales: it takes a short time for the process $X$ to reach temporary equilibrium in $\Omega / (\tilde{A} \cup \tilde{B})$ and a long time for the process $X$ to hit the targets $A$ and $B$.  Any model with these characteristics (in particular more general entropic barriers) will feature $\varepsilon$-flat hitting probabilities.
-
-\subsection{Hitting Probabilities and Capacities}
-\label{subsec:Capacities}
-
-Assume now, more generally, that $X$ is  
-the reflected diffusion process (\ref{equ:general_sde}) in a bounded open set $\Omega \subset \mathbb{R}^n$, satisfying the reversibility conditions in (\ref{eqn:reversibility}) relative to a continuously differentiable potential $U$ on $\Omega$.
-The concentric spherical neighborhoods of the toy problem are replaced by nested sets 
-$A \subset\tA\subset\Omega$, and 
-$B \subset\tB\subset\Omega$,
-all with smooth boundaries, and where $\tA\cap\tB=\emptyset$.
-
-Under the assumption that $h_{A,B}(x)$ is $\varepsilon$-flat
-relative to $\Omega \backslash (\tilde A \cup \tilde B)$, 
-we will show that the first-passage probabilities can be accurately estimated using only local information around the targets. In particular, it will be sufficient to calculate the ``capacities'' of 
-the sets $\tA \backslash A$ and $\tB \backslash B$:
-
-\begin{definition}(Capacity)
-For $S \subset \tilde{S} \subset \Omega$, we define the capacity of $\ensuremath{\operatorname{cap}} (S, \tilde{S})$ relative to $U$ as
-%
-\[ \ensuremath{\operatorname{cap}} (S, \tilde{S}) \triangleq \int_{\tilde S \backslash S}
-||\sigma(x) \nabla h_{S, \tilde{S}^c}(x)||^2 e^{- U(x)} \mathrm{d} x \]
-%  
-\end{definition}
-
-We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity" in the literature.  Throughout this work, the term is used only in the sense of the above definition. 
-
-In the presence of $\varepsilon$-flatness, these local capacities are intimately related to global hitting probabilities:
-
-\begin{theorem}\label{thm:main_thm}  
-Assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to 
-$\Omega \backslash (\tilde A \cup \tilde B)$.
-Then the first-passage probabilities can be well-approximated in terms of the target capacities:
-\[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
-\end{theorem}
-
-We defer the proof to Appendix \ref{sec:proof_thm}, but here we note that, on account of the additive property of 
-capacities (Proposition \ref{prop:capacity} in Appendix \ref{sec:three_perspectives}), the generalization to multiple targets is straightforward.
-Assume that $A_1\cdots A_m \subset \Omega$ and $\tilde A_1\cdots \tilde A_m \subset \Omega$, such that $A_k \subset \tilde A_k$ for every $k=1,2,\ldots,m$ and $\tA_1,\ldots\tA_m$ are disjoint. Define 
-\begin{equation*}
-p_{A_k} = \frac{\ensuremath{\operatorname{cap}} (A_k, \tilde{A}_k)}{\sum_{i = 1}^m \ensuremath{\operatorname{cap}} (A_i, \tilde{A}_i)}, k=1,\dots, m
-\end{equation*} 
-and, for each $k$, let $u_k(x)$ be the probability that $X_t$ hits $A_k$ before any other target, given that 
-$X_0=x\in M\doteq \Omega\backslash\bigcup_{k = 1}^n \tilde{A}_k $.
-Then, given the $\varepsilon$-flatness of the functions $\{u_k\}_{k=1,\dots, n}$ relative to $M$, each $u_k$ is well-approximated by $p_{A_k}$:
-\begin{cor}\label{thm:main_cor} 
-If, for each $k=1,2,\ldots,m$, $u_k$ is 
-$\varepsilon$-flat relative to $M$, then
-\[ \sup_{x \in M} \left| u_k (x) - p_{A_k} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2}, k=1,\dots, m\]
-\end{cor}
+A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.
 
 \section{Capacity Estimation} 
 \label{sec:Estimation}
@@ -309,7 +234,7 @@ Generically, given the process defined in Equation (\ref{equ:general_sde}), sati
 \end{equation}
 for a target $A$ and neighborhood $\tA$.
 
-The calculation is local, in that $\capac{A,\tilde{A}}$ depends only on the behavior of  $U$ on $\tA\backslash A$, but it is not uncomplicated. We will propose here a Monte Carlo approach to evaluating the integral, made up of a combination of analytic reductions and highly orchestrated random walks. Inevitably, the effectiveness, or even feasibility, of the approach will depend on the particulars of the stochastic system, (\ref{equ:general_sde}).
+The calculation is local, in that $\capac{A}{\tilde{A}}$ depends only on the behavior of  $U$ on $\tA\backslash A$, but it is not uncomplicated. We will propose here a Monte Carlo approach to evaluating the integral, made up of a combination of analytic reductions and highly orchestrated random walks. Inevitably, the effectiveness, or even feasibility, of the approach will depend on the particulars of the stochastic system, (\ref{equ:general_sde}).
 
 We begin by replacing the volume integral in (\ref{eqn:capacity}) with a surface integral:
 
@@ -718,7 +643,7 @@ as desired.
 \section{Proof of Theorem \ref{thm:epsilon_flat}}
 \label{sec:proof_epsilon_flat}
 
-Consider the setup of the ``Toy Model'' as described in the Introduction.  A stationary reversible diffusion $X$ is trapped inside the unit $n$-dimensional ball.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the case where $X_0$ is outside of $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_A,r_{\tilde B}}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,r_{\dot A}},\dot B=\bb{x_B,r_{\dot B}}$.  
+A stationary reversible diffusion $X$ is trapped inside the a convex open $n$-dimensional set with diameter 1.  We are interested to know which target $X$ will hit first: $A=\bb{x_A,r_A}$ or $B=\bb{x_B,r_B}$.  The function $h_{A,B}(x)$ indicates the probability we will hit $A$ first if $X_0=x$.  We will be particularly interested in the case where $X_0$ is outside of $\tilde A=\bb{x_A,r_{\tilde A}},\tilde B=\bb{x_A,r_{\tilde B}}$.  Also recall that in the toy example the diffusion behaves as a Brownian motion outside of $\dot A=\bb{x_A,r_{\dot A}},\dot B=\bb{x_B,r_{\dot B}}$.  
 
 It turns out that by taking $n$ to be sufficiently high or $r_{\dot A},r_{\dot B}$ to be sufficiently small, we can make the hitting probabilities arbitrarily close to constant in the region away from $\tilde A,\tilde B$.  This is the content of Theorem \ref{thm:epsilon_flat} from the main text, which we restate here for the convenience of the reader:
 
@@ -787,11 +712,11 @@ Putting these two results together at $t=2/\varepsilon$ we obtain that we can ma
 where $Z$ is uniformly distributed on $\Omega$.
 \end{lemma}
 \begin{proof}
-Per Loper,\cite{Loper2018} 
+Per Loper \cite{Loper2018},
 \[
 \sup_{f:\ \Omega\rightarrow [0,1]} | \mathbb{E}[f(M_t) - f(Z)|M_0=x]| \leq \mathbbm{P}(\tau>4t)
 \]
-where $\tau$ is the first exit time of a standard Brownian motion from $[-\xi,\xi]$. It is well known that $\mathbb{E}=\xi^2$. Hence, by the Markov inequality, $\mathbbm{P}(\tau>4t)\leq \xi^2/4t$.
+where $\tau$ is the first exit time of a one-dimensional Brownian motion from the interval $[-\xi,\xi]$ when initialized at the origin. Dynkin's formula gives that $\mathbb{E}[\tau]=\xi^2$. Hence, by the Markov inequality, $\mathbbm{P}(\tau>4t)\leq \xi^2/4t$.
 \end{proof}
 
 \begin{lemma}
