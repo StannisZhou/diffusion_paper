@@ -97,15 +97,19 @@
 \section{Introduction}
 \label{sec:Introduction}
 
-Reversible diffusions play a key role in a wide variety of physical systems.  For example, the folding of macromolecules into their native configurations is often posed as a diffusion (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through  membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   
+Reversible diffusions play a key role in a wide variety of physical systems.  For example, the folding of macromolecules into their native configurations is often posed as a diffusion (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   In all cases, the evolution of the physical state of the system at time $t$ is represented through a variable $X_t$, and this variable evolves according to a stochastic differential equation.
 
-In this paper we seek to estimate first-passage hitting probabilities of such diffusions: given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?   The best approach to this problem will be one which is tailored to the specifics of the diffusion's dynamics.
+In this paper we seek to estimate first-passage hitting probabilities of such diffusions: given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?   Here each target represents a set of physical configurations.  For example, if $X$ represents the position of a particle trapped inside a sphere with two holes, $A$ and $B$ might represent the two holes.  The hitting probability then indicates the probability that the particle exits through the first hole.  This probabilities are also sometimes called ``splitting probabilities'' \cite{E2006-fm}.  This work develops a new algorithm for approximating these hitting probabilities.  
 
-Here we focus on dynamics where the diffusion can ``forget'' its initial condition before either target is hit.  More formally, we will consider a large region $M$.  The targets will lie outside of $M$ and the diffusion will be initialized inside $M$; we are interested in the case that the rate of ergodicity inside of $M$ is faster than the typical escape time from $M$.   
+The proposed algorithm will not be useful for every diffusion; it is designed for cases where the diffusion can ``forget'' its initial condition before either target is hit.  To make this idea rigorous, we need three ingredients:
+\begin{itemize}
+    \item the initial configuration lies inside $M$, a set of physical configurations
+    \item the targets $A$ and $B$ lie outside the set $M$
+    \item the first passage time out of $M$ is long (a long time elapses before the process exits the set $M$)
+\end{itemize}
+This last condition is vague -- how long is long enough?  A simplistic answer is that the algorithm will be more accurate when the first passage time is longer.  A more precise answer requires some machinery from the theory of ergodicity.  Recall that reversible diffusions are ergodic: as time goes on, it gets harder and harder to guess the initial condition from it's final configuration.  If the first passage time out of $M$ is long enough, it therefore follows that the hitting probability will be nearly the same no matter which initial condition we started from.  It is this property we actually need: if the hitting probability varies by at most $\varepsilon$ among all initial conditions inside the set $M$, the proposed algorithm's approximation error is less than $\sqrt{2\varepsilon}$.  Figure \ref{fig:ToyModel} gives a rough sketch of this idea.  A rigorous definition is given in  \S\ref{sec:Preliminaries}.  
 
-If the system forgets its initial conditions in this way, we will say the diffusion reaches ``metastable equilibrium'' in $M$.  Figure \ref{fig:ToyModel} gives a rough sketch; we will make these ideas rigorous in \S\ref{sec:Preliminaries}.  
-
-When the first passage time is very long, many standard methods for approaching the problem break down; the associated partial differential equations often include large Lipschitz constants, and direct Monte-Carlo simulation requires prohibitive number of timesteps (cf.\ \cite{Baum1986-we, Wille1987-tf, Machta2009-gh}).  Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space, not much can be done to speed up their simulation without destroying the dynamics of the system'' \cite{Christen2008-ge}.  In fact, the separation of timescales can sometimes make analysis easier.   The literature includes a variety of tools which use this idea to advantage.  Here we review a few of these tools:
+The proposed algorithm applies when the first passage time from $M$ is long.  We designed this algorithm because many standard methods for approaching the problem break down in this situation; the associated partial differential equations often include large Lipschitz constants, and direct Monte-Carlo simulation requires prohibitive number of timesteps (cf.\ \cite{Baum1986-we, Wille1987-tf, Machta2009-gh}).  Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space, not much can be done to speed up their simulation without destroying the dynamics of the system'' \cite{Christen2008-ge}.  In fact, the separation of timescales can sometimes make analysis easier.   The literature includes a variety of tools which use this idea to advantage.  Here we review a few of these tools:
 
 \begin{description}
     \item[Asymptotic analyses] When the targets are very small, the first passage hitting times are often well-approximated by asymptotic formulae.  The ``narrow-escape problem'' (NEP) is a prototypical example; $X$ is a Brownian motion trapped inside a set by reflecting boundaries, and the targets are very small windows in boundary of the sphere.  Much of this literature focuses on making these formulas as accurate as possible for specific regimes, such as the case of $N$ circular targets (cf.\ \cite{cheviakov2010asymptotic}) or the case that one targets lie at the end of a long tube (cf.\ \cite{li2014matched}).  There is also some work on efficient numerical methods for low-dimensional problems (cf.\ \cite{kaye2019fast}).  Note that in these asymptotic limits the first-passage probabilities are inversely proportional to the mean first-passage times, so all of these techniques allow us to estimate first-passage probabilities.  
@@ -123,7 +127,7 @@ This approach can get accurate results while completely ignoring all dynamics in
 
 \begin{figure}
     \centering  \includegraphics[width=0.8\textwidth]{bigpicture.png}
-    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf First passage capacities allow efficient computation of hitting probabilities.} A reversible stochastic differential equation in an $n$-dimensional state-space is initialized at position $x_0$.  What is the probability it will reach region $A$ first before $B$?  We consider the case that $X$ reaches a metastable equilibrium before hitting either target.  Theorem \ref{thm:main_thm} then shows that the hitting probability can be approximated to within $\sqrt{2\epsilon}$ using only ``first passage capacities.'' These capacities can be computed using local simulations in neighborhoods around the targets.  Above we show several examples of this kind of problem.  In each case, the first passage capacities can be computed using only local simulations performed in the gray areas.}
+    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf First passage capacities allow efficient computation of hitting probabilities.} We consider a reversible stochastic differential equation in an $n$-dimensional state-space.  Let us say we initialize the diffusion at some configuration $x_0$ inside the set $M$; what is the probability it will reach region $A$ first before $B$?  We assume that the hitting probability is nearly the same for every initial condition $x_0 \in M$ (it must differ by at most $\varepsilon$ among all such initial conditions).  Theorem \ref{thm:main_thm} then shows that the hitting probability can then be approximated to within $\sqrt{2\varepsilon}$ using only ``first passage capacities.'' These capacities can be computed using only simulations that take place outside of $M$.  Above we sketch several examples where the condition can hold.  In each case, the first passage capacities can be computed using simulations performed in the gray areas.}
 \label{fig:ToyModel}
 \end{figure}
 
@@ -144,7 +148,7 @@ X_t = x_0 + \int_0^t b(X_s)ds + \int_0^t \sigma(X_s)dW_s - \int_0^t \nu(X_s) L(d
 and $L(\{t:\ X_t \notin \partial \Omega\})=0$. 
 For convenience, we will refer to $X$ by simply saying ``the reflected diffusion process (\ref{equ:general_sde}).'' We further assume that $X$ is a reversible process, with equilibrium distribution given by
 \[
-\rho(dx)\doteq \frac{1}{Z}e^{-U(x)}\ \ \
+\rho(x)\doteq \frac{1}{Z}e^{-U(x)}\ \ \
 Z=\int_{x\in\Omega}e^{-U(x)}dx
 \]
 where $U:\bar \Omega \rightarrow \mathbb{R}$ is continuously differentiable.  As shown by Chen\cite{chen1993reflecting}, to ensure that $X$ is reversible it is sufficient that 
@@ -166,14 +170,14 @@ The main goal of this paper is to estimate first passage hitting probabilities f
 where $\tau_{A\cup B}$ indicates the first passage time to $A\cup B$, i.e.\ $\tau_{A\cup B} \triangleq \inf \{ t \geqslant 0 : X_t \in A \cup B \}$.  Throughout this paper we will use $\tau_S$ to denote the first passage time to a set $S$ and $h_{S,S'}$ to denote the hitting probability function for targets $S,S'$. 
 \end{definition}
 
-It turns out that these hitting probabilities are much easier to estimate if the process reaches a metastable equilibrium before hitting either target.  In particular, we will assume that the process forgets its initial condition to such an extent that the hitting probabilities are nearly constant for any initial condition inside a set $M$:
+It turns out that these hitting probabilities are much easier to estimate if the process forgets its initial condition to such an extent that the hitting probabilities are nearly constant for any initial condition inside a set $M$:
 \begin{definition}(The $\varepsilon$-flatness condition)  A hitting probabiliy function $h_{A,B}(x)$ is said to be  
 ``$\varepsilon$-flat relative to $M$'' whenever
 \[
 \sup_{x, y \in M} |h_{A,B}(x) - h_{A,B}(y)| < \varepsilon
 \]
 \end{definition}
-The $\varepsilon$-flatness of $h_{A,B}$ is only a narrow view into the equilibrium of the process $X$.  However it is exactly the view we need; the $\varepsilon$-flatness of $h_{A,B}$ gives us a way to quantify the extent of the equilibrium with respect to what we're interested in.  As we shall see in Theorem \ref{thm:main_thm}, it is also exactly the condition we need to show that the hitting probabilities within $M$ can be well-approximated using ``first-passage capacities.''  These capacities are the last piece we must define:
+The $\varepsilon$-flatness of $h_{A,B}$ is only a narrow view into the ergodicity of the process $X$.  However it is exactly the view we need; the $\varepsilon$-flatness of $h_{A,B}$ gives us a way to quantify the extent of the equilibrium with respect to what we're interested in.  As we shall see in Theorem \ref{thm:main_thm}, it is also exactly the condition we need to show that the hitting probabilities within $M$ can be well-approximated using ``first-passage capacities.''  These capacities are the last piece we must define:
 
 \begin{definition}(Capacity)
 Let $S \subset \tilde{S} \subset \Omega$ be open sets and let $X$ be a diffusion governed by the SDE in Equation (\ref{eq:SDER}) and satisfying the reversibility conditions in Equation (\ref{eqn:reversibility}).  The first-passage capacity $\ensuremath{\operatorname{cap}} (S, \tilde{S})$ for $X$ is defined as 
@@ -183,7 +187,7 @@ Let $S \subset \tilde{S} \subset \Omega$ be open sets and let $X$ be a diffusion
 %  
 \end{definition}
 
-We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity'' in the probabilistic potential theory literature, all slightly different.  Throughout this work, the term is used only in the sense of the above definition. 
+We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity'' in the probabilistic potential theory literature, all slightly different.  For example, the Harmonic capacity arises by taking the above definition in the special case when the diffusion is a simple Brownian motion.  This definition most closely follows the work of Bovier \cite{Bovier2016-ez,Bovier2004-wj}.  Throughout this work, the term is used only in the sense of the above definition. 
 
 \section{Main theoretical results}
 \label{sec:MainResults}
@@ -231,7 +235,7 @@ $\varepsilon$-flat relative to
 $\Omega \backslash (\tilde{A} \cup \tilde{B})$. 
 \end{theorem}
 
-A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.  The essence of the proof is that the first exit from $\Omega \backslash \tilde A\cup \tilde B$ is long relative to the mixing time of the process.  The $\varpepsilon$-flatness condition will always hold in this situation.
+A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.  The essence of the proof is that the first exit from $\Omega \backslash \tilde A\cup \tilde B$ is long relative to the mixing time of the process.  The $\varepsilon$-flatness condition will always hold in this situation.
 
 \section{Capacity Estimation} 
 \label{sec:Estimation}
@@ -257,7 +261,7 @@ For any regions $G$ and $\tilde{G}$ having smooth boundaries and such that $A\su
 \end{equation}
 where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ is the $(n-1)$-dimensional Hausdorff measure, and $\normal$ represents the outward-facing (relative to the set $\tilde G \backslash G$) normal vector on $\partial (\tilde G \backslash G)$.
 \end{proposition}
-\noindent The proof is in Appendix \ref{sec:proof_proposition}.
+\noindent This result is almost certainly already known; a formal proof is in Appendix \ref{sec:proof_proposition}.
 
 There is a great deal of freedom in choosing $G$ and $\tilde G$; the idea is to choose them so as to make the surface integrals as simple as possible. Before pursuing this, we mention that there are many other ways to reduce the volume integral (\ref{eqn:capacity}) to a flux integral, some of which might make more sense than (\ref{eqn:GIntegral}) for a particular problem. Specifically, by a corollary of 
 Proposition (\ref{prop:flux}), $\capac{A}{\tilde A}$ can be written as the flux of a different field, but this time through a single surface (see Appendix \ref{sec:proof_proposition}):
@@ -560,6 +564,8 @@ The second major limitation of this work is that first-passage capacities do not
 
 In general, it may turn out that estimating first-passage times is profoundly more difficult than estimating first-passage hitting probabilities.  In this work we showed that the first-passage probabilities are sometimes invariant to the diffusion dynamics on the interior of a large set $M$, but the first-passing timing admit no such invariance.   If the dynamics inside of $M$ are genuinely intricate, it appears that estimating hitting times will always require a correspondingly intricate analysis.  
 
+We conclude by considering a possible future direction for this work.  Let us consider the case where we have many targets, $A_1,A_2\cdots A_n$, and the path between any two of the targets must pass through a set $M$.  In this case, assuming the $\varepsilon$-flatness condition holds, it follows that the order in which the process explores the targets could be accurately modeled using first-passage capacities alone.  In future we hope to explore this possibility.
+
 \newpage
 \appendix
 \noindent {\bf APPENDIX}
@@ -611,7 +617,7 @@ Let $A\subset \tilde A,B\subset \tilde B$ with $\tilde A,\tilde B$ disjoint.  Th
 \]
 \end{proposition}
 \begin{proof}
-Since $\tilde A,\tilde B$ are disjoint and $X$ is continuous, the process cannot cross from one to the other without hitting the boundary.  Thus we have $\tau_{\partial \tilde A\cup \partial \tilde B \cup \partial A \cup \partial B}=\tau_{\partial \tilde A \cup \partial A}$ as long as $X_0\in\tilde A$.  We get a symmetric result if $X_0\in \tilde B$.  It follows that
+This result is certainly known, but we include a proof here because we were unable to find a proof in the literature.  Since $\tilde A,\tilde B$ are disjoint and $X$ is continuous, the process cannot cross from one to the other without hitting the boundary.  Thus we have $\tau_{\partial \tilde A\cup \partial \tilde B \cup \partial A \cup \partial B}=\tau_{\partial \tilde A \cup \partial A}$ as long as $X_0\in\tilde A$.  We get a symmetric result if $X_0\in \tilde B$.  It follows that
 \[
 h_{A\cup B,(\tilde A\cup\tilde B)^c}(x) = 
     \begin{cases}
@@ -1044,7 +1050,7 @@ where $\normal$ are the normal vectors facing out of the set $S$ and $\hausdorff
 \]
 \end{lemma}
 \begin{proof}
-First, we apply Green's first identity to get
+This result is essentially a direct corollary of Green's identities.  Apply Green's first identity to get
 \begin{align*}
 	 &\int_{S} \nabla f^T a \nabla g e^{-U} dx\\
 	=&\int_{\partial S}f \normal^T a \nabla g e^{-U} \hausdorffmeasure - \int_{S} f \nabla \cdot (a \nabla g e^{-U}) dx
@@ -1070,7 +1076,7 @@ where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ i
 \end{proposition}
 \addtocounter{proposition}{-1}
 \begin{proof}
-First recall that $\mathcal{L} h_{A, \tilde{A}^c} = 0$ and
+This result is certainly known, but we include a proof here because we were unable to find a proof in the literature.  First recall that $\mathcal{L} h_{A, \tilde{A}^c} = 0$ and
 \begin{equation*}
 	\tmop{cap}(A,\tilde A) = \int_{\tilde A \backslash A} \nabla h_{A, \tilde{A}^c} (x)^T a(x) \nabla h_{A, \tilde{A}^c} (x) e^{-U(x)} dx
 \end{equation*}
@@ -1141,7 +1147,7 @@ It is natural to consider an apparently different problem, where the equality bo
 \begin{lemma} \label{lem:inequalityboundaryvar} Let $\tilde h$ satisfy $\tilde h(x)\geq 1$ on $A$ and $\tilde h(x)\leq 0$ on $B$.  Then $\mathscr{E}(\tilde h,\tilde h) \geq \capac{A}{\Omega \backslash B}$.
 \end{lemma}
 \begin{proof}
-Let $k=\mathtt{clamp}(\tilde h,0,1)$, i.e.
+This result is certainly known, but we include a proof here because we were unable to find a proof in the literature.  Let $k=\mathtt{clamp}(\tilde h,0,1)$, i.e.
 \[
 k(x)=
 \begin{cases}
@@ -1317,7 +1323,7 @@ h = 1.0,
 
 
 
-\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 \bibliography{refs.bib}
 
 \end{document}
