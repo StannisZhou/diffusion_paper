@@ -357,21 +357,26 @@ $S=S_{n-1}$, a well-chosen inner approximation of $\tilde G$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \section{Numerical Experiments\footnote{All the experimental results can be reproduced or easily modified from open-source code, which can found, along with detailed instructions, at \url{https://github.com/StannisZhou/entropic_barrier}.}}
-\label{sec:Experiments}
-We experimented with the two-target system discussed in \S\ref{sec:Introduction} and depicted in Figure \ref{fig:ToyModel}, with $n=5$ dimensions 
-and the particular targets $A=\bb{x_A, r_A}$,  where $x_A=(0.5,0.6,0.0,0,0,0.0)$ and $r_A=0.02$, and 
-$B=\bb{x_B, r_B}$,  where $x_B=(-0.7,0.0,0.0,0,0,0.0)$ and $r_B=0.04$. The configuration space is the unit ball centered at 
-the origin, $\Omega=\bb{0,1}$. 
-The goal is to estimate $h_{A,B}(x)$, the probability that $A$ is visited before $B$, using only the behavior of $U$ in the vicinity of the targets, provided that $x$, the starting configuration, is sufficiently far from $A\cup B$. The entropic barrier is idealized by assuming that $\nabla U(x)=0$ outside of $\dA=\bb{x_\dA, r_\dA}$ and $\dB=\bb{x_\dB, r_\dB}$ and ``sufficiently far away'' means outside of $\tA \cup \tB$, where $\tA=\bb{x_\tA, r_\tA}$ and $\tB=\bb{x_\tB, r_\tB}$. The concentric neighborhoods around the targets are supposed to satisfy $A\subset\dA\subset\tA$ and 
-$B\subset\dB\subset\tB$, which was enforced in our experiments by the choices $r_\dA= 0.05$, $r_\tA=0.1$, $r_\dB=0.075$, and
-$r_\tB=0.15$.
-Our experiments test the overall approximation to $h_{A,B}$ developed in \S\ref{sec:MainResults}-\ref{sec:Estimation} as well as each of the three components, separately: $\epsilon$-flatness, the role of capacities, and the methodology developed for estimating capacities.
+ \section{Numerical Experiments\footnote{All the experimental results can be reproduced or easily modified from open-source code, which can found, along with detailed instructions, at \url{https://github.com/StannisZhou/entropic_barrier}.}}\label{sec:Experiments}
+To verify our theoretical results and validate the capacity-estimation algorithm, we carry out numerical experiments with the following idealization: the configuration space,
+$\Omega$, is the unit ball in $\mathbb{R}^n$
+($\Omega = \bb{0,1}$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$). The configuration itself, $X=X_t$, is confined to $\Omega$ by a reflecting boundary at $\partial\Omega$, and within $\Omega$ the dynamics are assumed to be well approximated by the first-order (high-viscosity) Langevin equation,
+\begin{equation} 
+\label{equ:toy_sde}
+\mathrm{d} X_t = - \nabla U (X_t) \mathrm{d} t + \mathrm{d} W_t 
+\end{equation}
+where $W_t$ is an $n$-dimensional Brownian motion and 
+$U$ is a potential energy. There are only two targets, 
+\begin{align*}
+A &\triangleq \bb {x_A, r_A}\\
+B &\triangleq \bb {x_B, r_B}
+\end{align*}
+which can be completely or just partially contained in $\Omega$ (note that in the case where the targets are only partially contained in $\Omega$, we recover the narrow escape problem).
+Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first, in the special case that $U$ is smooth beyond the immediate neighborhoods of $A$ and $B$. To this end, introduce neighborhoods $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $r_A<r_\dA<r_\tA$, and $\dB=\bb{x_B,r_\dB }$ and $\tB=\bb{x_B,r_\tB }$ such that $r_B<r_\dB<r_\tB$, and assume, in the extreme case,  that $\nabla U(x)=0$ for all $x\in\Omega\backslash (\dA\cup\dB)$.  If we let $h_{A,B}(x)$ be the probability that $X_t$ reaches $A$ before reaching $B$ (``first-passage at $A$''), which depends on the starting configuration $X_0=x$, then more specifically we are interested in computing approximations to $h_{A,B}(x)$ using only the behavior of $U$ in the vicinity of the targets, provided that $x$, the starting configuration, is sufficiently far from $A\cup B$. The set $M$ is idealized by assuming that $\nabla U(x)=0$ outside of $\dA=\bb{x_\dA, r_\dA}$ and $\dB=\bb{x_\dB, r_\dB}$ and ``sufficiently far away'' means outside of $\tA \cup \tB$, where $\tA=\bb{x_\tA, r_\tA}$ and $\tB=\bb{x_\tB, r_\tB}$. 
 
-The experimental setup is sufficiently simple to allow
-exhaustive simulation for approximating ground truth. In each experiment, we compare the results of using the approximations developed here to the results from an ensemble of first-passage events simulated by simply running the diffusion 2,000 times at each of 100 randomly chosen points in $\Omega\backslash (\tA,\tB)$. There are two sets of experiments: In the first (a kind of ``sanity check''), the potential $U$ is flat everywhere outside of the targets $A$ and $B$, in other words, the diffusion is Brownian motion. In the second, there are complex landscapes in the vicinities of the targets, i.e. within $\dA$ and $\dB$.
+We experimented with this two-target system in $n=5$ dimensions. Our experiments test the overall approximation to $h_{A,B}$ developed in \S\ref{sec:MainResults}-\ref{sec:Estimation} as well as each of the three components, separately: $\epsilon$-flatness, the role of capacities, and the methodology developed for estimating capacities.  The experimental setup is sufficiently simple to allow exhaustive simulation for approximating ground truth. In each experiment, we compare the results of using the approximations developed here to the results from an ensemble of first-passage events simulated by simply running the diffusion 2,000 times at each of 100 randomly chosen points in $\Omega\backslash (\tA,\tB)$. There are two sets of experiments: In the first (a kind of ``sanity check''), the targets $A$ and $B$ are completely in $\Omega$, and the potential $U$ is flat everywhere outside of the targets $A$ and $B$ (i.e. the diffusion is Brownian motion). In the second, the targets $A$ and $B$ are only partially contained in $\Omega$, resulting in a narrow-escape type problem, and there are complex landscapes in the vicinities of the targets, i.e. within $\dA$ and $\dB$.
 
-Both Theorems, \ref{thm:epsilon_flat} and \ref{thm:main_thm}, are in force, and hence the first-passage probability $h_{A,B}(x)$, on $\Omega\backslash(\tA,\tB)$, is approximately a constant, and the value depends only on the two local capacities $\capac{A}{\tA}$ and
+If the targets $A$ and $B$ are both small (in the sense that $r_A,r_B \ll 1$), and the starting configuration $x\in\Omega\backslash(\tA,\tB)$ is sufficiently far from $A\cup B$, then Theorems \ref{thm:epsilon_flat} and \ref{thm:main_thm} are both in force, and hence the first-passage probability $h_{A,B}(x)$, on $\Omega\backslash(\tA,\tB)$, is approximately a constant, and the value depends only on the two local capacities $\capac{A}{\tA}$ and
 $\capac{B}{\tB}$:
 \[
  h_{A,B} (x) \approx \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}
@@ -445,13 +450,22 @@ The approximation we used for $\capac{B}{\tB}$ is the same, but with the substit
 \subsection{Brownian Diffusion}
 \label{sec:B_D}
 
-The first set of experiments test the approach in the simplest possible case: there is no gradient in $U$ anywhere outside of the targets. Even though the resulting diffusion is just a standard Brownian motion, there are few symmetries in the configuration space and hence still no closed-form solution for the first-passage probabilities. There is however a large entropic barrier and an opportunity to dissect and test separately each component of the the overall approximation. 
+\begin{figure}
+\fbox{\begin{minipage}{\textwidth}
+    \includegraphics[width=\textwidth]{results_brownian_motion.png}
+    \caption{\label{fig:results_brownian_motion}}
+\end{minipage}}
+\end{figure}
+
+The first set of experiments test the approach in the simplest possible case: there is no gradient in $U$ anywhere outside of the targets. Even though the resulting diffusion is just a standard Brownian motion, there are few symmetries in the configuration space and hence still no closed-form solution for the first-passage probabilities.
+
+In this set of experiments, we fixed the target centers $x_A=(0.5,0.6,0.0,0,0,0.0), x_B=(-0.7,0.0,0.0,0,0,0.0)$ and the radiuses $r_\tA=r_\tB=0.2$, and tested the overall approximation in three different cases, with targets of three different sizes: small (where $r_A=0.02, r_B=0.04$), medium (where $r_A=0.05, r_B=0.075$) and large (where $r_A=r_B=0.15$). An illustration of the three different cases and the corresponding results are shown in Figure \ref{fig:results_brownian_motion}.
 
 \subsubsection{Are first-passage probabilities approximately constant outside of $\bm{\tA\cup\tB}$?}
 \label{sec:toy_constant}
-Is it true that in regions with golf-course potentials, the hitting probability is approximately constant over initial conditions that are modestly far away from the targets? In other words, is $h_{A,B}$  $\varepsilon$-flat on $\Omega\backslash(\tA\cup\tB)$?  Theorem \ref{thm:epsilon_flat} shows that this must hold in the limiting regime of small $r_A,r_B$ or large $n$, but it is not obvious whether the parameters of the current model lie in this regime.  
+Is it true that in regions with golf-course potentials, the hitting probability is approximately constant over initial conditions that are modestly far away from the targets? In other words, is $h_{A,B}$  $\varepsilon$-flat on $\Omega\backslash(\tA\cup\tB)$?  Theorem \ref{thm:epsilon_flat} shows that this must hold in the limiting regime of small $r_A,r_B$ or large $n$, but it is not obvious how small $r_A, r_B$ need to be in order for the model to be operating within this regime.  
 
-We ran 2,000 diffusion simulations at each of 100 randomly selected initial conditions in the region $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, yielding 100 well-estimated probabilities of hitting $A$ before $B$. A histogram of these probabilities can be be found in panel (a) of Figure \ref{fig:results}. The observations fall in a fairly narrow window, $[0.0820, 0.1185]$, suggesting that $h$ is indeed $\varepsilon$-flat, with $\varepsilon \approx 0.0365$. In addition, the empirical distribution is quite peaked.
+In each of the three different cases, we ran 2,000 diffusion simulations at each of 100 randomly selected initial conditions in the region $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, yielding 100 well-estimated probabilities of hitting $A$ before $B$. The histograms of these probabilities can be be found in Figure \ref{fig:results_brownian_motion}. As we can see, as the targets become smaller, the observations fall in narrower windows, and the empirical distribution becomes more peaked. Note that in all three cases, we can say $h$ is $\varepsilon$-flat, with $\varepsilon$ being approximately $0.0295$ for small targets, $0.0420$ for medium targets, and $0.1060$ for large targets. However, being $\varepsilon$-flat with a small $\varepsilon$ is more interesting than with a large one, as, according to Theorem \ref{thm:main_thm}, a smaller $\varepsilon$ gives us a tighter error bound for our overall approximation to the first-passage probability.
 
 \subsubsection{Are first-passage probabilities proportional to capacity?}
 \label{sec:toy_capacity}
@@ -480,45 +494,37 @@ with $S=A$ and $S=B$:
 and hence 
 \begin{equation*}
 p_A = \frac{\frac{1}{r_A^{-3} - r_{\tilde{A}}^{-3}}}{\frac{1}{r_A^{-3} - r_{\tilde{A}}^{-3}} + \frac{1}{r_B^{-3} - r_{\tilde{B}}^{-3}}}
-\approx 0.1100
 \end{equation*}
-This probability is within $2\%$ of the average found by direct simulations, which was $0.0975$. 
+For the three different cases we used in our experiments, $p_A \approx 0.1104$ for small targets, $p_A \approx 0.2219$ for medium targets, and $p_A = 0.5$ for large targets.
+In all cases, this probability is close to the average found by direct simulations. 
 
 \subsubsection{Accuracy of the shell method.}
 \label{sec:toy_shell}
-Lastly, we check the accuracy of the capacity estimation algorithm that we call the shell method. Here, the exact values are available from the formulas in (\ref{eqn:analytic_capacities}):
-$\capac{A}{\tA}=0.000637$ and $\capac{B}{\tB}=0.005151$. 
-The approximate values come from two applications of (\ref{eqn:approx_capacities}), which produced $0.000591$ and $0.004827$, respectively.\footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method:
-$m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of 
-$10^{-7}$.}
+Lastly, we check the accuracy of the capacity estimation algorithm that we call the shell method. Here, the exact values are available from the formulas in (\ref{eqn:analytic_capacities}), while the approximate values come from two applications of (\ref{eqn:approx_capacities}). For small targets, the true capacities are $\capac{A}{\tA}=0.000637$ and $\capac{B}{\tB}=0.005151$, while shell method estimates them to be $0.000591$ and $0.004827$, respectively. For medium targets, the true capacities are $\capac{A}{\tA}=0.01002626$ and $\capac{B}{\tB}=0.03516428$, while shell method estimates them to be $0.00930769$ and $0.03362453$, respectively. For large targets, the true capacities are $\capac{A}{\tA}=\capac{B}{\tB}=0.4609372$, while shell method estimates them to be $0.45244093 $ and $0.45153703$, respectively. \footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method: $m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of $10^{-7}$.}
 
 Had we used the estimated capacities instead of the actual capacities for computing  $p_A$ from Equation
-(\ref{eqn:capacity_ratio}) the approximation of the first-passage probability, given $x\in\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, would have been 0.1091 instead of 0.1100.
+(\ref{eqn:capacity_ratio}) the approximation of the first-passage probability, given $x\in\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, would have been 0.1091 instead of 0.1104 for small targets, 0.2168 instead of 0.2219 for medium targets, and 0.5005 instead of 0.5 for large targets.
 
 In summary, all three components of the approach performed well in the Brownian motion test case.
 
 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
-    \includegraphics[width=\textwidth]{results.png}
-    \caption{\label{fig:results} {\bf Hitting probabilities: direct simulations vs. evaluation of local capacities.}  Local capacities  can accurately answer the question ``where will we go next?''  We start by designating two targets, $A$ and $B$.  For any given initial condition, the task is to determine the probability that the diffusion will hit $A$ first. We study this question in the context of two different energy landscapes. In panel (a), we study the simplest possible case, where we have a flat energy landscape and the diffusion is simply a Brownian motion.  In panel (b), we consider the case that the energy landscape becomes complicated near the targets.  In both cases we consider 100 random initial locations which are modestly far  away from either target.  For each initial location, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.  For both energy landscapes we see that the hitting probability is approximately constant for initial conditions which are modestly far away from the targets.  Furthermore, the value of this constant is very nearly proportional to the ratio of the local capacities. In summary, in these simulations first-passage probabilities are accurately estimated using only local simulations around the targets, and do not require any computations that involve the large space around $A$ and $B$.}
+    \includegraphics[width=\textwidth]{results_nontrivial.png}
+    \caption{\label{fig:results_nontrivial}}
 \end{minipage}}
 \end{figure}
 
 \subsection{Nontrivial Landscape}\label{sec:nontrivial_results}
-We performed the same tests, but with a complex energy landscape in the neighborhoods of the targets, i.e. on $\dA\backslash A$ and $\dB\backslash B$. The details of the specification can be found in Appendix \ref{sec:energy_function}.
+We performed the same tests, but with the targets $A$ and $B$ only partially contained in $\Omega$ (resulting in a narrow-escape type problem), and a complex energy landscape in the neighborhoods of the targets, i.e. on $\dA\backslash A$ and $\dB\backslash B$. More concretely, we fixed the target centers $x_A=(0.6402,0.7682,0.0,0,0,0.0), x_B=(-1.0,0.0,0.0,0,0,0.0)$ and the radiuses $r_\tA=r_\tB=0.5$, and tested the overall approximation in three different cases, with targets of three different sizes: small (where $r_A=0.02, r_\dA=0.05, r_B=0.04, r_\dB=0.075$), medium (where $r_A=0.1, r_\dA=0.15, r_B=0.2, r_\dB=0.25$) and large (where $r_A=r_B=0.45, r_\dA=r_\dB=0.475$). More details of the specification can be found in Appendix \ref{sec:energy_function}. An illustration of the three different cases and the corresponding results are shown in Figure \ref{fig:results_nontrivial}.
 
 \subsubsection{Are first-passage probabilities approximately constant outside of $\bm{\tA\cup\tB}$?}
-Following the same procedure used in \S\ref{sec:toy_constant}
-we tested for the near-constancy of $h_{A,B}$ on 
-$\Omega\backslash(\tA\cup\tB)$. The results are illustrated in Figure \ref{fig:results}, panel (b).  For each of the 100 initial conditions, the probability of first-passage at $A$ fell in the interval $[0.7985, 0.8460]$, consistent with the conclusions of Theorem \ref{thm:epsilon_flat}.
-
+Following the same procedure used in \S\ref{sec:toy_constant} we tested for the near-constancy of $h_{A,B}$ on $\Omega\backslash(\tA\cup\tB)$. The histograms of the probabilities are illustrated in Figure \ref{fig:results_nontrivial}. As we can see, for the large targets case, the first-passage probabilities are fairly spread-out, but as the targets become smaller, they become significantly more concentrated. For both the small and medium targets case, $h$ is $\varepsilon$-flat, with $\varepsilon$ being approximately $0.0495$ and $0.0530$, respectively.
 
 \subsubsection{Are first-passage probabilities proportional to capacity?}
-In the previous experiments we were able to compute the capacities in closed form, and use $p_A$, from Equation (\ref{eqn:capacity_ratio}), to directly verify the conclusion of Theorem \ref{thm:main_thm}. This is not possible in the current experiments. We are forced instead to use the estimated capacities, from which we obtained the estimate 
-$p_A\approx 0.8360$, which is within 2\% of $0.8175$,\footnote{Using the following parameters (Appendix \ref{sec:shell_method}): $m = 2$, $N_p = 3000$, $N_b = 5$, $N_s = 1000$, with time-step $10^{-6}$.  For target $A$ we used $n = 4$ and for the larger target $B$ we used $n = 5$.} the average found by direct simulations.
+In the previous experiments we were able to compute the capacities in closed form, and use $p_A$, from Equation (\ref{eqn:capacity_ratio}), to directly verify the conclusion of Theorem \ref{thm:main_thm}. This is not possible in the current experiments. We are forced instead to use the estimated capacities.For small targets, we obtained the estimate $p_A\approx 0.8216$, which is within 0.5\% of $0.8172$, the average found by direct simulations. For medium targets, we obtained the estimate $p_A\approx 0.3815$, which is within 2\% of $0.3885$, the average found by direct simulations.\footnote{Using the following parameters (Appendix \ref{sec:shell_method}): $m = 2$, $N_p = 3000$, $N_b = 5$, $N_s = 1000$, with time-step $10^{-6}$.  For target $A$ we used $n = 4$ and for the larger target $B$ we used $n = 5$.} 
 
-Notable in these results is the fact that the larger target, $B$, is substantially less likely than $A$ to be visited first. Evidently, the energy in $\dB\backslash B$, the region surrounding $B$, introduces a significant barrier to the diffusion process, at least in comparison to the energy surrounding $A$. Keep in mind that the process here is identical to the one in the previous experiments, i.e. Brownian motion, for so long as the process remains outside of 
+Notable in the results for the small targets is the fact that the larger target, $B$, is substantially less likely than $A$ to be visited first. Evidently, the energy in $\dB\backslash B$, the region surrounding $B$, introduces a significant barrier to the diffusion process, at least in comparison to the energy surrounding $A$. Keep in mind that the process here is identical to the one in the previous experiments, i.e. Brownian motion, for so long as the process remains outside of 
 $\dA\cup\dB$, and that in those experiments the first-passage occurred at $B$ approximately ten times more often than at $A$.
 Evidently, the process is much more likely to exit $\dB\backslash B$ at $\partial\dB$ than at $\partial B$, at least in comparison to the dynamics in $\dA\backslash A$. These observations serve to further illustrate the role of local capacities and the importance of  their accurate approximation.
 
@@ -528,7 +534,7 @@ As already remarked, the nontrivial energy landscape precludes a direct assessme
 
 Concerning computational efficiency, it is difficult to make a direct comparison between the capacity-estimation approach and straightforward simulation. There are many parameters and, besides, run times will depend on the dimension and details of the energies, possibly affecting the two approaches differently. In our experiments, for direct simulations we used the ``walk-on-spheres'' method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust the number of samples or the discretization parameters. Under these conditions, a single run of the direct simulation took about as long as estimating the two capacities.
 
-Assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to $\Omega \backslash (\tilde A \cup \tilde B)$. Both methods suffer if $\varepsilon$ is large: direct simulation because it will depend on the initial condition, which is unknowable in any realistic experiment, and capacity estimation because the capacity ratio has a built-in error (Theorem \ref{thm:main_thm}) that depends on $\varepsilon$. If we assume that $\varepsilon$ is negligible, then for a fixed $x\in\Omega \backslash (\tilde A \cup \tilde B)$ we can more-or-less directly compare the standard deviations of the capacity-based estimation of $p\doteq h_{A,B}(x)$ via the shell method to direct simulation via repeated-samples. For example, under the specific (albeit idealized) circumstances of the experiments in \S\ref{sec:B_D}, about how many direct-simulation samples would be needed to attain a confidence interval for $p$ of comparable width as from a single sample using capacity estimation by the shell method? The binomial estimator from $n$ direct samples has standard deviation $\sqrt\frac{p(1-p)}{n}$, which we can compare to the empirical standard deviation, $\hat{\sigma}\approx 0.006$, from 100 runs of the shell method estimating $p$. Recall from \S\ref{sec:B_D} that $p\approx 0.1100$, in which case approximately $n=2,700$ runs of direct simulation would be needed to get a comparable confidence interval. Bear in mind that a single run of the shell method requires about as much time as  a single run of direct diffusion. It would appear, then, that capacity-based estimation of first-passage probabilities can be several orders-of-magnitude faster than direct simulation.
+Assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to $\Omega \backslash (\tilde A \cup \tilde B)$. Both methods suffer if $\varepsilon$ is large: direct simulation because it will depend on the initial condition, which is unknowable in any realistic experiment, and capacity estimation because the capacity ratio has a built-in error (Theorem \ref{thm:main_thm}) that depends on $\varepsilon$. If we assume that $\varepsilon$ is negligible, then for a fixed $x\in\Omega \backslash (\tilde A \cup \tilde B)$ we can more-or-less directly compare the standard deviations of the capacity-based estimation of $p\doteq h_{A,B}(x)$ via the shell method to direct simulation via repeated-samples. For example, under the specific (albeit idealized) circumstances of the experiments for small targets in \S\ref{sec:B_D}, about how many direct-simulation samples would be needed to attain a confidence interval for $p$ of comparable width as from a single sample using capacity estimation by the shell method? The binomial estimator from $n$ direct samples has standard deviation $\sqrt\frac{p(1-p)}{n}$, which we can compare to the empirical standard deviation, $\hat{\sigma}\approx 0.006$, from 100 runs of the shell method estimating $p$. Recall from \S\ref{sec:B_D} that $p\approx 0.1100$, in which case approximately $n=2,700$ runs of direct simulation would be needed to get a comparable confidence interval. Bear in mind that a single run of the shell method requires about as much time as  a single run of direct diffusion. It would appear, then, that capacity-based estimation of first-passage probabilities can be several orders-of-magnitude faster than direct simulation.
 
 
 %  ____ ___ ____   ____ _   _ ____ ____ ___ ___  _   _ 
@@ -1267,45 +1273,8 @@ F(x) &= F_w(x|d_w, r_{\dot A}) + 0.1 \times d_w \times F_m(x|x_A, r_{\dot A}) + 
 F(x) &= F_c(x|d_c, h, r_{\dot B}) + 0.1 \times (d_c + h) \times F_m(x|x_B, r_{\dot B}) + F_r(x|\mu^{B}, \sigma^{B}), \forall x \in \dot{B} \setminus B
 \end{align}
 
-In our actual experiments, we used
-\begin{equation*}
-d_w = 10.0, 
-d_c = 6.0,
-h = 1.0,
-\sigma^{A}_{i j} = \sigma^{B}_{k, l} = 0.01, \forall i, j, k, l
-\end{equation*} and
-\begin{equation*}
-\mu^{A} = \begin{pmatrix}%
-0.512&0.583&-0.013&0.013&-0.001\\%
-0.464&0.575&-0.001&0.019&-0.014\\%
-0.503&0.611&-0.012&-0.024&0.023\\%
-0.5&0.601&-0.024&0.034&0.011\\%
-0.486&0.586&0.006&0.01&0.001\\%
-0.489&0.588&-0.017&0.002&0.027\\%
-0.493&0.585&0.015&-0.001&-0.032\\%
-0.516&0.596&0.027&-0.026&0.022\\%
-0.514&0.624&0.01&0.01&-0.002\\%
-0.5&0.605&0.017&-0.016&0.004%
-\end{pmatrix}, 
-\mu^{B} = \begin{pmatrix}%
--0.696&-0.006&0.023&-0.041&0.019\\%
--0.731&0.021&-0.033&-0.014&0.017\\%
--0.694&-0.034&-0.009&0.031&0.019\\%
--0.666&-0.013&0.002&0.017&0.009\\%
--0.68&0.058&0.007&-0.011&-0.008\\%
--0.704&-0.022&0.034&0.003&0.026\\%
--0.714&-0.015&0.017&0.027&0.028\\%
--0.681&0.017&-0.046&-0.04&-0.002\\%
--0.648&-0.009&0.002&-0.012&-0.022\\%
--0.664&-0.04&0.05&-0.012&-0.002%
-\end{pmatrix}
-\end{equation*}
 
-
-
-
-
-\bibliographystyle{unsrt}
+\bibstyle{plain}
 \bibliography{refs.bib}
 
 \end{document}
