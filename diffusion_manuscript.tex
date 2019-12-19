@@ -381,7 +381,7 @@ $\capac{B}{\tB}$:
 \[
  h_{A,B} (x) \approx \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}
  \]
-We need to compute, or approximate, $\capac{A}{\tA}$ and $\capac{B}{\tB}$. Will will work through the details for $\capac{A}{\tA}$, but the identical considerations apply to 
+We need to compute, or approximate, $\capac{A}{\tA}$ and $\capac{B}{\tB}$. We will work through the details for $\capac{A}{\tA}$, but the identical considerations apply to 
 $\capac{B}{\tilde B}$.  We start with the flux representation
 established in the Proposition, and the numerical approximation from Equation (\ref{eqn:approximate_capacity}), which reduces the problem to selecting $G$ and $\tilde G$ and then applying the shell method, as described in \S\ref{sec:Estimation}.
 In the current setup, 
@@ -453,7 +453,7 @@ The approximation we used for $\capac{B}{\tB}$ is the same, but with the substit
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
     \includegraphics[width=\textwidth]{results_brownian_motion.png}
-    \caption{\label{fig:results_brownian_motion}}
+    \caption{\label{fig:results_brownian_motion}{\bf First-passage probabilities: direct simulations vs. evaluation of local capacities.}  Local capacities  can accurately answer the question ``where will we go next?''  We start by designating two targets, $A$ and $B$.  For any given initial condition, the task is to determine the probability that the diffusion will hit $A$ first. We study this question in the context of the simplest possible case, where we have a flat energy landscape and the diffusion is simply a Brownian motion, and consider 100 random initial locations which are modestly far  away from either target.  We consider three different cases (small, medium and large targets), as illustrated in the left quater of the figure. For each initial location, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.   We see that the hitting probability is approximately constant for initial conditions which are modestly far away from the targets when the targets are small.  Furthermore, the value of this constant is very nearly proportional to the ratio of the local capacities. In summary, in cases where the targets are small, first-passage probabilities are accurately estimated using only local simulations around the targets, and do not require any computations that involve the large space around $A$ and $B$.}
 \end{minipage}}
 \end{figure}
 
@@ -500,7 +500,7 @@ In all cases, this probability is close to the average found by direct simulatio
 
 \subsubsection{Accuracy of the shell method.}
 \label{sec:toy_shell}
-Lastly, we check the accuracy of the capacity estimation algorithm that we call the shell method. Here, the exact values are available from the formulas in (\ref{eqn:analytic_capacities}), while the approximate values come from two applications of (\ref{eqn:approx_capacities}). For small targets, the true capacities are $\capac{A}{\tA}=0.000637$ and $\capac{B}{\tB}=0.005151$, while shell method estimates them to be $0.000591$ and $0.004827$, respectively. For medium targets, the true capacities are $\capac{A}{\tA}=0.01002626$ and $\capac{B}{\tB}=0.03516428$, while shell method estimates them to be $0.00930769$ and $0.03362453$, respectively. For large targets, the true capacities are $\capac{A}{\tA}=\capac{B}{\tB}=0.4609372$, while shell method estimates them to be $0.45244093 $ and $0.45153703$, respectively. \footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method: $m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of $10^{-7}$.}
+Lastly, we check the accuracy of the capacity estimation algorithm that we call the shell method. Here, the exact values are available from the formulas in (\ref{eqn:analytic_capacities}), while the approximate values come from two applications of (\ref{eqn:approx_capacities}). For small targets, the true capacities are $\capac{A}{\tA}=0.000632$ and $\capac{B}{\tB}=0.005094$, while shell method estimates them to be $0.000549$ and $0.004699$, respectively. For medium targets, the true capacities are $\capac{A}{\tA}=0.01002626$ and $\capac{B}{\tB}=0.03516428$, while shell method estimates them to be $0.00930769$ and $0.03362453$, respectively. For large targets, the true capacities are $\capac{A}{\tA}=\capac{B}{\tB}=0.4609372$, while shell method estimates them to be $0.45244093 $ and $0.45153703$, respectively. \footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method: $m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of $10^{-7}$.}
 
 Had we used the estimated capacities instead of the actual capacities for computing  $p_A$ from Equation
 (\ref{eqn:capacity_ratio}) the approximation of the first-passage probability, given $x\in\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, would have been 0.1091 instead of 0.1104 for small targets, 0.2168 instead of 0.2219 for medium targets, and 0.5005 instead of 0.5 for large targets.
@@ -511,7 +511,7 @@ In summary, all three components of the approach performed well in the Brownian 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
     \includegraphics[width=\textwidth]{results_nontrivial.png}
-    \caption{\label{fig:results_nontrivial}}
+    \caption{\label{fig:results_nontrivial} {\bf First-passage probabilities direct simulations vs. evaluation of local capacities.}  The setup is similar to Figure \ref{fig:results_brownian_motion}, with the only differences being that the targets $A$ and $B$ are only partially contained in $\Omega$, and the energy landscape becomes complicated near the targets. We again consider three different cases (small, medium and large targets), as illustrated in the left quater of the figure. For each initial location, we conduct 2000 simulations to estimate the probability of hitting target $A$ first. While the first-passage probabilities vary significantly in the case of large targets, they are approximately constant in the case of small and medium targets, for initial conditions which are modestly far away from the targets.  Furthermore, the value of this constant is very nearly proportional to the ratio of the local capacities. In summary, in these simulations first-passage probabilities are accurately estimated using only local simulations around the targets, and do not require any computations that involve the large space around $A$ and $B$.}
 \end{minipage}}
 \end{figure}
 
