@@ -1,5 +1,5 @@
 % \documentclass[nofootinbib,english, aip, jcp, priprint, graphicx,floatfix]{revtex4-1}
-\documentclass[12pt, nofootinbib,english, amsmath, amssymb, aps, priprint, graphicx,floatfix,draft]{revtex4-1}
+\documentclass[12pt, nofootinbib,english, amsmath, amssymb, aps, priprint, graphicx,floatfix]{revtex4-1}
 \usepackage{amsmath,bm}
 \usepackage{amsthm}
 \usepackage{amssymb}
@@ -29,7 +29,7 @@
 \newtheorem{algorithm}{Algorithm}
 %%%%%%%%%% End TeXmacs macros
 
-\draft % marks overfull lines with a black rule on the right
+% \draft % marks overfull lines with a black rule on the right
 
 \theoremstyle{plain}
 \newtheorem{thm}{\protect\theoremname}
@@ -52,7 +52,7 @@
 \newcommand{\BB}[1]{\mathcal{\bar B}\left(#1\right)}
 
 
-\usepackage{babel}
+\usepackage[english]{babel}
 \providecommand{\corollaryname}{Corollary}
 \providecommand{\propositionname}{Proposition}
 \providecommand{\definitionname}{Definition}
@@ -99,7 +99,7 @@
 \section{Introduction}
 \label{sec:Introduction}
 
-Reversible diffusions play a key role in a wide variety of physical systems.  For example, the folding of macromolecules into their native configurations is often posed as a diffusion (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   In all cases, the evolution of the physical state of the system at time $t$ is represented through a variable $X_t$, and this variable evolves according to a stochastic differential equation.
+Reversible diffusions play a key role in a wide variety of physical systems.  For example, the folding of macromolecules into their native configurations is often posed as a diffusion (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   In all cases, the evolution of the physical state of the system at time $t$ is represented through a variable $X_t$, and this variable evolves according to a stochastic differential equation. 
 
 In this paper we seek to estimate first-passage hitting probabilities of such diffusions: given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?   Here each target represents a set of physical configurations.  For example, if $X$ represents the position of a particle trapped inside a sphere with two holes, $A$ and $B$ might represent the two holes.  The hitting probability then indicates the probability that the particle exits through the first hole.  These probabilities are also sometimes called ``splitting probabilities'' \cite{E2006-fm}.  This work develops a new algorithm for approximating these hitting probabilities.
 
