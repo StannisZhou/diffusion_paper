@@ -27,9 +27,8 @@ Jackson Loper, Guangyao Zhou, and Stuart Geman\\\\
 
 \section{Revision overview}
 
-As both referees noticed, we the authors of this paper have a mathematics-heavy background, and in our first draft we did not to make the significance of our work sufficiently clear to a Physical Review E audience.   Although both referees acknowledged the interesting mathematical aspects of the work, neither of them found the computational motivation compelling.  Over the past few months we have tried to make a better study of the the style and language of the field, guided by the pointers from reviewer 2.  We think that the new draft is more accessible and better motivated.
+Over the past few months we have performed a series of additional simulations and rewritten the article from scratch to closely follow the pointers from reviewer 2.
 
-There are two major changes:
 \begin{enumerate}
     \item We rewrote the introduction to:
     \begin{itemize}
@@ -37,6 +36,9 @@ There are two major changes:
         \item clarify how this work relates to existing literature,
         \item make our terminology more consistent with standard use.
     \end{itemize}
+    \item We rewrote the preliminaries to more actively highlight the four key objects (reversible diffusions, hitting probabilities, $\varepsilon$-flatness, and capacities).
+    \item We rewrote the main results section to trim out unnecessary mathematical details and focus on the key results.
+    \item We rewrote the shell-method section to better highlight the main ideas. 
     \item We conducted more comprehensive numerical simulations of the technique's accuracy.  In the previous draft we used the numerical results mostly to verify the theory.  The new draft tries to take a more methodical look, using a wider variety of problems and quantifying the approximation error in a wider variety of ways.  
 \end{enumerate}
 
@@ -53,14 +55,14 @@ There are two major changes:
 
 \rev{1}{This paper is a mathematical theoretical study...}{
 
-This paper does contain a fair amount of theory, but it also contains a computational aspect which was easy to miss in the first draft.  In fact, in our view this work centers around a new algorithm for estimating hitting probabilities in reversible diffusions.  To make this clear, we now devote the second paragraph to focusing on the computational problem we're interested in.  We also clarify that this paper includes a practical algorithm for tackling this computational problem.}
+This paper does contain a fair amount of theory, but it also contains a computational aspect which was easy to miss in the first draft.  In fact, in our view this work centers around a new algorithm for estimating hitting probabilities in reversible diffusions.  To make this clear, we now devote the second paragraph of the introduction to focusing more clearly on the computational problem we're interested in.  We also clarify that this paper includes a practical algorithm for tackling this computational problem.}
 
 \rev{1}{...that is not easy to follow for the non-mathematician}{
 
-In the new revision we have tried to make the main ideas clearer:
+In the introduction of the new revision we have made the main ideas clearer:
 \begin{itemize}
-    \item Reversible diffusions -- in the first paragraph we take a moment to actually describe reversible diffusions, giving a few examples from the sciences.  In the second section we give the technical definition.  
-    \item Hitting probabilities -- in the second paragraph we define these and give an example to clarify.  In the second section we give the technical definition.
+    \item Reversible diffusions -- in the first paragraph of the introduction we take a moment to actually describe reversible diffusions, giving a few examples from the sciences.  We defer the technical definition to the second section.
+    \item Hitting probabilities -- in the second paragraph of the introduction we define these and give an example to clarify.  In the second section we give the technical definition.
     \item When does this algorithm apply -- Here we had a bit of difficulty, because there are two ways of thinking about this:
     \begin{itemize}
         \item On the one hand, there is a technical condition we actually use ($\varepsilon$-flatness).  The algorithm is only guaranteed to work if that condition holds
@@ -72,7 +74,7 @@ In the new revision we have tried to make the main ideas clearer:
 
 \rev{1}{(also because of the notation that is not common for theoretical chemists/physicists).}{
     
-This was one issue we unfortunately were not able to substantially improve.  We tried to find more standard notations for our various variables and concepts, but were unable to figure out what was really standard.  If there is anything specific we should change in the notation we would of course be happy to do so.  We note there is also a related issue with our first draft, which is that some of our choice of vocabulary was non-standard.  We discuss this issue below, with respect to a point from Reviewer 2.}
+We made a review of the literature and changed any notation/language that seemed non-standard.   If there is anything specific we should change we would of course be happy to do so.}
 
 \rev{1}{References are not order and superscript citations should follow after
 the punctuation. Last Eq on p6 (not numbered): I think it should be $\rho(x)$ and  not $\rho(dx)$}{
@@ -104,7 +106,7 @@ Our work does contain many propositions and lemmas, and some of these are certai
 
 We shifted the motivation to the narrow escape problem (which does have implications in mesoscopic bio-systems) for which the proposed algorithm is more obviously relevant.
 
-However, we actually do think that the central assumption of small absorbing points in a mostly flat landscape is  relevant to macromolecular systems.  We note TCB McLeish has said that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.''   There is also some experimental evidence that the exploration of regions with golf-course potentials is the rate-limiting step for a variety of processes. We would be curious to hear Reviewer 2's point of view on this.
+However, we do still include some mention of macromolecular systems.  We note TCB McLeish has said that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.''   There is also some experimental evidence that the exploration of regions with golf-course potentials is the rate-limiting step for a variety of processes. 
 
 Some references we looked at that gave us this impression:
 
@@ -115,6 +117,9 @@ Some references we looked at that gave us this impression:
     \item Kevin W Plaxco and David Baker. Limited internal friction in the rate-limiting step of a two-state protein folding reaction. Proc. Natl. Acad. Sci. U. S. A., 95(23):13591–13596, November 1998.
     \item David J Wales. Energy landscapes: calculating pathways and rates. Int. Rev. Phys. Chem., 25(1-2):237–282, January 2006
 \end{itemize}
+
+If these results bear out, the first-passage time out of this exploration may be long and our conditions may hold for macromolecular diffusions. 
+
 }
 
 \rev{2}{...But with
@@ -134,9 +139,9 @@ In brief, there are three differences between this work and the approach taken b
         \item We also have a second theorem which shows that this $\varepsilon$ vanishes as the target sets become smaller.  This is indeed an asymptotic result, although qualitatively different from the kinds of results found in the narrow escape literature.  Instead of showing how hitting times can be well-approximated (as the narrow escape literature does), this second theorem shows cases where that hitting probabilities are nearly constant inside a large region $M$.
     \end{itemize}
 
-    \item Second, taking a step back, the the proposed algorithm is posed to handle a much wider variety of problems, because it requires very little special analysis to deal with the particular shape of the target.  By reducing the problem to a small region around each target, the proposed algorithm makes it feasible to compute the relevant properties numerically; no asymptotic analysis of the shape are necessary.  Moreover, the proposed method applies even in the case of nontrivial energy landscapes, which should be helpful.  For example, the axons studied in the narrow escape literature certainly contain large-scale fields, and this method should be able to handle those kinds of issues easily, whereas existing work focuses almost exclusively on the Brownian Motion case.
+    \item Second, taking a step back, the the proposed algorithm is posed to handle a much wider variety of problems, because it requires very little special analysis to deal with the particular shape of the target.  By reducing the problem to a small region around each target, the proposed algorithm makes it feasible to compute the relevant properties numerically; no asymptotic analysis of the shape are necessary.  Moreover, the proposed method applies even in the case of nontrivial energy landscapes.  The axons studied in the narrow escape literature certainly contain large-scale fields, and this method should be able to handle those kinds of issues easily, whereas existing work focuses almost exclusively on the Brownian Motion case.
 
-    \item Third, our method says \emph{nothing} about the overall timescale of the process.  The existing asymptotic analysis are able to give information about these timescale because they make strong assumptions about the process (e.g. that it is a Brownian motion in a sphere).  The algorithm proposed here is much more general, but it comes at a steep cost: we can't get timing information.
+    \item Third, our method says \emph{nothing} about the overall timescale of the process -- this is a weakness of the algorithm proposed here.  The existing asymptotic analysis are able to give information about these timescale because they make strong assumptions about the process (e.g. that it is a Brownian motion in a sphere).  The algorithm proposed here is much more general, but it comes at a steep cost: we can't get timing information.
 \end{enumerate}
 We try to make these points clear in the new draft of the introduction.  The last point we also revisit in the discussion.
 }
@@ -158,7 +163,7 @@ We are certainly open to any further suggestions in this regard.
 
 \rev{2}{The existing literature is extremely poorly described.}{
 
-We have tried to substantially bulk out our description of what is known.  We now describe four different literatures and relate our approach to each one.  
+We now devote half of the introduction to describing what is already known.  We describe four different related literatures and relate our approach to each one.  
 
 }
 
@@ -189,9 +194,15 @@ However, in the interest of keeping the issues clear for a broad audience, the n
 approximations, as advertised in section 3. Nor did I could recognize
 the gauge on what 'good agreement' is supposed to mean.}{
     
-This point is well-taken.  In the previous draft we used the numerical results mostly to verify the theory.  The new draft tries to take a more methodical look, using a wider variety of problems and quantifying the approximation error in a wider variety of ways.  
+We have completely replaced the numerical results section, using six new experiments intended to more methodically assess the quality of the approximations.  We try to clearly investigate all possible sources of error in a capacity-based approach:
+\begin{itemize}
+    \item The hitting probability functions are not perfectly flat.  We investigate clearly exactly how flat they are in various circumstances.
+    \item The hitting probability is not exactly equal to the ratio of capacities.  We investigate the error here, and find that it is significantly smaller than what might be expected from the results of Theorem 1.
+    \item The capacity cannot be computed exactly.  Where the capacity can be computed exactly we evaluate the error of the shell method.  Where it cannot be computed exactly we evaluate the quality of the shell method by proxy, looking at the accuracy of the hitting probability estimates derived from the capacity estimates.  
+\end{itemize}
+We also now include two ways to think about the magnitude of these errors (to gauge what `good agreement' might mean).  First, we compare against the number of direct simulations necessary to achieve comparable accuracy (under the optimistic assumption that the direct simulations are perfectly exact).  Second, we compare the magnitude of the second two types of errors against the first; indeed, if the hitting probabilities vary by initial condition by $\varepsilon$ inside a region, then capacity-based methods (which give only a single estimate) cannot hope to get less error than $\varepsilon/2$.  This provides a kind of lower-bound we can measure against.
 
-[[ Stannis will say more here]]
+
 
 }
 \end{document}

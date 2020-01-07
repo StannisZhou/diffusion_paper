@@ -1,5 +1,5 @@
 % \documentclass[nofootinbib,english, aip, jcp, priprint, graphicx,floatfix]{revtex4-1}
-\documentclass[12pt, nofootinbib,english, amsmath, amssymb, aps, priprint, graphicx,floatfix]{revtex4-1}
+\documentclass[12pt, nofootinbib,english, amsmath, amssymb, aps, priprint, graphicx,floatfix,draft]{revtex4-1}
 \usepackage{amsmath,bm}
 \usepackage{amsthm}
 \usepackage{amssymb}
@@ -16,6 +16,8 @@
 \newcommand{\mathd}{\mathrm{d}}
 \newcommand{\nin}{\not\in}
 \newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+
+\newcommand{\theepsrate}{\varepsilon + \sqrt{\varepsilon/2}}
 \newcommand{\tmtextbf}[1]{{\bfseries{#1}}}
 \newtheorem{definition}{Definition}
 \newtheorem{proposition}{Proposition}
@@ -87,7 +89,7 @@
 \date{\today}
 
 \begin{abstract}
-	A reversible stochastic differential equation is initialized at position $x_0$ -- where will it go next?  What is the probability it will reach one region before it reaches another region?  We here propose an approach for estimating the probability that a given target, among many, will be the first to be reached by a reversible stochastic differential equation.   We focus on the situation that it takes a long time to hit any target; in this case direct simulation of the hitting probabilities becomes prohibitively expensive.  We turn this curse into a blessing; if the timescales are sufficiently long the system will essentially ``forget'' its initial condition before it hits any target.  In this case we show that the hitting probabilities can be accurately approximated using only local simulations around each target, obviating the need for global simulations.  Numerical experiments on idealized energy landscape show the estimates can be nearly as accurate as direct simulations and thousands of times faster to compute.
+	A reversible stochastic differential equation is initialized at position $x_0$ -- where will it go next?  What is the probability it will reach one target before it reaches another target?  We here propose an approach for estimating this probability.  We focus on the situation that it takes a long time to hit any target; in this case direct simulation of the hitting probabilities becomes prohibitively expensive.  We turn this curse into a blessing; if the timescales are sufficiently long the system will essentially ``forget'' its initial condition before it hits any target.  In this case we show that the hitting probabilities can be accurately approximated using only local simulations around each target, obviating the need for global simulations.  In empirical tests, we find that these estimates can be computed in the same time it would take to compute a single direct simulation, but they achieve the same accuracy as would be obtained from one hundred simulations.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -99,81 +101,82 @@
 
 Reversible diffusions play a key role in a wide variety of physical systems.  For example, the folding of macromolecules into their native configurations is often posed as a diffusion (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   In all cases, the evolution of the physical state of the system at time $t$ is represented through a variable $X_t$, and this variable evolves according to a stochastic differential equation.
 
-In this paper we seek to estimate first-passage hitting probabilities of such diffusions: given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?   Here each target represents a set of physical configurations.  For example, if $X$ represents the position of a particle trapped inside a sphere with two holes, $A$ and $B$ might represent the two holes.  The hitting probability then indicates the probability that the particle exits through the first hole.  This probabilities are also sometimes called ``splitting probabilities'' \cite{E2006-fm}.  This work develops a new algorithm for approximating these hitting probabilities.  
+In this paper we seek to estimate first-passage hitting probabilities of such diffusions: given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?   Here each target represents a set of physical configurations.  For example, if $X$ represents the position of a particle trapped inside a sphere with two holes, $A$ and $B$ might represent the two holes.  The hitting probability then indicates the probability that the particle exits through the first hole.  These probabilities are also sometimes called ``splitting probabilities'' \cite{E2006-fm}.  This work develops a new algorithm for approximating these hitting probabilities.
 
 The proposed algorithm will not be useful for every diffusion; it is designed for cases where the diffusion can ``forget'' its initial condition before either target is hit.  To make this idea rigorous, we need three ingredients:
 \begin{itemize}
-    \item the initial configuration lies inside $M$, a set of physical configurations
-    \item the targets $A$ and $B$ lie outside the set $M$
+    \item the initial configuration $X_0$ must lie \emph{inside} a set of physical configurations we denote $M$
+    \item the targets $A$ and $B$ lie \emph{outside} the set $M$
     \item the first passage time out of $M$ is long (a long time elapses before the process exits the set $M$)
 \end{itemize}
-This last condition is vague -- how long is long enough?  A simplistic answer is that the algorithm will be more accurate when the first passage time is longer.  A more precise answer requires some machinery from the theory of ergodicity.  Recall that reversible diffusions are ergodic: as time goes on, it gets harder and harder to guess the initial condition from it's final configuration.  If the first passage time out of $M$ is long enough, it therefore follows that the hitting probability will be nearly the same no matter which initial condition we started from.  It is this property we actually need: if the hitting probability varies by at most $\varepsilon$ among all initial conditions inside the set $M$, the proposed algorithm's approximation error is less than $\varepsilon + \sqrt{\varepsilon/2}$.  Figure \ref{fig:ToyModel} gives a rough sketch of this idea.  A rigorous definition is given in  \S\ref{sec:Preliminaries}.  
+This last condition is vague -- how long is long enough?  A simplistic answer is that the proposed algorithm will be more accurate when the first passage time is longer.  A more precise answer requires some machinery from the theory of ergodicity.  Recall that reversible diffusions are ergodic: as time goes on, it gets harder and harder to guess the initial condition from it's final configuration.  As this happens, the process is said to becomes ``mixed,'' and speed with which the initial condition is forgotten is called the ``mixing rate.''  If the first passage time out of $M$ is long relative to this mixing rate, the hitting probability will be nearly the same no matter which initial condition we started from.  It is this property we actually need: if the hitting probability varies by at most $\varepsilon$ among all initial conditions inside the set $M$, the proposed algorithm's approximation error is less than $\varepsilon + \sqrt{\varepsilon/2}$.  Figure \ref{fig:ToyModel} gives a rough sketch of this idea.  Rigorous definitions are given in  \S\ref{sec:Preliminaries}.  
 
-Many standard methods for calculating hitting probabilities fail in exactly the cases where the proposed algorithm excels.  When the escape time from $M$ is large, the associated partial differential equations often include large Lipschitz constants, and direct Monte-Carlo simulation requires prohibitive number of timesteps (cf.\ \cite{Baum1986-we, Wille1987-tf, Machta2009-gh}).  Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space, not much can be done to speed up their simulation without destroying the dynamics of the system'' \cite{Christen2008-ge}.  
+Are there any real cases where the diffusion can forget its initial condition in this way?  The narrow-escape literature gives at least one class of examples.  In these examples $X$ is a Brownian motion trapped inside a set by reflecting boundaries, and the targets are very small windows in boundary of the sphere.  These models have been successfully applied to a variety of mesoscopic biosystems (cf. \cite{schuss2007narrow} and the references therein).  These kinds of diffusions may also be relevant for modeling the folding of large molecules.  TCB McLeish has said that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' \cite{McLeish2005-dq}.  There is also some experimental evidence that the exploration of large regions is the rate-limiting step for a variety of processes \cite{Goldberg1999-mv,Jacob1999-bs,Plaxco1998-iv,Wales2006-ur}.  If these results bear out, the first-passage time out of this exploration may be long and our conditions may hold. 
+
+Many standard methods for calculating hitting probabilities fail for diffusions of this kind.  When the escape time from $M$ is large, the associated partial differential equations often include large Lipschitz constants and direct Monte-Carlo simulation requires prohibitive number of timesteps (cf.\ \cite{Baum1986-we, Wille1987-tf, Machta2009-gh}).  Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space, not much can be done to speed up their simulation without destroying the dynamics of the system'' \cite{Christen2008-ge}.
 
 In fact, some kind of separation of timescales can make analysis easier.   The literature includes a variety of tools which use this idea to advantage.  Here we review a few of these tools:
 
 \begin{description}
-    \item[Analytic analyses] When the targets are very small, the first passage hitting times are often well-approximated by analytic formulae.  The ``narrow-escape problem'' (NEP) is a prototypical example; $X$ is a Brownian motion trapped inside a set by reflecting boundaries, and the targets are very small windows in boundary of the sphere.  Much of this literature focuses on making these formulas as accurate as possible for specific geometric configurations, such as the case of $N$ circular targets (cf.\ \cite{cheviakov2010asymptotic}), the case that one targets lie at the end of a long tube (cf.\ \cite{li2014matched}), or the case that the motion is trapped inside a symmetric domain (cf.\ \cite{Chevalier2010-bq,Condamin2006-vi,Coombs2009-pe,Lindsay2017-ds}).  There is also some work on efficient numerical methods for low-dimensional problems using insights from these analytic results (cf.\ \cite{kaye2019fast}).  Note that in these asymptotic limits the first-passage probabilities are inversely proportional to the mean first-passage times, so all of these techniques allow us to estimate first-passage probabilities.  A helpful overview of many of the main ideas in this literature can be found in \cite{Benichou2014-jb}.
+    \item[Analytic analyses] When the targets are very small, the separation of timescales allow the first passage hitting times to be well-approximated by analytic formulae.  The narrow-escape literature has developed many techniques in this direction.  Much of this literature focuses on making these formulas as accurate as possible for specific geometric configurations, such as the case of $N$ circular targets (cf.\ \cite{cheviakov2010asymptotic}), the case that one targets lie at the end of a long tube (cf.\ \cite{li2014matched}), or the case that the motion is trapped inside a symmetric domain (cf.\ \cite{Chevalier2010-bq,Condamin2006-vi,Coombs2009-pe,Lindsay2017-ds}).  There is also some work on efficient numerical methods for low-dimensional problems using insights from these analytic results (cf.\ \cite{kaye2019fast}).  Note that this literature mostly focuses on hitting times, whereas in this paper we focus on hitting probabilities.   However, the first-passage probabilities are nearly inversely proportional to the mean first-passage times for many cases, so all of these techniques can allow us to estimate first-passage probabilities.  A helpful overview of many of the main ideas in this literature can be found in \cite{Benichou2014-jb}.
 
-    \item[Markov State Models] Markov State Models (MSM) begin by partitioning the state-space of the diffusion into $n$ sets (``states'').  The diffusion can be understood at a coarse level by looking at which state the process is in at any given time (cf.\ \cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}).   If this coarse process is approximately Markovian, we can simulate the discrete process as long as we know the distribution on the exit times and the probability of transitioning to each possible state.  The amount of computational time required to simulate from this approximate process does not depend upon how long the process actually spends in each state.  This allows one to overcome the challenges of long time-scales.  
+    \item[Markov State Models] Markov State Models (MSM) take advantage of separated timescales in another way.  They begin by partitioning the state-space of the diffusion into $n$ sets (``states'').  The diffusion can be understood at a coarse level by looking at which state the process is in at any given time (cf.\ \cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}).   In some cases the time it takes to move between states is long relative to the rate of mixing inside the states.  This separation of timescales ensures that the coarse process is approximately Markovian.  We can therefore approximately simulate the discrete process as long as we know the distribution on the exit times and the probability of transitioning to each possible state.  The amount of computational time required to simulate from this approximate process does not depend upon how long the process actually spends in each state.
 
     \item[Site-localizing functions] Site-localizing functions take a relaxed version of the MSM idea; instead of creating a hard partitioning of the space, one constructs basis functions $g_1(x)\cdots g_n(x)$ such that $\sum_i g_i(x)=1$.  In many cases the action of the relevant infinite-dimensional diffusion operators can be well-approximated by the their action on the $n$-dimensional space spanned by these basis functions.   For example, under a separation-of-timescales assumption, Morro (cf.\ \cite{moro1995kinetic}) shows a way to design basis functions which faithfully represent the diffusion's behavior on the slow timescale.
 
-    \item[Milestoning] In some cases it is possible to construct a low-dimensional reaction coordinate which measures the distance from the targets in some suitable metric.  The dynamics of the diffusion along this coordinate are generally non-Markovian, but nonetheless they can be approximated with a low-dimensional stochastic differential equation.  If the reaction coordinate is carefully chosen, many properties of the original diffusion are maintained in this one-dimensional projection \cite{E2006-fm}.  Simulating from this low-dimensional approximate diffusion can yield useful insight into the overall behavior \cite{Bello-Rivas2015-ld}.  This is especially true of the system mixes quickly within the level-sets of the reaction coordinate.  Otherwise, an accurate estimate can still be obtained by subdividing the level-sets of the reaction coordinate and tracing individual trajectories between these subdivisions; this idea leads to techniques such as ``Milestoning without a reaction coordinate'' (cf.\  \cite{Majek2010-uy}).
+    \item[Milestoning] In some cases it is possible to construct a low-dimensional reaction coordinate which measures the distance from the targets in some suitable metric.  In some cases the movement along this reaction coordinate is slow relative to the mixing rate along all other directions.  This separation of timescales ensures that the dynamics of the diffusion along this coordinate are approximately Markovian.  If the reaction coordinate is carefully chosen, many properties of the original diffusion are maintained in this low-dimensional projection \cite{E2006-fm}.  Simulating from this low-dimensional approximate diffusion can yield useful insight into the overall behavior \cite{Bello-Rivas2015-ld}.  
 \end{description}
 
-Here we investigate a different approach, using the fact that a diffusion eventually forgets its initial condition; we give an overview of the main idea here.  Let $h(x)$ denote the hitting probability when the diffusion is initialized at $x$.  If the diffusion nearly forgets its initial condition in $M$ before it hits either target, it follows that the hitting probability will be nearly the same for every initial condition in $M$.  We then recall that $h$ can be understood as the solution of a variational problem (we review of this matter in Appendix \ref{sec:three_perspectives}); this suggests we might try to solve the associated variational problem subject to the hard constraint that the hitting probability is \emph{exactly} the same for every initial condition in $M$.  Adding this additional constraint introduces error into our result.  In Theorem \ref{thm:main_thm}, we bound the error introduced by this approximation: $|\bar h - h(x) |\leq \varepsilon + \sqrt{\varepsilon/2}$, where $\varepsilon$ is the difference between the maximum and minimum hitting probabilities for initial conditions in $M$.  Under this approximation the calculation of $\bar h$ becomes much easier; $\bar h$ depends only on the dynamics outside of $M$, and this dependency can be summarized through what we call ``first passage capacities.''
+Here we investigate a new different way to make use of separated of timescales.  We here give a high-level summary of the mathematical idea.  Let $h(x)$ denote the hitting probability when the diffusion is initialized at $x$.  If the diffusion nearly forgets its initial condition in $M$ before it hits either target, it follows that the hitting probability will be nearly the same for every initial condition in $M$.  We then recall that $h$ can be understood as the solution of a variational problem (we review of this matter in Appendix \ref{sec:three_perspectives}).  We can solve the associated variational problem subject to the hard constraint that the hitting probability is \emph{exactly} the same for every initial condition in $M$.  Adding this additional constraint introduces error into our result.  In Theorem \ref{thm:main_thm}, we bound the error introduced by this approximation: $|\bar h - h(x) |\leq \varepsilon + \sqrt{\varepsilon/2}$, where $\varepsilon$ is the difference between the maximum and minimum hitting probabilities for initial conditions in $M$.  Under this approximation the calculation of $\bar h$ becomes much easier; $\bar h$ depends only on the dynamics outside of $M$, and this dependency can be summarized through what we call ``first passage capacities.''  These capacities can be calculated using integrals around a neighborhood of each target.  
 
-This approach can get accurate results while completely ignoring all dynamics inside $M$.  This is particularly valueable if $M$ is a large, high-dimensional set.  When $M$ is very large, it is unclear how one would partition $M$, making Markov State Models difficult to implement.  Similarly it is unclear how one should formulate a reaction coordinate, making milestoning approaches difficult to implement.  Integrating over all of $M$ is computationally burdensome in this case, making site-localizing functions difficult to implement.  Asymptotic techniques from the narrow escape/reaction-controlled diffusion literature may still be applied, but only if the problem falls into one of the very specific cases which have already been studied.  Most of these cases lie in two or three-dimensions, feature regular targets, and assume the diffusion has no energetic potential.  By contrast, first passage capacities can be calculated efficiently for a diffusion with an arbitrary energetic potential, target shape, and ambient dimension.  Moreover, first-passage capacities are a fundamentally non-asymptotic technique; for any problem the approximation error is bounded explicitly in terms of the extent to which the hitting probability varies inside $M$, i.e. $\varepsilon$.   First-passage capacities do come with a significant limitation, however: they do not give direct insight into the overall timescale of the diffusion. There is an overall proportionality constant which connects first-passage hitting probabilities to the first-passage hitting times, and this constant cannot be recovered from the first-passage capacities.  We discuss this limitation further in \S\ref{sec:Discussion}.  
+In brief, one can efficiently compute first-passage capacities around each target and use these capacities to get good estimates of the hitting probabilities.  The key advantage of this approach is that it completely ignores all dynamics inside $M$.  This is particularly valueable if $M$ is a large, high-dimensional set.  When $M$ is very large, it is unclear how one would partition $M$, making Markov State Models difficult to implement.  Similarly it is unclear how one should formulate a reaction coordinate, making milestoning approaches difficult to implement.  Integrating over all of $M$ is computationally burdensome in this case, making site-localizing functions difficult to implement.  Asymptotic techniques from the narrow escape/reaction-controlled diffusion literature may still be applied, but only if the problem falls into one of the very specific cases which have already been studied.  Most of these cases lie in two or three-dimensions, feature regular targets, and assume the diffusion has no energetic potential.  By contrast, first passage capacities can be calculated efficiently for a diffusion with an arbitrary energetic potential, target shape, and ambient dimension.  Moreover, first-passage capacities are a fundamentally non-asymptotic technique; for any problem the approximation error is bounded explicitly in terms of the extent to which the hitting probability varies inside $M$, i.e. $\varepsilon$.   First-passage capacities do come with a significant limitation, however: they do not give direct insight into the overall timescale of the diffusion. There is an overall proportionality constant which connects first-passage hitting probabilities to the first-passage hitting times, and this constant cannot be recovered from the first-passage capacities.  We discuss this limitation further in \S\ref{sec:Discussion}.
 
 \begin{figure}
     \centering  \includegraphics[width=0.8\textwidth]{bigpicture.png}
-    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf First passage capacities allow efficient computation of hitting probabilities.} We consider a reversible stochastic differential equation in an $n$-dimensional state-space.  Let us say we initialize the diffusion at some configuration $x_0$ inside the set $M$; what is the probability it will reach region $A$ first before $B$?  We assume that the hitting probability is nearly the same for every initial condition $x_0 \in M$ (it must differ by at most $\varepsilon$ among all such initial conditions).  Theorem \ref{thm:main_thm} then shows that the hitting probability can then be approximated to within $\varepsilon + \sqrt{\varepsilon/2}$ using only ``first passage capacities.'' These capacities can be computed using only simulations that take place outside of $M$.  Above we sketch several examples where the condition can hold.  In each case, the first passage capacities can be computed using simulations performed in the gray areas.}
+    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf First passage capacities allow efficient computation of hitting probabilities.} We consider a reversible stochastic differential equation in an $n$-dimensional state-space.  Let us say we initialize the diffusion at some configuration $x_0$ inside the set $M$; what is the probability it will reach region $A$ first before $B$?  We assume that the hitting probability is nearly the same for every initial condition $x_0 \in M$ -- it must differ by at most $\varepsilon$ among all such initial conditions.  Theorem \ref{thm:main_thm} then shows that the hitting probability can then be approximated to within $\varepsilon + \sqrt{\varepsilon/2}$ using only ``first passage capacities.'' These capacities can be computed using only simulations that take place outside of $M$.  Above we sketch several examples where the condition can hold.  In each case, the first passage capacities can be computed efficiently using local simulations performed in the gray areas.}
 \label{fig:ToyModel}
 \end{figure}
 
-In the following section (\S\ref{sec:Preliminaries}, ``Preliminaries'') we will introduce notation, define our diffusion, define first passage hitting probabilities, define our main assumption, and finally define the first-passage capacities that are at the heart of this approach.  In \S\ref{sec:MainResults} we show that these capacities can be used to accurately estimate first-passage probabilities as long as our assumption holds; we also give an example where this condition is guaranteed.  In \S\ref{sec:Estimation}, we develop an approach to computing the first passage capacities.   In \S\ref{sec:Experiments} we look at the results of computational experiments on a five-dimensional diffusion.  
-
+In the following section (\S\ref{sec:Preliminaries}, ``Preliminaries'') we will introduce notation, define our diffusion, define first passage hitting probabilities, define our main assumption, and finally define the first-passage capacities that are at the heart of this approach.  In \S\ref{sec:MainResults} we show that these capacities can be used to accurately estimate first-passage probabilities as long as our assumption holds; we also give examples where this condition is guaranteed.  In \S\ref{sec:Estimation}, we develop an algorithm to compute the first passage capacities.   In \S\ref{sec:Experiments} we investigate the speed and accuracy of the capacity-based approach, using computational experiments on various diffusions.
 
 \section{Preliminaries}
 \label{sec:Preliminaries}
 
-Let us first define our diffusion process.  Our results are about diffusion process $X$ confined to an open bounded set $\Omega \subset \mathbb{R}^n$ with reflecting smooth boundary $\partial\Omega$ for $n\geq 3$.  We assume $X$ is driven by an $n$-dimensional standard Brownian motion $W$, i.e.
+The results in this paper are about diffusion processes $X$ confined to an open bounded set $\Omega \subset \mathbb{R}^n$ with reflecting smooth boundary $\partial\Omega$ for $n\geq 3$.  We assume $X$ is driven by an $n$-dimensional standard Brownian motion $W$, i.e.
 \begin{equation}\label{equ:general_sde}\mathrm{d} X_t = b (X_t) \mathrm{d} t + \sigma (X_t) \mathrm{d} W_t \end{equation}
 where $b: \Omega \rightarrow \mathbbm{R}^n$ and $\sigma :
 \Omega \rightarrow \mathbbm{R}^{n \times n}$ are continuously differentiable vector-valued and matrix-valued functions.  We further assume that $a(x)=\sigma(x)\sigma(x)^T$ is uniformly elliptic on $\Omega$, i.e. the smallest eigenvalues of $a$ are bounded away from zero.  Let $\bar \Omega$ denote the closure of $\Omega$ (and in general let $\bar S$ denote the closure of any set $S\subset \bar \Omega$).  For the precise definition of the reflected process, we adopt the framework developed by Lions and Sznitman\cite{lions1984stochastic}: Let $\normal=\normal(x)$ denote the outward normal of $\partial \Omega$ and $\nu:\ \partial \Omega \rightarrow \mathbb{R}^n$ a smooth vector field satisfying $\normal^T\nu\geq c>0$, and assume that $x_0 \in \Omega$.  Then there is a unique pathwise continuous
-and $W$-adapted strong Markov process $X_t\in\bar\Omega$, and (random) measure $L$, such that 
+and $W$-adapted strong Markov process $X_t\in\bar\Omega$, and (random) measure $L$, such that
 \begin{gather}\label{eq:SDER}
 X_t = x_0 + \int_0^t b(X_s)ds + \int_0^t \sigma(X_s)dW_s - \int_0^t \nu(X_s) L(ds)
 \end{gather}
-and $L(\{t:\ X_t \notin \partial \Omega\})=0$. 
+and $L(\{t:\ X_t \notin \partial \Omega\})=0$.
 For convenience, we will refer to $X$ by simply saying ``the reflected diffusion process (\ref{equ:general_sde}).'' We further assume that $X$ is a reversible process, with equilibrium distribution given by
 \[
 \rho(x)\doteq \frac{1}{Z}e^{-U(x)}\ \ \
 Z=\int_{x\in\Omega}e^{-U(x)}dx
 \]
-where $U:\bar \Omega \rightarrow \mathbb{R}$ is continuously differentiable.  As shown by Chen\cite{chen1993reflecting}, to ensure that $X$ is reversible it is sufficient that 
+where $U:\bar \Omega \rightarrow \mathbb{R}$ is continuously differentiable.  As shown by Chen \cite{chen1993reflecting}, to ensure that $X$ is reversible it is sufficient that
 \begin{align}
 \begin{split}
-b_i(x)&=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j - \frac{1}{2}\sum_j a_{ij}(x) \partial U(x)/\partial x_j 
+b_i(x)&=\frac{1}{2} \sum_j \partial a_{ij}(x)/\partial x_j - \frac{1}{2}\sum_j a_{ij}(x) \partial U(x)/\partial x_j
 \label{eqn:reversibility} \\
-\nu(x)&= a(x) \normal(x) 
+\nu(x)&= a(x) \normal(x)
 \end{split}
 \end{align}
 where $a(x)=\sigma(x)\sigma(x)^T$ is uniformly elliptic.
 When the conditions in (\ref{eqn:reversibility}) are in force
 we will say that $X$ satisfies the reversibility conditions relative to $U$.  We assume these conditions throughout the paper.
 
-The main goal of this paper is to estimate first passage hitting probabilities for $X$.  We here give a formal definition for these hitting probabilities: 
+The main goal of this paper is to estimate first passage hitting probabilities for $X$.  We here give a formal definition for these hitting probabilities:
 
 \begin{definition}(First passage hitting probabilities).  Fix two disjoint sets $A,B\subset \Omega$.  The first-passage hitting probability function $h_{A,B}(x)$ indicates the probability that the process $X$ visits $A$ before $B$ if it is initialized at $X_0=x$.  Formally,
 \[ h_{A, B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in A|X_0=x)\]
-where $\tau_{A\cup B}$ indicates the first passage time to $A\cup B$, i.e.\ $\tau_{A\cup B} \triangleq \inf \{ t \geqslant 0 : X_t \in A \cup B \}$.  Throughout this paper we will use $\tau_S$ to denote the first passage time to a set $S$ and $h_{S,S'}$ to denote the hitting probability function for targets $S,S'$. 
+where $\tau_{A\cup B}$ indicates the first passage time to $A\cup B$, i.e.\ $\tau_{A\cup B} \triangleq \inf \{ t \geqslant 0 : X_t \in A \cup B \}$.  Throughout this paper we will use $\tau_S$ to denote the first passage time to a set $S$ and $h_{S,S'}$ to denote the hitting probability function for targets $S,S'$.
 \end{definition}
 
 It turns out that these hitting probabilities are much easier to estimate if the process forgets its initial condition to such an extent that the hitting probabilities are nearly constant for any initial condition inside a set $M$:
-\begin{definition}(The $\varepsilon$-flatness condition)  A hitting probabiliy function $h_{A,B}(x)$ is said to be  
+\begin{definition}(The $\varepsilon$-flatness condition)  A hitting probability function $h_{A,B}(x)$ is said to be
 ``$\varepsilon$-flat relative to $M$'' whenever
 \[
 \sup_{x, y \in M} |h_{A,B}(x) - h_{A,B}(y)| < \varepsilon
@@ -182,22 +185,22 @@ It turns out that these hitting probabilities are much easier to estimate if the
 The $\varepsilon$-flatness of $h_{A,B}$ is only a narrow view into the ergodicity of the process $X$.  However it is exactly the view we need; the $\varepsilon$-flatness of $h_{A,B}$ gives us a way to quantify the extent of the equilibrium with respect to what we're interested in.  As we shall see in Theorem \ref{thm:main_thm}, it is also exactly the condition we need to show that the hitting probabilities within $M$ can be well-approximated using ``first-passage capacities.''  These capacities are the last piece we must define:
 
 \begin{definition}(Capacity)
-Let $S \subset \tilde{S} \subset \Omega$ be open sets and let $X$ be a diffusion governed by the SDE in Equation (\ref{eq:SDER}) and satisfying the reversibility conditions in Equation (\ref{eqn:reversibility}).  The first-passage capacity $\ensuremath{\operatorname{cap}} (S, \tilde{S})$ for $X$ is defined as 
+Let $S \subset \tilde{S} \subset \Omega$ be open sets and let $X$ be a diffusion governed by the SDE in Equation (\ref{eq:SDER}) and satisfying the reversibility conditions in Equation (\ref{eqn:reversibility}).  The first-passage capacity $\ensuremath{\operatorname{cap}} (S, \tilde{S})$ for $X$ is defined as
 %
 \[ \ensuremath{\operatorname{cap}} (S, \tilde{S}) \triangleq \int_{\tilde S \backslash S}
 ||\sigma(x) \nabla h_{S, \tilde{S}^c}(x)||^2 e^{- U(x)} \mathrm{d} x \]
-%  
+%
 \end{definition}
 
-We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity'' in the probabilistic potential theory literature, all slightly different.  For example, the Harmonic capacity arises by taking the above definition in the special case when the diffusion is a simple Brownian motion.  This definition most closely follows the work of Bovier \cite{Bovier2016-ez,Bovier2004-wj}.  Throughout this work, the term is used only in the sense of the above definition. 
+We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity'' in the probabilistic potential theory literature, all slightly different.  For example, the Harmonic capacity arises by taking the above definition in the special case when the diffusion is a simple Brownian motion.  The definition used here most closely follows the work of Bovier \cite{Bovier2016-ez,Bovier2004-wj}.  Throughout this work, the term is used only in the sense of the above definition.
 
 \section{Main theoretical results}
 \label{sec:MainResults}
 
 Our main theorem shows that the first-passage capacities give accurate approximations of the hitting probabilities when the hitting probabilities are themselves $\varepsilon$-flat in a region outside a neighborhood of the targets.
 
-\begin{theorem}\label{thm:main_thm}  
-Let $A\subset \tilde A,B\subset \tilde B$ be open sets and assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to 
+\begin{theorem}\label{thm:main_thm}
+Let $A\subset \tilde A,B\subset \tilde B$ be open sets and assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to
 $\Omega \backslash (\tilde A \cup \tilde B)$.
 Then the first-passage probabilities are well-approximated by the first-passage capacities:
 \[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
@@ -205,9 +208,9 @@ Then the first-passage probabilities are well-approximated by the first-passage 
 
 We defer the proof to Appendix \ref{sec:proof_thm}.  Note that the generalization to multiple targets is straightforward due to the additive property of capacities (Proposition \ref{prop:capacity} in Appendix \ref{sec:three_perspectives}); if you have $n$ targets and approximate the hitting probability to each by taking it to be proportional to the corresponding capacity, then all probabilities will be within $\varepsilon+\sqrt{\varepsilon/2}$ of the truth.
 
-When might the $\varepsilon$-flatness condition hold?  In the introduction, we gave an intuitive explanation for when this might be expected to happen, namely whenever the diffusion forgets its initial condition before it hits the targets.  To prove the $\varepsilon$-flatness condition for a particular problem, one must make this idea rigorously.  To offer the reader a flavor for how this may be done, we offer the following examples:
+When might the $\varepsilon$-flatness condition hold?  In the introduction, we gave an intuitive explanation for when this might be expected to happen, namely whenever the diffusion forgets its initial condition before it hits the targets.  To prove the $\varepsilon$-flatness condition for a particular problem, one must make this idea rigorous.  To offer the reader a flavor for how this may be done, we offer the following examples:
 
-\begin{theorem}\label{thm:epsilon_flat} (Examples of $\varepsilon$-flatness).   Let $\bb{x,r} = \{y:\ \Vert x-y \Vert < r\}$ denote the ball of radius $r$ centered at $x$.  
+\begin{theorem}\label{thm:epsilon_flat} (Examples of $\varepsilon$-flatness).   Let $\bb{x,r} = \{y:\ \Vert x-y \Vert < r\}$ denote the ball of radius $r$ centered at $x$.
 \begin{enumerate}
     \item Fix $r,\varepsilon>0$.  We can then find $\delta>0$ with the following property.  For any convex set $\Omega$ with diameter less than or equal to 1, any $x_A,x_B \in \Omega$, any diffusion such that $\nabla U(x) =0$ for all $x\notin \bb{x_A, \delta} \cup \bb{x_B, \delta}$, and any $A\subset \bb{x_A, \delta}, B \subset \bb{x_B, \delta}$, we have that $h_{A,B}$ is $\varepsilon$-flat on $\Omega \backslash \bb{x_A, r} \cup \subset \bb{x_B, r}$.
 
@@ -215,22 +218,21 @@ When might the $\varepsilon$-flatness condition hold?  In the introduction, we g
 \end{enumerate}
 \end{theorem}
 
-A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.  The first example shows how hitting probabilities become flat as the targets become small.  The second example notes that even if we fix the radius of the targets, the hitting probabilities becomes flat if the ambient dimension $n$ is high.  Both points can be proved by showing that the rate of ergodicity inside $\Omega$ is fast and it generally takes a long time to hit the targets.
+A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.  The first example shows how hitting probabilities become flat as the targets become small.  The second example notes that even if we fix the radius of the targets, the hitting probabilities becomes flat if the ambient dimension $n$ is high.  In both cases, the results are proved by showing that the rate of mixing inside $M$ is fast and it generally takes a long time to leave $M$.
 
-\section{Capacity Estimation} 
+%      _          _ _                _   _               _ 
+%  ___| |__   ___| | |_ __ ___   ___| |_| |__   ___   __| |
+% / __| '_ \ / _ \ | | '_ ` _ \ / _ \ __| '_ \ / _ \ / _` |
+% \__ \ | | |  __/ | | | | | | |  __/ |_| | | | (_) | (_| |
+% |___/_| |_|\___|_|_|_| |_| |_|\___|\__|_| |_|\___/ \__,_|
+                                                         
+
+
+\section{Capacity Estimation via the Shell Method}
 \label{sec:Estimation}
-For a class of stochastic systems, characterized by a separation of time scales such that the process of finding targets is slow compared to the process of exploring the regions away from the targets, we have reduced the estimation of first-passage probabilities to the evaluation, or approximation, of capacities.
-Generically, given the process defined in Equation (\ref{equ:general_sde}), satisfying the reversibility conditions in (\ref{eqn:reversibility}) relative to a continuously differentiable energy $U$, our goal is to evaluate
-\begin{equation}
-\label{eqn:capacity}
-\ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\tilde A \backslash A}
-||\sigma(x) \nabla h_{A, \tilde{A}^c}(x)||^2 e^{- U(x)} \mathrm{d} x 
-\end{equation}
-for a target $A$ and neighborhood $\tA$.
+To make use of Theorem \ref{thm:main_thm} in practice, we must be able to compute capacities.  The calculation is local, in that $\capac{A}{\tilde{A}}$ is an integral on $\tA\backslash A$. We will propose here a Monte Carlo approach to evaluating the integral, using a combination of analytic reductions and a short location simulations.
 
-The calculation is local, in that $\capac{A}{\tilde{A}}$ depends only on the behavior of  $U$ on $\tA\backslash A$, but it is not uncomplicated. We will propose here a Monte Carlo approach to evaluating the integral, made up of a combination of analytic reductions and highly orchestrated random walks. Inevitably, the effectiveness, or even feasibility, of the approach will depend on the particulars of the stochastic system, (\ref{equ:general_sde}).
-
-We begin by replacing the volume integral in (\ref{eqn:capacity}) with a surface integral:
+We begin by using an alternative formulation of the capacity:
 
 \begin{proposition}
 \label{prop:flux}
@@ -241,48 +243,35 @@ For any regions $G$ and $\tilde{G}$ having smooth boundaries and such that $A\su
 \end{equation}
 where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ is the $(n-1)$-dimensional Hausdorff measure, and $\normal$ represents the outward-facing (relative to the set $\tilde G \backslash G$) normal vector on $\partial (\tilde G \backslash G)$.
 \end{proposition}
-\noindent This result is almost certainly already known; a formal proof is in Appendix \ref{sec:proof_proposition}.
+\noindent This result is already known, though we could not find it written down in exactly the form we need.  A formal proof is in Appendix \ref{sec:proof_proposition}.
 
-There is a great deal of freedom in choosing $G$ and $\tilde G$; the idea is to choose them so as to make the surface integrals as simple as possible. Before pursuing this, we mention that there are many other ways to reduce the volume integral (\ref{eqn:capacity}) to a flux integral, some of which might make more sense than (\ref{eqn:GIntegral}) for a particular problem. Specifically, by a corollary of 
-Proposition (\ref{prop:flux}), $\capac{A}{\tilde A}$ can be written as the flux of a different field, but this time through a single surface (see Appendix \ref{sec:proof_proposition}):
-\begin{cor}
-\label{cor:flux}
-For any region $S$ having smooth boundary $\partial S$, and such that $A\subset S \subset \tilde A$, $\capac{A,\tA}$ can be expressed as a flux leaving $S$:
-\begin{equation}
-\ensuremath{\operatorname{cap}} (A, \tilde{A}) = \int_{\partial S}   \normal(x)^T a (x) \nabla h_{A, \tilde{A}^c} (x)e^{- U (x)} \hausdorffmeasure
-\end{equation}
-where $a$ and $\hausdorffmeasure$ are as defined in the Proposition, and  $\normal$ is the outward-facing normal on $\partial S$.
-\end{cor}
-\noindent
-The possible advantage is that there is only one surface and the integrand involves only one first-passage probability function, $h_{A, \tilde{A}^c} (x)$, instead of two. The possible disadvantage is the need to estimate $\nabla h_{A, \tilde{A}^c}$ on $S$, which is harder than estimating $h_{A, \tilde{A}^c}$. As we will see shortly, judicious choices for $G$ and $\tilde G$ can mitigate, and in some cases even eliminate, the need to estimate gradients of first-passage probabilities.
-
-Returning to the representation in (\ref{eqn:GIntegral}), there are two surface integrals, each of which can be viewed as an expectation, as follows: Define a probability measure on
+There is a great deal of freedom in choosing $G$ and $\tilde G$; the idea is to choose them so as to make the surface integrals as simple as possible.  Each of these surface integrals can be viewed as an expectation.  Let $\hausdorffmeasure$ denote the $n-1$-dimensional Hausdorff measure.  We can define a probability measure on
 $\partial G$ by
 \[
-\PMeasure\doteq\frac{1}{Z}e^{-U(x)}\hausdorffmeasure 
+\PMeasure\doteq\frac{1}{Z}e^{-U(x)}\hausdorffmeasure
 \text{   where   }
 Z= \int_{\partial G} e^{-U(x)}\hausdorffmeasure
 \]
-and define $\tPMeasure$
-and $\tilde{Z}$ analogously, but on $\partial\tilde{G}$ rather than $\partial G$.
+We can define $\tPMeasure$
+and $\tilde{Z}$ analogously, on $\partial\tilde{G}$ rather than $\partial G$.
 Then
 \begin{align}
 \capac{A}{\tilde A} & = \int_{\partial\tilde{G}} h_{A, \tilde{A}^c}    \normal^T a  \nabla h_{G, \tilde{G}^c} e^{- U } \hausdorffmeasure
 -\int_{\partial G} h_{A, \tilde{A}^c}    \normal^T a  \nabla h_{G, \tilde{G}^c} e^{- U } \hausdorffmeasure
 \nonumber \\
-&=Z
+&=\tilde Z
 \int_{\partial\tilde{G}} h_{A, \tilde{A}^c}    \normal^T a  \nabla h_{G, \tilde{G}^c} \tPMeasure
 -Z
-\int_{\partial G} h_{A, \tilde{A}^c}    \normal^T a  
+\int_{\partial G} h_{A, \tilde{A}^c}    \normal^T a
 \nabla h_{G,\tilde{G}^c} \PMeasure
 \label{eqn:PMeasureInt}
 \end{align}
-where, in these integrals, the normal, $\normal$, points outward from {\em both} $G$ and $\tilde G$.
-If now $y_1,y_2,\dots,y_m\sim \text{iid}\ \PMeasure$, then 
+where, in these integrals, the normal, $\normal$, points outward from both $G$ and $\tilde G$.
+Let $y_1,y_2,\dots,y_m\sim \text{iid}\ \PMeasure$, so that
 \begin{align*}
-\frac{1}{m}\sum_{i=1}^m 
+\frac{1}{m}\sum_{i=1}^m
 h_{A, \tilde{A}^c}(y_i) \normal^T(y_i) a(y_i)  \nabla h_{G,\tilde{G}^c}(y_i) & \stackrel{m\to\infty}{\longrightarrow}
- \int_{\partial G} h_{A, \tilde{A}^c}    \normal^T a  
+ \int_{\partial G} h_{A, \tilde{A}^c}    \normal^T a
 \nabla h_{G,\tilde{G}^c} \PMeasure \\
 \text{and}\ \ \ \ \ \ \frac{1}{m}\sum_{i=1}^m e^{U(y_i)}
 & \stackrel{m\to\infty}{\longrightarrow} \int_{\partial G} e^U
@@ -291,183 +280,139 @@ h_{A, \tilde{A}^c}(y_i) \normal^T(y_i) a(y_i)  \nabla h_{G,\tilde{G}^c}(y_i) & \
 where $|\partial G|$ is the surface area of $G$. Putting these together, we get the large $n$ approximation
 \[
 Z
-\int_{\partial G} h_{A, \tilde{A}^c}    \normal^T a  
+\int_{\partial G} h_{A, \tilde{A}^c}    \normal^T a
 \nabla h_{G,\tilde{G}^c} \PMeasure
 \approx
 |\partial G|
-\frac{\sum_{i=1}^m 
+\frac{\sum_{i=1}^m
 h_{A, \tilde{A}^c}(y_i) \normal^T(y_i) a(y_i)  \nabla h_{G,\tilde{G}^c}(y_i)}
 {\sum_{i=1}^m e^{U(y_i)}}
 \]
-If we now extend all of this to $\partial\tilde{G}$, with 
-$\tilde{y}_1,\tilde{y}_2,\dots,\tilde{y}_n\sim \text{iid}\ \tPMeasure$, and put the approximations into 
+If we now extend all of this to $\partial\tilde{G}$, with
+$\tilde{y}_1,\tilde{y}_2,\dots,\tilde{y}_n\sim \text{iid}\ \tPMeasure$, and put the approximations into
 (\ref{eqn:PMeasureInt}), then for large $n$ and $m$
 \begin{align}
 \capac{A}{\tilde A} & \approx
 |\partial\tilde{G}|
-\frac{\sum_{i=1}^n 
+\frac{\sum_{i=1}^n
 h_{A, \tilde{A}^c}(\tilde{y}_i) \normal^T(\tilde{y}_i) a(\tilde{y}_i)  \nabla h_{G,\tilde{G}^c}(\tilde{y}_i)}
 {\sum_{i=1}^n e^{U(\tilde{y}_i)}}
 \label{eqn:approximate_capacity}\\
 & -|\partial G|
-\frac{\sum_{i=1}^m 
+\frac{\sum_{i=1}^m
 h_{A, \tilde{A}^c}(y_i) \normal^T(y_i) a(y_i)  \nabla h_{G,\tilde{G}^c}(y_i)}
 {\sum_{i=1}^m e^{U(y_i)}}
 \nonumber
 \end{align}
 
-To make this useful, we will need to choose $G$ and $\tilde{G}$ so that (i) we can readily sample from $\PMeasure$ and $\tPMeasure$; (ii) the surface areas $|\partial G|$ and
-$|\partial\tilde{G}|$ can be well approximated; (iii) 
-the first-passage probability $h_{A, \tilde{A}^c}$ can be well approximated on  $G$ and $\tilde{G}$; and (iv) the gradient
-$\nabla h_{G, \tilde{G}^c}$ can also be well approximated on 
- $G$ and $\tilde{G}$. 
-The first two of these challenges lend themselves to more-or-less routine, though not necessarily easy methods, including importance and rejection sampling. Of course we're free to choose $G$ and $\tilde G$ to make (i) and (ii) as easy as possible.
+In summary: we can use a Monte-Carlo technique to compute the capacity as long as we can (i) sample from $\PMeasure$ and $\tPMeasure$; (ii) compute the surface areas $|\partial G|$ and
+$|\partial\tilde{G}|$; (iii)
+compute the first-passage probability $h_{A, \tilde{A}^c}$; and (iv) compute the gradient
+$\nabla h_{G, \tilde{G}^c}$.  
+We can often make tasks (i) and (ii) straightforward by a judicious choice of $G,\tilde G$.  However, tasks (iii) and (iv) are more difficult.  
 
-As for approximating first-passage probabilities and their gradients, broadly speaking there are two approaches. It is well known that first-passage probabilities satisfy an elliptic PDE related to the infinitesimal generator---see Appendix \ref{sec:three_perspectives}, Equation (\ref{eq:pde})---and we could therefore choose from a selection of numerical solvers. One drawback with this approach is that numerical PDE methods are famously difficult to employ successfully in high dimensions (``curse of dimensionality''). Here, in a different direction, we exploit the connection between first-passage probabilities and the underlying random walk in order to develop Monte Carlo tools suitable for estimating both $h_{A, \tilde{A}^c}$ and $\nabla h_{G, \tilde{G}^c}$ on the surfaces
+Thus, to compute the capacity using this approach, the most difficult challenge is to compute the first-passage probabilities along $G,\tilde G$.  Broadly speaking there are two approaches for this kind of problem.  First-passage probabilities satisfy an elliptic PDE related to the infinitesimal generator -- see Appendix \ref{sec:three_perspectives}, Equation (\ref{eq:pde}) -- and we could therefore choose from a selection of numerical solvers. Here, in a different direction, we exploit the connection between first-passage probabilities and the underlying random walk in order to develop Monte Carlo tools suitable for estimating both $h_{A, \tilde{A}^c}$ and $\nabla h_{G, \tilde{G}^c}$ on the surfaces
 $\partial G$ and $\partial\tilde{G}$. These tools are based on
 what we will call the ``shell method,'' which we describe briefly in the following paragraphs and in full detail in Appendix \ref{sec:shell_method}.
 
-Generically, given two simply-connected regions $R$ and $\tilde{R}$, with $R\subset \tilde{R}$, and a set $S$ such that 
-$R\subset S  \subset\tilde{R}$, we seek an approximation to 
-the function $h_{R,\tilde{R}^c}$ on the surface $\partial S$. In principle, we could begin with a fine-grained partitioning of $\partial S$ into simply-connected ``cells,'' and for each cell run the diffusion $X_t$ many times, recording whether or not the path first exits $\partial (\tilde{R}\backslash R)$ at $\partial R$. The fraction of paths that first exit at $\partial R$ constitutes an estimate of 
-$h_{R,\tilde{R}^c}(x)$ for any $x$ in the current cell. But this is wasteful and likely infeasible in all but the simplest of settings. Much of the waste stems from the fact that the ensemble of all paths generated from all cells will likely include many near collisions of paths scattered throughout $\partial (\tilde{R}\backslash R)$. An alternative, divide-and-conquer  approach, is to introduce multiple sets, $S_0,S_1,\ldots,S_n$ such that 
+Generically, given two simply-connected regions $R$ and $\tilde{R}$, with $R\subset \tilde{R}$, and a set $S$ such that
+$R\subset S  \subset\tilde{R}$, we seek an approximation to
+the function $h_{R,\tilde{R}^c}$ on the surface $\partial S$. In principle, we could begin with a fine-grained partitioning of $\partial S$ into simply-connected ``cells,'' and for each cell simulate the diffusion many times, recording whether or not the path first exits $\partial (\tilde{R}\backslash R)$ at $\partial R$. The fraction of paths that first exit at $\partial R$ constitutes an estimate of
+$h_{R,\tilde{R}^c}(x)$ for any $x$ in the current cell. But this is wasteful and likely infeasible in all but the simplest of settings. Much of the waste stems from the fact that the ensemble of all paths generated from all cells will likely include many near collisions of paths scattered throughout $\partial (\tilde{R}\backslash R)$. An alternative, divide-and-conquer  approach, is to introduce multiple sets, $S_0,S_1,\ldots,S_n$ such that
 \begin{equation*}
 R=S_0 \subset \cdots \subset S_{m-1}\subset S_m = S \subset S_{m+1} \subset \cdots \subset S_n = \tilde{R}
 \end{equation*}
-and use sample paths from $X$, {\em locally}, to estimate the transition probability matrices from each cell within each ``shell'' $\partial S_k$ to each cell of its neighboring shells, $\partial S_{k-1}$ and $\partial S_{k+1}$. Equipped with these transition matrices, the first-passage probability for a given $x\in S$ is computed algebraically, without further approximation.  
+and use sample paths from $X$, {\em locally}, to estimate the transition probability matrices from each cell within each ``shell'' $\partial S_k$ to each cell of its neighboring shells, $\partial S_{k-1}$ and $\partial S_{k+1}$. Equipped with these transition matrices, the first-passage probability for a given $x\in S$ is computed algebraically, without further approximation.
 
 $S$ must have been chosen not only to satisfy $R\subset S  \subset\tilde{R}$ but also in such a way as to make it feasible to sample from $\partial S$ under the probability measure
 $\frac{1}{Z}e^{-U}\hausdorffmeasure$. After that, $S_k\ k=1,\ldots,n-1$ are chosen so that the shells nest and are in close proximity; the hitting times starting from a sample in $\partial
- S_k$ and ending at $\partial S_{k-1} \cup \partial S_{k+1}$ must be short enough to encourage many repeated runs. The output is a set of samples, 
- $z_1,\ldots,z_N \sim \frac{1}{Z}e^{-U}\hausdorffmeasure$ on $\partial S$ together with the approximate value of $h_{R,\tilde{R}^c}(x)$ at each sample $x=z_i$. (In fact, though the main purpose is to estimate $h_{R,\tilde{R}^c}$ on 
+ S_k$ and ending at $\partial S_{k-1} \cup \partial S_{k+1}$ must be short enough to encourage many repeated runs. The output is a set of samples,
+ $z_1,\ldots,z_N \sim \frac{1}{Z}e^{-U}\hausdorffmeasure$ on $\partial S$ together with the approximate value of $h_{R,\tilde{R}^c}(x)$ at each sample $x=z_i$. (In fact, though the main purpose is to estimate $h_{R,\tilde{R}^c}$ on
  $\partial S$, a byproduct is a sample from $\frac{1}{Z}e^{-U}\hausdorffmeasure$ on all of the shells $\partial S_k$, along with an estimate of $h_{R,\tilde{R}^c}$ at every sample.)
 With the choice of $A$ for $R$ and $\tilde A$ for $\tilde R$, the algorithm becomes directly applicable to the estimation of $h_{A, \tilde{A}^c}$ on $\partial G$ and $\partial\tilde{G}$, taking $S=G$ in the former case and $S=\tilde{G}$ in the latter.
- 
+
 The shell method is closely related to milestoning\cite{West2007-cn, Bello-Rivas2015-ld, Aristoff2016-gc} and Markov state models\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}, though more tailored to the problem at hand. In particular, our interest here is in computing the first-passage probabilities rather than in approximating the underlying process. Also, the discretizations of the shells are {\em adaptive}, in that they are based on clusters that are derived from an ensemble of samples, as opposed to being crafted for a particular landscape.  See Appendix \ref{sec:shell_method}.
- 
-As for the required gradients, these are generally harder to estimate. Nevertheless, for the particular gradient $\nabla h_{G, \tilde{G}^c}$, the problem is substantially mitigated by noting that we are only interested in its evaluation on $\partial G$ and $\partial\tilde G$, each of which is a level set of 
-$h_{G, \tilde{G}^c}$ ($h_{G, \tilde{G}^c}=1$ on $G$ and 0 on $\tilde G$). Consequently, on each surface the gradient is in the normal direction and we need only estimate its magnitude. And for this purpose it is enough to know the values of $h_{G, \tilde{G}^c}$ on a surface close to $G$ and interior to $\tilde{G}\backslash G$ (for estimating $\nabla h_{G, \tilde{G}^c}$ on $G$) and on another surface  
+
+As for the required gradients, these are generally harder to estimate. Nevertheless, for the particular gradient $\nabla h_{G, \tilde{G}^c}$, the problem is substantially mitigated by noting that we are only interested in its evaluation on $\partial G$ and $\partial\tilde G$, each of which is a level set of
+$h_{G, \tilde{G}^c}$ ($h_{G, \tilde{G}^c}=1$ on $G$ and 0 on $\tilde G$). Consequently, on each surface the gradient is in the normal direction and we need only estimate its magnitude. And for this purpose it is enough to know the values of $h_{G, \tilde{G}^c}$ on a surface close to $G$ and interior to $\tilde{G}\backslash G$ (for estimating $\nabla h_{G, \tilde{G}^c}$ on $G$) and on another surface
 close to $\tilde{G}$ and also interior to $\tilde{G}\backslash G$ (for estimating $\nabla h_{G, \tilde{G}^c}$ on $\tilde G$). Two such surfaces would be $\partial S_1$ and $\partial S_{n-1}$, were we to apply the shell method with $R=G$ and $\tilde{R}=\tilde{G}$,
-since, as already noted, a byproduct of the method is an estimate of 
-$h_{R,\tilde{R}^c}$ on all of the shells. Alternatively, in the interest of better accuracy, the method could be run twice, once with $S=S_1$, a well-chosen outer approximation of $G$, and then again with 
-$S=S_{n-1}$, a well-chosen inner approximation of $\tilde G$. 
+since, as already noted, a byproduct of the method is an estimate of
+$h_{R,\tilde{R}^c}$ on all of the shells. Alternatively, in the interest of better accuracy, the method could be run twice, once with $S=S_1$, a well-chosen outer approximation of $G$, and then again with
+$S=S_{n-1}$, a well-chosen inner approximation of $\tilde G$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \section{Numerical Experiments\footnote{All the experimental results can be reproduced or easily modified from open-source code, which can found, along with detailed instructions, at \url{https://github.com/StannisZhou/entropic_barrier}.}}
-\label{sec:Experiments}
-We experimented with the two-target system discussed in \S\ref{sec:Introduction} and depicted in Figure \ref{fig:ToyModel}, with $n=5$ dimensions 
-and the particular targets $A=\bb{x_A, r_A}$,  where $x_A=(0.5,0.6,0.0,0,0,0.0)$ and $r_A=0.02$, and 
-$B=\bb{x_B, r_B}$,  where $x_B=(-0.7,0.0,0.0,0,0,0.0)$ and $r_B=0.04$. The configuration space is the unit ball centered at 
-the origin, $\Omega=\bb{0,1}$. 
-The goal is to estimate $h_{A,B}(x)$, the probability that $A$ is visited before $B$, using only the behavior of $U$ in the vicinity of the targets, provided that $x$, the starting configuration, is sufficiently far from $A\cup B$. The entropic barrier is idealized by assuming that $\nabla U(x)=0$ outside of $\dA=\bb{x_\dA, r_\dA}$ and $\dB=\bb{x_\dB, r_\dB}$ and ``sufficiently far away'' means outside of $\tA \cup \tB$, where $\tA=\bb{x_\tA, r_\tA}$ and $\tB=\bb{x_\tB, r_\tB}$. The concentric neighborhoods around the targets are supposed to satisfy $A\subset\dA\subset\tA$ and 
-$B\subset\dB\subset\tB$, which was enforced in our experiments by the choices $r_\dA= 0.05$, $r_\tA=0.1$, $r_\dB=0.075$, and
-$r_\tB=0.15$.
-Our experiments test the overall approximation to $h_{A,B}$ developed in \S\ref{sec:MainResults}-\ref{sec:Estimation} as well as each of the three components, separately: $\epsilon$-flatness, the role of capacities, and the methodology developed for estimating capacities.
+%                                  _           _                       _ _       
+%  _ __  _   _ _ __ ___   ___ _ __(_) ___ __ _| |  _ __ ___  ___ _   _| | |_ ___ 
+% | '_ \| | | | '_ ` _ \ / _ \ '__| |/ __/ _` | | | '__/ _ \/ __| | | | | __/ __|
+% | | | | |_| | | | | | |  __/ |  | | (_| (_| | | | | |  __/\__ \ |_| | | |_\__ \
+% |_| |_|\__,_|_| |_| |_|\___|_|  |_|\___\__,_|_| |_|  \___||___/\__,_|_|\__|___/
+                                                                               
 
-The experimental setup is sufficiently simple to allow
-exhaustive simulation for approximating ground truth. In each experiment, we compare the results of using the approximations developed here to the results from an ensemble of first-passage events simulated by simply running the diffusion 2,000 times at each of 100 randomly chosen points in $\Omega\backslash (\tA,\tB)$. There are two sets of experiments: In the first (a kind of ``sanity check''), the potential $U$ is flat everywhere outside of the targets $A$ and $B$, in other words, the diffusion is Brownian motion. In the second, there are complex landscapes in the vicinities of the targets, i.e. within $\dA$ and $\dB$.
 
-Both Theorems, \ref{thm:epsilon_flat} and \ref{thm:main_thm}, are in force, and hence the first-passage probability $h_{A,B}(x)$, on $\Omega\backslash(\tA,\tB)$, is approximately a constant, and the value depends only on the two local capacities $\capac{A}{\tA}$ and
-$\capac{B}{\tB}$:
-\[
- h_{A,B} (x) \approx \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}
- \]
-We need to compute, or approximate, $\capac{A}{\tA}$ and $\capac{B}{\tB}$. Will will work through the details for $\capac{A}{\tA}$, but the identical considerations apply to 
-$\capac{B}{\tilde B}$.  We start with the flux representation
-established in the Proposition, and the numerical approximation from Equation (\ref{eqn:approximate_capacity}), which reduces the problem to selecting $G$ and $\tilde G$ and then applying the shell method, as described in \S\ref{sec:Estimation}.
-In the current setup, 
-good choices for $G$ and $\tilde G$ are $G=\dA$ and 
-$\tilde G = \tA$, as can be seen from the following observations:
-\begin{enumerate}
+\section{Numerical Experiments\footnote{All the experimental results can be reproduced or easily modified from open-source code, which can found, along with detailed instructions, at \url{https://github.com/StannisZhou/entropic_barrier}.}}\label{sec:Experiments}
+We use numerical experiments to test the practical relevance of our theoretical results and capacity-estimation algorithm.  There several questions we would like to address empirically:
 
-\item Recall that $h_{A,\tA^c}(x)$ is the probability of first exiting $\tilde{A}\backslash A$ at $\partial A$ rather than at $\partial\tA$, given that the process started at $x$. 
-Consequently $h_{A,\tA^c}(x)=0$ for all $x\in\partial\tA$, and hence also on $\partial\tilde{G}$.
-Hence, with reference to Equation (\ref{eqn:approximate_capacity}), we need only consider the flux approximation on $\partial G$:
+\begin{itemize}
+    \item Are first-passage hitting probability functions flat?  Theorem \ref{thm:epsilon_flat} gives conditions for the first-passage hitting probability function to become flat in the asymptotic limit as the targets become small.  How quickly do these asymptotic limits begin to apply?  What kinds of diffusions actually satisfy $\varepsilon$-flatness condition with $\varepsilon \ll 1$?
+	\item Theorem \ref{thm:main_thm} shows that the first-passing hitting probabilities can be well-approximated by the capacity whenever the first-passage hitting probability function is $\varepsilon$-flat.  Specifically, we show that capacity-based estimates lie within $\theepsrate$ of the truth.  Is this bound is tight or loose?
+	\item In Section \ref{sec:Estimation} we propose a new algorithm for estimating the capacity.  What is the speed and accuracy of this algorithm?
+\end{itemize}
+
+To test these questions we look at problems of the following form.  In every case the configuration space,
+$\Omega$, is the unit ball in $\mathbb{R}^5$
+($\Omega = \bb{0,1}$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$). A diffusion is confined to $\Omega$ by a reflecting boundary at $\partial\Omega$, and within $\Omega$ the dynamics are assumed to be well approximated by the first-order (high-viscosity) Langevin equation,
 \begin{equation}
-\label{eqn:toy_cap_approx}
-\capac{A}{\tilde A} \approx
--|\partial G|
-\frac{\sum_{i=1}^m 
-h_{A, \tilde{A}^c}(y_i) \normal(y_i)\cdot \nabla h_{G,\tilde{G}^c}(y_i)}
-{\sum_{i=1}^m e^{U(y_i)}}
+\label{equ:toy_sde}
+\mathrm{d} X_t = - \nabla U (X_t) \mathrm{d} t + \mathrm{d} W_t
 \end{equation}
-where $y_1,\ldots,y_m$ are independent samples from 
-$\PMeasure=\frac{1}{Z}e^{-U}\hausdorffmeasure$ on $\partial G$, $\normal(x)$ faces outward from $G$, and compared to (\ref{eqn:approximate_capacity}), we have used the fact that in the current setup $a(x)$ is the identity $I$.
- 
- \item The surface area $|\partial G|$ is just the area of the 4-sphere (in five dimensions), with radius $r_\dA$:
- \[
- |\partial G| = \frac{2\pi^{\frac{5}{2}}}{\Gamma(\frac{5}{2})}r_\dA^4
- \]
- 
- \item 
-Furthermore, since 
-$\nabla U(x)=0$ on $\Omega\backslash(\dA\cup\dB)$ and the diffusion is unchanged by a constant shift of the potential, we can assume that $U(x)=0$ on $\Omega\backslash(\dA\cup\dB)$. 
-Since $G=\dA$ and since $U$ is continuous, $U(x)=0$ for all $x\in \partial G$. Hence $\sum_{i=1}^m e^{U(y_i)}=m$.
- 
-\item 
-\label{lab:analytic}
-Since $U$ is flat on $\tilde G \backslash G$, the first-passage function $h_{G,\tilde G^c}$ is that of a standard Brownian motion between two concentric spheres. The PDE in Equation (\ref{eq:pde}) of Appendix \ref{sec:three_perspectives} reduces to an instance of Laplace's equation, with analytic solution\cite{Wendel1980-sj}
- \[ h_{G, \tilde{G}^c} (x) = \frac{1}{r_\dA^{-3} - r_{\tilde{A}}^{ -3}} \| x
-- x_A \|^{-3} - \frac{r_{\tilde{A}}^{-3}}{r_\dA^{-3} -
-r_{\tilde{A}}^{-3}} \]
-from which the gradient is found to be 
-\[
-\nabla h_{G, \tilde{G}^c} (x)  = \frac{-3}{r_\dA^{-3} - r_{\tilde{A}}^{-3}} \| x - x_A \|^{-4} \frac{x - x_A}{\| x - x_A \|} 
-= \frac{-3}{r_\dA^{-3} - r_{\tilde{A}}^{-3}} \| x - x_A \|^{-4} \frac{x - x_A}{\| x - x_A \|} 
-\]
-And since $\| x - x_A \|=r_\dA$ and  $\frac{x - x_A}{\| x - x_A \|} 
-=\normal(x)$,
-\[
-\normal(x)\cdot\nabla h_{G, \tilde{G}^c} (x)  = 
-\frac{-3}
-{r_\dA^4(r_\dA^{-3} - r_\tA^{-3})} 
-\]
+where $W_t$ is an $n$-dimensional Brownian motion and
+$U$ is a potential energy. There are only two targets,
+\begin{align*}
+A &\triangleq \bb {x_A, r_A}\\
+B &\triangleq \bb {x_B, r_B}
+\end{align*}
+Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first.  We further assume that $U$ is constant beyond the immediate neighborhoods of $A$ and $B$; letting $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $r_A<r_\dA<r_\tA$, letting $\dB=\bb{x_B,r_\dB }$ and  $\tB=\bb{x_B,r_\tB}$ such that $r_B<r_\dB<r_\tB$, we assume that $\nabla U(x)=0$ for all $x\in\Omega\backslash (\dA\cup\dB)$.  We will be particularly interested in initial conditions which are somewhat far away from $A\cup B$; we formalize this by constructing $\tA=\bb{x_\tA, r_\tA}$ and $\tB=\bb{x_\tB, r_\tB}$ and considering cases where $X_0 \nin \tA \cup \tB$.
 
-\item  It remains to choose a sample $y_1,\ldots,y_m$ from $\PMeasure$ on $G$, and estimates of the accompanying values of $h_{A,\tA^c}(y_i),\ i=1,\ldots,m$. Here, the shell method (Appendix \ref{sec:shell_method}) can be used, with $R=A$, $\tilde{R}=\tA$, and $S=G$, resulting in the desired samples $y_1,\ldots,y_m$ and estimates of $h_{A,\tA^c}(y_1),
-\ldots,h_{A,\tA^c}(y_m)$,  say $u_1,\ldots,u_m$.
-
-\end{enumerate}
-
-Putting together the pieces, the approximation in (\ref{eqn:toy_cap_approx}) becomes
-\begin{equation}
-\label{eqn:approx_capacities}
-\capac{A}{\tilde A} \approx
-\frac{6\pi^{\frac{5}{2}}}
-{\Gamma(\frac{5}{2})(r_\dA^{-3} - r_\tA^{-3})} 
-\frac{1}{m}\sum_{i=1}^m u_i
-\end{equation}
-The approximation we used for $\capac{B}{\tB}$ is the same, but with the substitutions $A\to B$ and $\tA\to\tB$.
-
+We will consider several variations on the setup described above; each variation will gives us a different perspective on the empirical questions we are seeking to answer.  
 \subsection{Brownian Diffusion}
 \label{sec:B_D}
 
-The first set of experiments test the approach in the simplest possible case: there is no gradient in $U$ anywhere outside of the targets. Even though the resulting diffusion is just a standard Brownian motion, there are few symmetries in the configuration space and hence still no closed-form solution for the first-passage probabilities. There is however a large entropic barrier and an opportunity to dissect and test separately each component of the the overall approximation. 
+\begin{figure}
+\fbox{\begin{minipage}{\textwidth}
+    \includegraphics[width=\textwidth]{results_brownian_motion.png}
+    \caption{\label{fig:results_brownian_motion}{\bf First-passage probabilities: direct simulations vs. approximation by local capacities.}  Local capacities can accurately answer the question ``where will we go next?''  We start by designating two targets, $A$ and $B$.  For any given initial condition, the task is to determine the probability that the diffusion will hit $A$ first. We first study the simplest possible case, where the diffusion is simply a Brownian motion.  We consider three different cases (small, medium and large targets), as illustrated in the left side of the figure.  We consider 100 random initial locations which are modestly far away from either target; for each initial location, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.   The hitting probability is approximately constant for initial conditions which are modestly far away from the targets.  Furthermore, the value of this constant is well-approximated by the ratio of the local capacities, as indicated by the dotted red lines.}
+\end{minipage}}
+\end{figure}
 
-\subsubsection{Are first-passage probabilities approximately constant outside of $\bm{\tA\cup\tB}$?}
+The first set of experiments tests the capacity-based approach in the simplest possible case: $U(x)=0$.  Using the simple geometry of our setup, a ``walk-on-spheres'' method (cf.\ \cite{bingham1972random}) can efficiently simulate trajectories for this kind of problem.  This allows us to compute something very close to ``ground-truth'' estimates for the hitting probabilities, even though no analytic formula is available and the problem is somewhat high-dimensional.  We can then compare the results of Theorem \ref{thm:main_thm} and \ref{thm:epsilon_flat} against this ground-truth.  
+
+In this set of experiments, we fixed the target centers $x_A=(0.5,0.6,0.0,0,0,0.0), x_B=(-0.7,0.0,0.0,0,0,0.0)$, fixed the radii $r_\tA=r_\tB=0.2$, and varied the radii $r_A,r_B$.  We looked at three different cases: small (where $r_A=0.02, r_B=0.04$), medium (where $r_A=0.05, r_B=0.075$) and large (where $r_A=r_B=0.15$). An illustration of the three different cases and the corresponding results are shown in Figure \ref{fig:results_brownian_motion}.  
+
+For each radius we will be interested in our three main questions.  Does the $\varepsilon$-flatness condition hold?  How well do the first-passage capacities estimate the hitting probabilities?  How accurate and fast is the capacity estimation algorithm?
+
+\subsubsection{Does the $\varepsilon$-flatness condition hold?}
 \label{sec:toy_constant}
-Is it true that in regions with golf-course potentials, the hitting probability is approximately constant over initial conditions that are modestly far away from the targets? In other words, is $h_{A,B}$  $\varepsilon$-flat on $\Omega\backslash(\tA\cup\tB)$?  Theorem \ref{thm:epsilon_flat} shows that this must hold in the limiting regime of small $r_A,r_B$ or large $n$, but it is not obvious whether the parameters of the current model lie in this regime.  
-
-We ran 2,000 diffusion simulations at each of 100 randomly selected initial conditions in the region $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, yielding 100 well-estimated probabilities of hitting $A$ before $B$. A histogram of these probabilities can be be found in panel (a) of Figure \ref{fig:results}. The observations fall in a fairly narrow window, $[0.0820, 0.1185]$, suggesting that $h$ is indeed $\varepsilon$-flat, with $\varepsilon \approx 0.0365$. In addition, the empirical distribution is quite peaked.
+For each case we ran 2,000 diffusion simulations at each of 100 randomly selected initial conditions in the region $\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, yielding 100 well-estimated probabilities of hitting $A$ before $B$. The histograms of these probabilities can be be found in Figure \ref{fig:results_brownian_motion}. As the targets become smaller, the observations fall in narrower windows, and the empirical distribution becomes more peaked. The flatness of the hitting probability functions are given by:
+\begin{itemize}
+    \item $\varepsilon\approx 0.0295$ when the targets are small
+    \item $\varepsilon\approx 0.0420$ when the targets are medium
+    \item $\varepsilon\approx 0.1060$ when the targets are large
+\end{itemize}
 
 \subsubsection{Are first-passage probabilities proportional to capacity?}
 \label{sec:toy_capacity}
-According to Theorem \ref{thm:main_thm},
-in light of the $\varepsilon$-flatness of 
-$h_{A,B}$  with respect to $\Omega\backslash(\tA\cup\tB)$, 
-$h_{A,B}(x)$ should be well approximated by 
+According to Theorem \ref{thm:main_thm}, first-passage capacities should be able to approximate the hitting probabilities:
 \begin{equation}
 \label{eqn:capacity_ratio}
-p_A \doteq \frac{\capac{A}{\tA}}{\capac{A}{\tA}+\capac{B}{\tB}}
+h_{A,B}(x) \approx p_A \triangleq \frac{\capac{A}{\tA}}{\capac{A}{\tA}+\capac{B}{\tB}}
 \end{equation}
-for $x\in 
-\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$. 
-In the current experiment, with $\nabla U=0$ on 
-$\tA\backslash A$ and $\tB\backslash B$, the capacities can be computed analytically, e.g. from Corollary \ref{cor:flux}, 
-with $S=A$ and $S=B$:
+for $x\in\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$.  Using this theorem and the $\varepsilon$-flatness conditions from the previous section, we obtain that the first-passage capacity estimate $p_A$ should be accurate to within 15\%, 19\%, and 34\% for small, medium, and large targets respectively.  
+
+The capacities can be computed analytically:
 \begin{equation}
 \label{eqn:analytic_capacities}
 \capac{A}{\tA}  =
@@ -477,80 +422,66 @@ with $S=A$ and $S=B$:
 \frac{6\pi^{\frac{5}{2}}}
 {\Gamma(\frac{5}{2})(r_B^{-3} - r_\tB^{-3})}
 \end{equation}
-and hence 
+and hence
 \begin{equation*}
 p_A = \frac{\frac{1}{r_A^{-3} - r_{\tilde{A}}^{-3}}}{\frac{1}{r_A^{-3} - r_{\tilde{A}}^{-3}} + \frac{1}{r_B^{-3} - r_{\tilde{B}}^{-3}}}
-\approx 0.1100
 \end{equation*}
-This probability is within $2\%$ of the average found by direct simulations, which was $0.0975$. 
+For the three different cases we used in our experiments, $p_A \approx 0.1104$ for small targets, $p_A \approx 0.2219$ for medium targets, and $p_A = 0.5$ for large targets.  Let us compare these analytical results with the hitting probabilities found by simulation from different initial locations in the three different cases.  We see that the approximations are within 2\%, 2\%, and 7\% of each hitting probability for the small, medium, and large cases respectively.  The capacity-based estimates are thus closer to the ground truth than we might expect from the bound given in Theorem \ref{thm:main_thm}.  
 
-\subsubsection{Accuracy of the shell method.}
+\subsubsection{Accuracy and speed of the shell method.}
 \label{sec:toy_shell}
-Lastly, we check the accuracy of the capacity estimation algorithm that we call the shell method. Here, the exact values are available from the formulas in (\ref{eqn:analytic_capacities}):
-$\capac{A}{\tA}=0.000637$ and $\capac{B}{\tB}=0.005151$. 
-The approximate values come from two applications of (\ref{eqn:approx_capacities}), which produced $0.000591$ and $0.004827$, respectively.\footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method:
-$m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of 
-$10^{-7}$.}
+We here check the accuracy of the capacity estimation algorithm that we call the shell method (cf. \S\ref{sec:Estimation}). For small targets, we find that $\capac{A}{\tA}=0.000632$ and $\capac{B}{\tB}=0.005094$, while shell method estimates them to be $0.000549$ and $0.004699$, respectively. For medium targets, the true capacities are $\capac{A}{\tA}=0.01002626$ and $\capac{B}{\tB}=0.03516428$, while shell method estimates them to be $0.00930769$ and $0.03362453$, respectively. For large targets, the true capacities are $\capac{A}{\tA}=\capac{B}{\tB}=0.4609372$, while shell method estimates them to be $0.45244093 $ and $0.45153703$, respectively.\footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method: $m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of $10^{-7}$.}
 
-Had we used the estimated capacities instead of the actual capacities for computing  $p_A$ from Equation
-(\ref{eqn:capacity_ratio}) the approximation of the first-passage probability, given $x\in\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$, would have been 0.1091 instead of 0.1100.
-
-In summary, all three components of the approach performed well in the Brownian motion test case.
-
+Had we used the shell-method to estimate capacities instead of the exact capacities in computing $p_A$ from Equation
+(\ref{eqn:capacity_ratio}), we would have obtained different estimates of the first-passage probability: 0.1091 instead of 0.1104 for small targets, 0.2168 instead of 0.2219 for medium targets, and 0.5005 instead of 0.5 for large targets.  These errors are all at least ten times smaller than the variability of the hitting probability across different initial conditions.
 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
-    \includegraphics[width=\textwidth]{results.png}
-    \caption{\label{fig:results} {\bf Hitting probabilities: direct simulations vs. evaluation of local capacities.}  Local capacities  can accurately answer the question ``where will we go next?''  We start by designating two targets, $A$ and $B$.  For any given initial condition, the task is to determine the probability that the diffusion will hit $A$ first. We study this question in the context of two different energy landscapes. In panel (a), we study the simplest possible case, where we have a flat energy landscape and the diffusion is simply a Brownian motion.  In panel (b), we consider the case that the energy landscape becomes complicated near the targets.  In both cases we consider 100 random initial locations which are modestly far  away from either target.  For each initial location, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.  For both energy landscapes we see that the hitting probability is approximately constant for initial conditions which are modestly far away from the targets.  Furthermore, the value of this constant is very nearly proportional to the ratio of the local capacities. In summary, in these simulations first-passage probabilities are accurately estimated using only local simulations around the targets, and do not require any computations that involve the large space around $A$ and $B$.}
+    \includegraphics[width=\textwidth]{results_nontrivial.png}
+    \caption{\label{fig:results_nontrivial} {\bf First-passage probabilities direct simulations vs. evaluation of local capacities.}  The setup is similar to Figure \ref{fig:results_brownian_motion}, but now the targets $A$ and $B$ are only partially contained in $\Omega$ and the energy landscape becomes complicated near the targets. We again consider three different cases (small, medium and large targets), as illustrated in the left side of the figure. In each case, for each of 100 initial locations at modest distance from the targets, we conduct 2000 simulations to estimate the probability of hitting target $A$ first.  The first-passage probabilities vary significantly in the case of large targets, but they are approximately constant in the case of small and medium targets.  In the latter cases the constant is well-approximated by the ratio of local capacities estimated using the shell method from Section \ref{sec:Estimation}.}
 \end{minipage}}
 \end{figure}
 
 \subsection{Nontrivial Landscape}\label{sec:nontrivial_results}
-We performed the same tests, but with a complex energy landscape in the neighborhoods of the targets, i.e. on $\dA\backslash A$ and $\dB\backslash B$. The details of the specification can be found in Appendix \ref{sec:energy_function}.
+The second set of experiments considers diffusions where the targets $A$ and $B$ are only partially contained in $\Omega$ and the energy landscape $U$ is nontrivial.  We fixed the target centers $x_A=(0.6402,0.7682,0.0,0,0,0.0), x_B=(-1.0,0.0,0.0,0,0,0.0)$ and the radiuses $r_\tA=r_\tB=0.5$, and tested the overall approximation in three different cases, with targets of three different sizes: small (where $r_A=0.02, r_\dA=0.05, r_B=0.04, r_\dB=0.075$), medium (where $r_A=0.1, r_\dA=0.15, r_B=0.2, r_\dB=0.25$) and large (where $r_A=r_B=0.45, r_\dA=r_\dB=0.475$). More details of the specification can be found in Appendix \ref{sec:energy_function}. An illustration of the three different cases and the corresponding results are shown in Figure \ref{fig:results_nontrivial}.  We look at our three main questions in the context of these kinds of diffusions.
 
-\subsubsection{Are first-passage probabilities approximately constant outside of $\bm{\tA\cup\tB}$?}
-Following the same procedure used in \S\ref{sec:toy_constant}
-we tested for the near-constancy of $h_{A,B}$ on 
-$\Omega\backslash(\tA\cup\tB)$. The results are illustrated in Figure \ref{fig:results}, panel (b).  For each of the 100 initial conditions, the probability of first-passage at $A$ fell in the interval $[0.7985, 0.8460]$, consistent with the conclusions of Theorem \ref{thm:epsilon_flat}.
+\subsubsection{Does the $\varepsilon$-flatness condition hold?}
+Following the same procedure used in \S\ref{sec:toy_constant} we tested for the near-constancy of $h_{A,B}$ on $\Omega\backslash(\tA\cup\tB)$. The histograms of the probabilities are illustrated in Figure \ref{fig:results_nontrivial}. We find that $h$ is $\varepsilon$-flat, with:
+\begin{itemize}
+    \item $\varepsilon\approx 0.0530$ when the targets are small
+    \item $\varepsilon\approx 0.0495$ when the targets are medium
+    \item $\varepsilon> 0.75$ when the targets are large
+\end{itemize}
+In the last case $h$ can hardly be called flat, varying by more than 75\% based depending upon the initial condition.  However, in the first two cases the constant $\varepsilon$ is sufficiently small that Theorem \ref{thm:main_thm} has relevant consequences.
 
+\subsubsection{Are first-passage probabilities proportional to estimated capacities?}
+Applying Theorem \ref{thm:main_thm} and using the shell method to estimate capacities, we can estimate hitting probabilities.  If shell-method performed perfectly, the $\varepsilon$-flatness values from the previous section together with Theorem \ref{thm:main_thm} suggest these estimates should be within 20\% of the truth.  For small targets we obtain an estimate of $0.8216$ for small targets, which is within 3\% of all the hitting probabilities among all initial conditions.  For medium targets we obtain $.3815$, which is again within 3\%.  This again suggests that the bound of \ref{thm:main_thm} may be somewhat loose.
 
-\subsubsection{Are first-passage probabilities proportional to capacity?}
-In the previous experiments we were able to compute the capacities in closed form, and use $p_A$, from Equation (\ref{eqn:capacity_ratio}), to directly verify the conclusion of Theorem \ref{thm:main_thm}. This is not possible in the current experiments. We are forced instead to use the estimated capacities, from which we obtained the estimate 
-$p_A\approx 0.8360$, which is within 2\% of $0.8175$,\footnote{Using the following parameters (Appendix \ref{sec:shell_method}): $m = 2$, $N_p = 3000$, $N_b = 5$, $N_s = 1000$, with time-step $10^{-6}$.  For target $A$ we used $n = 4$ and for the larger target $B$ we used $n = 5$.} the average found by direct simulations.
+\subsubsection{Accuracy and speed of the shell method.}
 
-Notable in these results is the fact that the larger target, $B$, is substantially less likely than $A$ to be visited first. Evidently, the energy in $\dB\backslash B$, the region surrounding $B$, introduces a significant barrier to the diffusion process, at least in comparison to the energy surrounding $A$. Keep in mind that the process here is identical to the one in the previous experiments, i.e. Brownian motion, for so long as the process remains outside of 
-$\dA\cup\dB$, and that in those experiments the first-passage occurred at $B$ approximately ten times more often than at $A$.
-Evidently, the process is much more likely to exit $\dB\backslash B$ at $\partial\dB$ than at $\partial B$, at least in comparison to the dynamics in $\dA\backslash A$. These observations serve to further illustrate the role of local capacities and the importance of  their accurate approximation.
+It is not possible to obtain exact values for the capacity for this case; this makes it difficult to determine whether the shell algorithm is accurately estimating the capacity.  However, we can compare the true hitting probabilities with the estimates based on Theorem \ref{thm:main_thm} and the the capacities estimated from the shell method.  As discussed above, the hitting probabilities agreed with the estimates to within 3\% for small and medium targets.  This constitutes indirect evidence for the accuracy of the shell method.  For large targets the $\varepsilon$-flatness condition only held with $\varepsilon>0.75$, so we cannot use the same idea to assess the accuracy of the shell method for large targets. 
 
-\subsubsection{Accuracy of the shell method.}
-
-As already remarked, the nontrivial energy landscape precludes a direct assessment of the accuracy of the capacity estimation algorithm.  It is not possible to obtain exact values for the capacity.  Therefore, we cannot directly test whether our algorithm is accurately estimating the capacities.  However, the good agreement between the estimated value of $p_A$ and the results of straightforward simulation constitute indirect evidence supporting the approximations, and the accuracy of the shell method in particular.
-
-Concerning computational efficiency, it is difficult to make a direct comparison between the capacity-estimation approach and straightforward simulation. There are many parameters and, besides, run times will depend on the dimension and details of the energies, possibly affecting the two approaches differently. In our experiments, for direct simulations we used the ``walk-on-spheres'' method to simulate trajectories in the flat region,\cite{bingham1972random} JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust the number of samples or the discretization parameters. Under these conditions, a single run of the direct simulation took about as long as estimating the two capacities.
-
-Assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to $\Omega \backslash (\tilde A \cup \tilde B)$. Both methods suffer if $\varepsilon$ is large: direct simulation because it will depend on the initial condition, which is unknowable in any realistic experiment, and capacity estimation because the capacity ratio has a built-in error (Theorem \ref{thm:main_thm}) that depends on $\varepsilon$. If we assume that $\varepsilon$ is negligible, then for a fixed $x\in\Omega \backslash (\tilde A \cup \tilde B)$ we can more-or-less directly compare the standard deviations of the capacity-based estimation of $p\doteq h_{A,B}(x)$ via the shell method to direct simulation via repeated-samples. For example, under the specific (albeit idealized) circumstances of the experiments in \S\ref{sec:B_D}, about how many direct-simulation samples would be needed to attain a confidence interval for $p$ of comparable width as from a single sample using capacity estimation by the shell method? The binomial estimator from $n$ direct samples has standard deviation $\sqrt\frac{p(1-p)}{n}$, which we can compare to the empirical standard deviation, $\hat{\sigma}\approx 0.006$, from 100 runs of the shell method estimating $p$. Recall from \S\ref{sec:B_D} that $p\approx 0.1100$, in which case approximately $n=2,700$ runs of direct simulation would be needed to get a comparable confidence interval. Bear in mind that a single run of the shell method requires about as much time as  a single run of direct diffusion. It would appear, then, that capacity-based estimation of first-passage probabilities can be several orders-of-magnitude faster than direct simulation.
+Concerning computational efficiency: how fast is a capacity-estimation approach when compared against a simulation-based approach?  It is somewhat difficult to assess; there are many parameters and run times will depend on the dimension and details of the energies, possibly affecting the two approaches differently. In our experiments, for direct simulations we used the ``walk-on-spheres'' method to simulate trajectories in the flat region \cite{bingham1972random}, JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust the number of samples or the discretization parameters. Under these conditions, a single run of the direct simulation took about as long as estimating both capacities.  To achieve the 3\% accuracy given by the capacity-based method, one would need about 100 such simulations (this follows from standard deviation of the binomial estimator for the hitting probability, together with the assumption that each individual simulation is exactly perfect). This suggests that capacity-based estimation of first-passage probabilities can be orders of magnitude faster than direct simulation at the same level of accuracy.
 
 
-%  ____ ___ ____   ____ _   _ ____ ____ ___ ___  _   _ 
+%  ____ ___ ____   ____ _   _ ____ ____ ___ ___  _   _
 % |  _ \_ _/ ___| / ___| | | / ___/ ___|_ _/ _ \| \ | |
 % | | | | |\___ \| |   | | | \___ \___ \| | | | |  \| |
 % | |_| | | ___) | |___| |_| |___) |__) | | |_| | |\  |
 % |____/___|____/ \____|\___/|____/____/___\___/|_| \_|
-                                                     
 
 
-\section{Discussion} 
+
+\section{Discussion}
 \label{sec:Discussion}
 
-This paper arises from an elementary observation: if the hitting probability is nearly the same for every initial condition in a region $M$, then it is reasonable to approximate that the hitting probability is \emph{exactly} the same for every initial condition in $M$.  Applying this approximation to the appropriate variational problem, we find that the hitting probability is well-approximated in terms of integrals computed away from $M$; we dub these integrals the ``first-passage capacities.''  These capacities can be approximately computed using a milestoning-like technique, as described in \S\ref{sec:Estimation}.  In Theorem \ref{thm:main_thm} we show that the error introduced by this approximation is small -- assuming it is really true that the hitting probability is nearly invariant to the initial condition inside a region $M$.
+If the hitting probability is nearly the same for every initial condition in a region $M$, then it can be well-approximated in terms of integrals computed away from $M$; we dub these integrals the ``first-passage capacities.''  These capacities can be approximately computed using a milestoning-like technique, as described in \S\ref{sec:Estimation}.  In Theorem \ref{thm:main_thm} we show that the error introduced by this approximation is small -- assuming it is really true that the hitting probability is nearly invariant to the initial condition inside a region $M$.  Is it ever true that hitting probabilities are nearly the same for every initial condition in large region, $M$?  Theorem \ref{thm:epsilon_flat} shows that the answer is yes.  Indeed, the answer is yes whenever the mixing rate of the diffusion is fast relative to the typical escape time from $M$.  In practice, this condition may not always be easy to check.
 
-This begs the question: is it ever true that hitting probabilities are nearly the same for every initial condition in large region, $M$?  Theorem \ref{thm:epsilon_flat} shows that the answer is yes.  Indeed, the answer is yes whenever the mixing rate of the diffusion is fast relative to the typical escape time from $M$.  In practice, this condition may not always be easy to check.  
-
-A major outstanding limitation of this work is that we provide no strategy for checking the $\varepsilon$-flatness condition.  In theory, bounds on the Lipschitz constant of the energy function and the Poincare constant for $M$ should be sufficient to ensure this condition, but we leave this for future work.  For now, we content ourselves that the condition certainly holds when the ambient dimension is at least three and the targets become small.  Moreover, when the dimension is very large then even targets with modestly large diameter can have very small overall volume, yielding a similar result.  
+A major outstanding limitation of this work is that we provide no strategy for checking the $\varepsilon$-flatness condition.  In theory, bounds on the Lipschitz constant of the energy function and the Poincare constant for $M$ should be sufficient to ensure this condition, but we leave this for future work.  For now, we content ourselves that the condition certainly holds when the ambient dimension is at least three and the targets become small.  Moreover, when the dimension is very large then even targets with modestly large diameter can have very small overall volume, yielding a similar result.
 
 The second major limitation of this work is that first-passage capacities do not directly inform us about the overall timescale on which the diffusion is operating.  The mean first-passage capacities are often inversely proportional to the first-passage times, but the overall proportionality constant is lost in this analysis.  In some limited cases, methods from the narrow escape literature may enable us to determine this overall constant.
 
-In general, it may turn out that estimating first-passage times is profoundly more difficult than estimating first-passage hitting probabilities.  In this work we showed that the first-passage probabilities are sometimes invariant to the diffusion dynamics on the interior of a large set $M$, but the first-passing timing admit no such invariance.   If the dynamics inside of $M$ are genuinely intricate, it appears that estimating hitting times will always require a correspondingly intricate analysis.  
+In general, it may turn out that estimating first-passage times is profoundly more difficult than estimating first-passage hitting probabilities.  In this work we showed that the first-passage probabilities are sometimes invariant to the diffusion dynamics on the interior of a large set $M$, but the first-passing timing admit no such invariance.   If the dynamics inside of $M$ are genuinely intricate, it appears that estimating hitting times will always require a correspondingly intricate analysis.
 
 We conclude by considering a possible future direction for this work.  Let us consider the case where we have many targets, $A_1,A_2\cdots A_n$, and the path between any two of the targets must pass through a set $M$.  In this case, assuming the $\varepsilon$-flatness condition holds on $M$, the order in which the process explores the targets could be accurately modeled using first-passage capacities alone.  In future we hope to explore this possibility.
 
@@ -559,47 +490,47 @@ We conclude by considering a possible future direction for this work.  Let us co
 \noindent {\bf APPENDIX}
 
 
-%     _    ____  ____  _____ _   _ ____ _____  __     _    
-%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ /    / \   
-%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /    / _ \  
-%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \   / ___ \ 
+%     _    ____  ____  _____ _   _ ____ _____  __     _
+%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ /    / \
+%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /    / _ \
+%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \   / ___ \
 % /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\ /_/   \_\
-                                                         
+
 \section{Three Perspectives on Hitting Probabilities}
 \label{sec:three_perspectives}
 
-Many of our results are based on the fact that hitting probabilities can actually be seen from three distinct perspectives.  To prepare for these results, we take a moment to review these three perspectives here.  Let $A,B\subset \Omega$, disjoint, open with smooth boundary.  
+Many of our results are based on the fact that hitting probabilities can actually be seen from three distinct perspectives.  To prepare for these results, we take a moment to review these three perspectives here.  Let $A,B\subset \Omega$, disjoint, open with smooth boundary.
 
 \begin{enumerate}
 \item Hitting probabilities.  Let $\tau_S \triangleq \inf\{t:\ X_t \in S\}$ for any set $S$ and $h_{A,B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in \partial A|X_0=x)$.
-    
+
 \item Elliptic equation.  Let $h^\mathrm{dir}_{A,B}(x)$ denote the solution to the partial differential equation:
 	    \begin{align}\label{eq:pde}
     0 &= \sum_{i = 1}^n b_i (x) \frac{\partial u
         (x)}{\partial x_i} + \frac{1}{2} \sum_{i = 1}^n \sum_{j = 1}^n a_{ij} (x)
         \frac{\partial^2 u (x)}{\partial x_i \partial x_j}\quad x\notin \bar A,\bar B\\
-    1 &= u(x),x\in  A \nonumber \\ 
+    1 &= u(x),x\in  A \nonumber \\
     0 &= u(x),x\in  B \nonumber \\
-    0 &= \normal(x)^Ta(x)\nabla u(x), x \in \partial{\Omega} 
+    0 &= \normal(x)^Ta(x)\nabla u(x), x \in \partial{\Omega}
     \nonumber
     \end{align}
 This solution is unique and smooth.\cite{lieberman1986mixed}  What's more, it is equal to the hitting probability function: $h^\mathrm{dir}_{A,B}(x)=h_{A,B}(x)$ (cf.\ Section 6.7 of Chen\cite{chen2012symmetric}).
-\item Variational form.  For any open set $S\subset \Omega$ let $\mathscr{E}_{S}(f,g)\triangleq \int_S \nabla f(x)^T a(x) \nabla g(x) \rho(dx)$ denote the ``Dirichlet Form'' of $f,g$ on the domain $S$.  Let $\mathscr L^2(S,\rho)$ denote the Hilbert space of functions on $S$ which are square-integrable with respect to $\rho$.  Let $\mathcal{H}^1(S,\rho)=W^{1,2}(S) \subset \mathscr{L}^2(S)$ denote the corresponding once-weakly-differentiable Hilbert Sobolev space.  We define $h^\mathrm{var}_{A,B}(x)$ as the solution to 
+\item Variational form.  For any open set $S\subset \Omega$ let $\mathscr{E}_{S}(f,g)\triangleq \int_S \nabla f(x)^T a(x) \nabla g(x) \rho(dx)$ denote the ``Dirichlet Form'' of $f,g$ on the domain $S$.  Let $\mathscr L^2(S,\rho)$ denote the Hilbert space of functions on $S$ which are square-integrable with respect to $\rho$.  Let $\mathcal{H}^1(S,\rho)=W^{1,2}(S) \subset \mathscr{L}^2(S)$ denote the corresponding once-weakly-differentiable Hilbert Sobolev space.  We define $h^\mathrm{var}_{A,B}(x)$ as the solution to
     \begin{align*}
     \min_{u \in \mathcal H^1(S)} \quad & \mathscr{E}_S(u,u) \\
     \mbox{subject to} \quad & u(x)=1,x\in \partial A \\
      & u(x)=0,x\in \partial B
     \end{align*}
-    where $S=\Omega \backslash (A\cup B)$.  This solution is unique and equal to $h^\mathrm{dir}_{A,B}$ on $S$ (cf.\ Section 4 of Dret\cite{dret2016partial}).  
-This variational perspective leads us to the notion of the ``condenser capacity'' associated with $h_{A,B}$.  It is defined as 
+    where $S=\Omega \backslash (A\cup B)$.  This solution is unique and equal to $h^\mathrm{dir}_{A,B}$ on $S$ (cf.\ Section 4 of Dret\cite{dret2016partial}).
+This variational perspective leads us to the notion of the ``condenser capacity'' associated with $h_{A,B}$.  It is defined as
     \[
     \capac{A}{\Omega \backslash B} \triangleq \mathscr{E}_S(h_{A,B},h_{A,B})
     \]
-    where again $S=\Omega \backslash (A\cup B)=(\Omega \backslash B) \backslash A$.  
+    where again $S=\Omega \backslash (A\cup B)=(\Omega \backslash B) \backslash A$.
 \end{enumerate}
 We will use all three of these perspectives to show our results.  For example, consider how the hitting probability perspective helps us show a result about capacities:
 \begin{proposition}\label{prop:capacity}
-Let $A\subset \tilde A,B\subset \tilde B$ with $\tilde A,\tilde B$ disjoint.  Then 
+Let $A\subset \tilde A,B\subset \tilde B$ with $\tilde A,\tilde B$ disjoint.  Then
 \[
 \capac{A\cup B}{\tilde A \cup \tilde B}=\capac{A}{\tilde A}+\capac{B}{\tilde B}
 \]
@@ -607,7 +538,7 @@ Let $A\subset \tilde A,B\subset \tilde B$ with $\tilde A,\tilde B$ disjoint.  Th
 \begin{proof}
 This result is certainly known, but we include a proof here because we were unable to find a proof in the literature.  Since $\tilde A,\tilde B$ are disjoint and $X$ is continuous, the process cannot cross from one to the other without hitting the boundary.  Thus we have $\tau_{\partial \tilde A\cup \partial \tilde B \cup \partial A \cup \partial B}=\tau_{\partial \tilde A \cup \partial A}$ as long as $X_0\in\tilde A$.  We get a symmetric result if $X_0\in \tilde B$.  It follows that
 \[
-h_{A\cup B,(\tilde A\cup\tilde B)^c}(x) = 
+h_{A\cup B,(\tilde A\cup\tilde B)^c}(x) =
     \begin{cases}
     h_{A,\tilde A^c}(x) & \mbox{if }x\in \tilde A\\
     h_{B,\tilde B^c}(x) & \mbox{if }x\in \tilde B\\
@@ -615,7 +546,7 @@ h_{A\cup B,(\tilde A\cup\tilde B)^c}(x) =
 \]
 We can now use this probabilistic perspective to help us understand the capacity by articulating it as the Dirichlet form on the relevant hitting probability functions
 \begin{align*}
-\capac{A\cup B}{\tilde A \cup \tilde B} 
+\capac{A\cup B}{\tilde A \cup \tilde B}
         &= \int_{\tilde A\cup \tilde B \backslash (A\cup B)} \Vert \sigma \nabla h_{A\cup B,(\tilde A \cup \tilde B)^c}\Vert^2\rho(dx) \\
         &= \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,\tilde A^c}\Vert^2\rho(dx)
             +\int_{\tilde B \backslash B} \Vert \sigma \nabla h_{B,\tilde B^c}\Vert^2 \rho(dx) \\
@@ -624,12 +555,12 @@ We can now use this probabilistic perspective to help us understand the capacity
 as desired.
 \end{proof}
 
-%     _    ____  ____  _____ _   _ ____ _____  __  ____  
-%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ / | __ ) 
-%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  |  _ \ 
+%     _    ____  ____  _____ _   _ ____ _____  __  ____
+%    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ / | __ )
+%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  |  _ \
 %  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \  | |_) |
-% /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\ |____/ 
-                                                       
+% /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\ |____/
+
 
 
 
@@ -638,7 +569,7 @@ as desired.
 
 \begingroup
 \def\thetheorem{\ref{thm:epsilon_flat}}
-\begin{theorem}  
+\begin{theorem}
 (Examples of $\varepsilon$-flatness).   Let $\bb{x,r} = \{y:\ \Vert x-y \Vert < r\}$ denote the ball of radius $r$ centered at $x$.  Recall that the process $X$ behaves according to the stochastic differential equation $dX_t = b(X_t)dt + \omega(X_t)dW_t$ contrained to lie inside a set $\Omega$ by normally reflecting boundaries.
 \begin{enumerate}
     \item Let $\Omega \in \mathbb{R}^n, n\geq 3$ be convex and open with diameter less than or equal to 1.  Fix any points $x_A,x_B \in \mathbb{R}^n$.  For any $r,\varepsilon>0$ we can find $r'>0$ such that $h_{A,B}$ is $\varepsilon$-flat on $\Omega \backslash \bb{x_A,r}\cup \bb{x_B,r}$ for any $A\subset \bb{x_A,r'},B\subset \bb{x_A,r'}$ as long as $b(x)=0,\Omega(x)=I$ for $x \in \Omega \backslash \bb{x_A,r'}\cup\bb{x_B,r'}$.
@@ -651,7 +582,7 @@ as desired.
 
 \begin{proof}
 Let $\dot A=\bb{x_A,r'},\dot B=\bb{x_B,r'}$.  Let $\{Z_t\}_t$ denote a Brownian motion trapped inside $\Omega$ and coupled to $X$ such that $X_{t}=Z_{t}$ for all $t\leq\tau=\left\{ \inf t:\ X_{t}\in\dot{A}\cup\dot{B}\right\} $ (we can do this because we assumed that $X$ behaves like Brownian motion outside of $\dot{A},\dot{B}$).  Let $Z_\infty$ denote the stationary distribution of $Z$, i.e. the uniform distribution on $\Omega$.
-Using Lemma \ref{lem:uniform_ergodicity}, we have that 
+Using Lemma \ref{lem:uniform_ergodicity}, we have that
 \[
 \left|\mathbb{E}\left[h_{A,B}(Z_{t})-h_{A,B}(Z_{\infty}) | Z_0 =x \right]\right|\leq\frac{1}{t} \qquad \forall x
 \]
@@ -682,7 +613,7 @@ To make this small, it thus suffices to get $t$ large but keep $\mathbb{P}\left(
 \begin{lemma}
 \label{lem:uniform_ergodicity}(Uniform ergodicity) Let $\Omega\subset\mathbbm{R}^d$ be a convex set with diameter $\xi$ and let $M$ denote a Brownian motion trapped by reflecting boundaries inside $\Omega$.  The distribution of $M_t$ converges uniformly to the uniform distribution, in the sense that:
 %
-\[ 
+\[
 \sup_{f:\ \Omega\rightarrow [0,1]} | \mathbb{E}[f(M_t) - f(Z)|M_0=x]| \leq \xi^2/4t \qquad \forall x\in \Omega, t>0
 \]
 %
@@ -736,17 +667,17 @@ g_{2} & =\sup_{z:\ \left\Vert z-x\right\Vert =r_2}\mathbb{E}\left[\mathbb{E}\lef
  & \leq\sup_{z:\ \left\Vert z-x\right\Vert =r_2}\mathbb{E}\left[e^{-\frac{1}{2}T_{3}}g_{3}\mathbb{I}_{T_{3}<\tau}+e^{-\frac{1}{2}\tau}\mathbb{I}_{T_{3}>\tau}|Z_{0}=z\right]
 \end{align*}
 On the other hand, applying the continuity of Brownian motion we have
-that $T_{2}<\tau$ whenever $Z_0$ lies outside the ball of radius $r_2$, so 
+that $T_{2}<\tau$ whenever $Z_0$ lies outside the ball of radius $r_2$, so
 \[
 g_3=\sup_{z:\ \left\Vert z-x\right\Vert =r_3}\mathbb{E}\left[e^{-\frac{1}{2}T_{2}}g(T_{2})|Z_{0}=z\right]\leq g_2
 \]
-So in fact 
+So in fact
 \begin{align*}
 g_3 & \leq\sup_{z:\ \left\Vert z-x\right\Vert =r_2}\mathbb{E}\left[e^{-\frac{1}{2}T_{3}}\mathbb{I}_{T_{3}<\tau}g_3+e^{-\frac{1}{2}\tau}\mathbb{I}_{T_{3}>\tau}|Z_{0}=z\right]\\
 g_3 & \leq\frac{\sup_{z:\ \left\Vert z-x\right\Vert =r_2}\mathbb{E}\left[e^{-\frac{1}{2}\tau}\mathbb{I}_{T_{3}>\tau}|Z_{0}=z\right]}{1-\sup_{z:\ \left\Vert z-x\right\Vert =r_2}\mathbb{E}\left[e^{-\frac{1}{2}T_{3}}\mathbb{I}_{T_{3}<\tau}|Z_{0}=z\right]} = L
 \end{align*}
 
-To calculate this upper-bound $L$, defined above, Wendel gives explicit formulas (cf.\ \cite{Wendel1980-sj}).  We caution that in this document a somewhat nonstandard notation is used, namely Wendel uses $\mathbb{E}[A;B]$ to indicate $\mathbb{E}[A\times\mathbb{I}_B]$.  For any $z$ with $\Vert z-x\Vert=r_2$, Wendel uses the symmetry of the problem to show that 
+To calculate this upper-bound $L$, defined above, Wendel gives explicit formulas (cf.\ \cite{Wendel1980-sj}).  We caution that in this document a somewhat nonstandard notation is used, namely Wendel uses $\mathbb{E}[A;B]$ to indicate $\mathbb{E}[A\times\mathbb{I}_B]$.  For any $z$ with $\Vert z-x\Vert=r_2$, Wendel uses the symmetry of the problem to show that
 %
 \begin{align*}
 \mathbb{E}\left[e^{-\frac{1}{2}\tau}\mathbb{I}_{T_{3}>\tau}|Z_{0}=z\right]&=\left(\frac{r_{1}}{r_{2}}\right)^{h}\frac{I(r_{3})K(r_{2})-I(r_{2})K(r_{3})}{I(r_{3})K(r_{1})-I(r_{1})K(r_{3})}\\
@@ -754,11 +685,11 @@ To calculate this upper-bound $L$, defined above, Wendel gives explicit formulas
 \end{align*}
 %
 where $h=(n-2)/2$ and $I,K$ denote the modified Bessel functions of order $h$.  This leads to the following explicit formula for $L$.
-\begin{gather} 
+\begin{gather}
 L=\frac{\left(\frac{r_{1}}{r_{2}}\right)^{h}\left(I_{3}K_{2}-I_{2}K_{3}\right)}{I_{2}K_{1}\left(\frac{I_{3}}{I_{2}}-\left(\frac{r_{3}}{r_{2}}\right)^{h}\right)+I_{1}K_{2}\left(\left(\frac{r_{3}}{r_{2}}\right)^{h}-\frac{K_{3}}{K_{2}}\right)}
 \label{eq:Lforlongtime}
 \end{gather}
-where we denote $I_1=I(r_1),K_1=K(r_1),I_2=I(r_2)$, and so-on.  To prove our result, it thus suffices to show we can drive $L$ to zero by taking $n$ sufficiently large.  
+where we denote $I_1=I(r_1),K_1=K(r_1),I_2=I(r_2)$, and so-on.  To prove our result, it thus suffices to show we can drive $L$ to zero by taking $n$ sufficiently large.
 
 The numerator of $L$ in Equation (\ref{eq:Lforlongtime}) converges to zero as $r_1\rightarrow 0$, because $\frac{r_1}{r_2}\rightarrow 0,h>0$ and the other terms are constant.  On the other hand, the denominator explodes, because as $r_1\rightarrow0$ we have
 \begin{align*}
@@ -770,37 +701,37 @@ These limits follow immediately from three properties of Bessel functions:
     \item $K(x)\rightarrow \infty,I(x)\rightarrow 0$ as $x\rightarrow 0$ for $h>0$
     \item $K(x),I(x)>0$ for $x>0,h>0$
     \item $\frac{I(y)}{I(x)} > \left(\frac{y}{x}\right)^{h}$ for $y>x$ and $h>0$
-\end{itemize} 
+\end{itemize}
 The first two properties are well-known and can be found in DLMF (cf. \cite{noauthor_undated-ti}); the second can be found in Baricz (cf. \cite{noauthor_undated-ti,baricz2010bounds}). In conclusion, since the numerator vanishes and the denominator explodes, we have that overall $L$ vanishes.  Applying a Chernoff bound, we have our result for the case that $x \in \Omega$.
 
 What happens if $x$ is not in the closure of $\Omega$?  Then by taking $r_1$ sufficiently small we can ensure that $A \cap \Omega = \emptyset$, so $\tau = \infty$.  Thus the result is proved automatically.
 
-What if $x$ is precisely on the boundary of $\Omega$?  Here we must use the smoothness of the boundary of $\Omega$.  By picking $r_3$ sufficiently small, the smoothness guarantees that $\Omega$ is arbitrarily well-approximated by a half-plane when restricted to a ball $\bb{x,r_3}$.  In this half-plane case, identical arguments to the ones above can be used to argue that we can always take a $r_1$ that is yet smaller than $r_3$ and ensure that the hitting time is arbitrarily long.  Finally, to account for the slight discrepancy between the half-plane case and the actual case for some finite $r_3$, we appeal to the continuity of the Poisson equation which governs $g$ with respect to boundary condition (cf. \cite{strang1972approximation}).  
+What if $x$ is precisely on the boundary of $\Omega$?  Here we must use the smoothness of the boundary of $\Omega$.  By picking $r_3$ sufficiently small, the smoothness guarantees that $\Omega$ is arbitrarily well-approximated by a half-plane when restricted to a ball $\bb{x,r_3}$.  In this half-plane case, identical arguments to the ones above can be used to argue that we can always take a $r_1$ that is yet smaller than $r_3$ and ensure that the hitting time is arbitrarily long.  Finally, to account for the slight discrepancy between the half-plane case and the actual case for some finite $r_3$, we appeal to the continuity of the Poisson equation which governs $g$ with respect to boundary condition (cf. \cite{strang1972approximation}).
 \end{proof}
 
 
 %%%%%%%%%%%%%%
 
 \begin{lemma}
-\label{lem:longtime} Fix $0<\epsilon$ and $0<r_1<r_3$.  Then we can always find an $n$ with the following property.  Pick any open set $\Omega \in \mathbb{R}^n$, any $x$ satisfying $\bb{x,r_3}\subset \Omega$, and any $x_0 \notin \bb{x,r_3}$.  Consider a Brownian motion $Z$ trapped inside $\Omega$ by reflecting boundaries and let $\tau$ denote the first hitting time of the process to $\bb{x,r_1}$.  Our choice of $n$ guarantees that 
+\label{lem:longtime} Fix $0<\epsilon$ and $0<r_1<r_3$.  Then we can always find an $n$ with the following property.  Pick any open set $\Omega \in \mathbb{R}^n$, any $x$ satisfying $\bb{x,r_3}\subset \Omega$, and any $x_0 \notin \bb{x,r_3}$.  Consider a Brownian motion $Z$ trapped inside $\Omega$ by reflecting boundaries and let $\tau$ denote the first hitting time of the process to $\bb{x,r_1}$.  Our choice of $n$ guarantees that
 \[
 \mathbb{P}(\tau < 1/\epsilon|Z_t=x_0) \leq \epsilon
 \]
 \end{lemma}
 \begin{proof}
 Following the same arguments found in Lemma \ref{lem:longtime_diamater}, we again obtain that $\mathbb{E}[e^{-\tau/2}|Z_0=x_0]$ is bounded by
-\begin{gather} 
+\begin{gather}
 L=\frac{\left(\frac{r_{1}}{r_{2}}\right)^{h}\left(I_{3}K_{2}-I_{2}K_{3}\right)}{I_{2}K_{1}\left(\frac{I_{3}}{I_{2}}-\left(\frac{r_{3}}{r_{2}}\right)^{h}\right)+I_{1}K_{2}\left(\left(\frac{r_{3}}{r_{2}}\right)^{h}-\frac{K_{3}}{K_{2}}\right)}
 \end{gather}
 To show our proof, it thus suffices to show we can drive this quantity to zero and then apply a Chernoff bound.
 
 Let us first look at the numerator of $L$ in Equation \ref{eq:Lforlongtime}.  Asymptotics from the DLMF give that as $h \rightarrow \infty$ we have
 \begin{align*}
-I(x) \sim \frac{x^h}{2^h\Gamma(h+1)} & & K(x) \sim \frac{2^h\Gamma(h+1)}{(2h)x^h}  
+I(x) \sim \frac{x^h}{2^h\Gamma(h+1)} & & K(x) \sim \frac{2^h\Gamma(h+1)}{(2h)x^h}
 \end{align*}
 Here by $f_1(h)\sim f_2(h)$ we mean ``asymptotic equivalence,'' i.e.\ $\lim_{h\rightarrow\infty}f_1(h)/f_2(h)=1$.  Plugging these in, we see that both terms in the numerator are asymptotically vanishing.
 
-Now let us turn to the denominator.  Using the asymptotic formula above, we first note that 
+Now let us turn to the denominator.  Using the asymptotic formula above, we first note that
 \begin{align*}
 \left(\frac{r_{3}}{r_{2}}\right)^{h}I_{1}K_{2}&\sim\frac{1}{2h}\left(\frac{r_{3}r_{1}}{r_{2}^{2}}\right)^{h}=\frac{1}{2h}\rightarrow0\\
 -\frac{K_3}{K_{2}}I_{1}K_{2}&\sim-\frac{1}{2h}\left(\frac{r_{1}}{r_{3}}\right)^{h}\rightarrow0
@@ -809,46 +740,46 @@ So those terms are negligible.  However, the other two terms of the denominator 
 \begin{align*}\left(\frac{I_{3}}{I_{2}}-\left(\frac{r_{3}}{r_{2}}\right)^{h}\right)K_{1}I_{2}&\geq\frac{r_{3}^{h}}{\cancel{I_{2}}}\times\frac{r_{3}^{2}-r_{2}^{2}}{2^{h+2}\Gamma(h+2)}K_{1}\cancel{I_{2}}\\
 &\sim r_{3}^{h}\times\frac{r_{3}^{2}-r_{2}^{2}}{2^{h+2}\Gamma(h+2)}\frac{2^{h}\Gamma(h+1)}{2hr_{1}^{h}}\\&=\left(\frac{r_{3}}{r_{1}}\right)^{h}\left(\frac{r_{3}^{2}-r_{2}^{2}}{8h(h+1)}\right)
 \end{align*}
-which is indeed exploding to positive infinity as $h=(n-2)/2 \rightarrow \infty$.  
+which is indeed exploding to positive infinity as $h=(n-2)/2 \rightarrow \infty$.
 
-Thus, since the numerator vanishes and the denominator explodes to positive infinity, we have that $L$ vanishes as $n\rightarrow \infty$.  
+Thus, since the numerator vanishes and the denominator explodes to positive infinity, we have that $L$ vanishes as $n\rightarrow \infty$.
 \end{proof}
 
 \begin{lemma}\label{lem:bessel}
 Let $I$ denote the modified bessel function of the first kind of order $h$.  If $a>b$ then
     \[
-    \frac{I ( a)}{I (b)} - \left(\frac{a}{b} \right)^h 
+    \frac{I ( a)}{I (b)} - \left(\frac{a}{b} \right)^h
     \geq
     \frac{a^h}{I(b)}\times\frac{a^{2} -b^{2}}{2^{h+2}\Gamma(h+2)}
     \]
 \end{lemma}
 \begin{proof}
-Recall that $I$ may be defined as 
+Recall that $I$ may be defined as
 \[
 I(x) = \sum_{m=0}^\infty \frac{x^{h+2m}}{2^{h+2m}\Gamma(m+h+1)\Gamma(m+1)}
 \]
 Thus
 \begin{align*}
-\frac{I ( a)}{I (b)} - \left(\frac{a}{b} \right)^h 
+\frac{I ( a)}{I (b)} - \left(\frac{a}{b} \right)^h
     &= \frac{I(a)b^h-a^hI(b)}{b^hI(b)}  \\
     &= \frac{a^hb^h\sum_{m=0}^\infty \frac{a^{2m} -b^{2m}}{2^{h+2m}\Gamma(m+h+1)\Gamma(m+1)}}{b^{h}I(b)}
 \end{align*}
 Since $a>b$, we have that $a^{2m} -b^{2m}$ is always positive.  Thus we can get a lower bound by simply taking one of the terms.  Choosing $m=1$, we get our final result.
 \end{proof}
 
-%  ____ _____     _______ ____   ____ _____ _   _  ____ _____ 
+%  ____ _____     _______ ____   ____ _____ _   _  ____ _____
 % |  _ \_ _\ \   / / ____|  _ \ / ___| ____| \ | |/ ___| ____|
-% | | | | | \ \ / /|  _| | |_) | |  _|  _| |  \| | |   |  _|  
-% | |_| | |  \ V / | |___|  _ <| |_| | |___| |\  | |___| |___ 
+% | | | | | \ \ / /|  _| | |_) | |  _|  _| |  \| | |   |  _|
+% | |_| | |  \ V / | |___|  _ <| |_| | |___| |\  | |___| |___
 % |____/___|  \_/  |_____|_| \_\\____|_____|_| \_|\____|_____|
-                                                            
+
 
 
 \section{Proof of Theorem \ref{thm:main_thm}}
 \label{sec:proof_thm}
 
 Let $A\subset\tilde A\subset\Omega,B\subset\tilde B\subset\Omega$.  Let $\tilde A,\tilde B$ be disjoint and
-$h_{A,B}(x)$  $\varepsilon$-flat with respect to $\Omega \backslash (\tilde A \cup \tilde B)$. We assume the set boundaries are all smooth.  
+$h_{A,B}(x)$  $\varepsilon$-flat with respect to $\Omega \backslash (\tilde A \cup \tilde B)$. We assume the set boundaries are all smooth.
 
 Under these conditions, we will show we can use local capacities to get good approximations for $h_{A,B}(x)$ when $x\notin \tilde A,\tilde B$.  To do so, our key idea is to uncover upper and lower bounds on the value of the Dirichlet form applied to this function, $\mathscr{E}(h_{A,B},h_{A,B})$.  We will see that these bounds can be understood in terms of local capacities, and the resulting inequalities will then yield our main result in the form of Theorem \ref{thm:main_thm}.
 
@@ -870,19 +801,19 @@ u_c (x) \triangleq \left\{ \begin{array}{ll}
 (1 - c) h_{A, \widetilde{A}^c} (x) + c & \tmop{if} x \in \tilde{A} \\
 c (1 - h_{B, \widetilde{B}^c} (x)) & \tmop{if} x \in \tilde{B} \\
 c & \mbox{otherwise}
-\end{array} \right. 
+\end{array} \right.
 \]
 %
 These functions are well-suited to giving us upper bounds on $\mathscr{E}_S (h_{A,B}, h_{A,B})$.  Indeed:
 \begin{itemize}
-\item $u_c(\partial A)=1,u_c(\partial B)=0$.  In fact, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.  
+\item $u_c(\partial A)=1,u_c(\partial B)=0$.  In fact, $u_c$ takes a constant value $c$ outside of $\tilde A,\tilde B$, drops smoothly in $\tilde B$ to achieve 0 on $\partial B$, and rises smoothly in $\tilde A$ to achieve 1 on $\partial \tilde A$.
 \item Noting that $u_c$ is written as a piecewise combination of hitting probability functions, we see that its Dirichlet form can be calculated in terms of capacities on local regions: $\mathscr{E}_S(u_c,u_c) = (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})$.
 \end{itemize}
-Thus the $u_c$ functions give us a practical way to calculate upper bounds: 
+Thus the $u_c$ functions give us a practical way to calculate upper bounds:
 \[
 \mathscr{E}_S(h_{A,B}, h_{A,B})\leq (1 - c)^2 \tmop{cap} (A, \tilde{A}) + c^2 \tmop{cap} (B, \tilde{B})
 \]
-This inequality holds for any value of $c$.  To get the best bound, we can take derivatives to minimize the right hand side with respect to $c$.  The result is 
+This inequality holds for any value of $c$.  To get the best bound, we can take derivatives to minimize the right hand side with respect to $c$.  The result is
 \[
 c^* = \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}
 \]
@@ -893,30 +824,30 @@ Plugging this into the previous equation, we obtain our final result.
 %%%%%%%%%%%
 
 \begin{lemma}  Let $S=\Omega \backslash (A\cup B)$.  Let $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  The Dirichlet form of $h_{A,B}$ can be lower-bounded in terms of $m$ and the capacities:
-\[\mathscr{E}_S (h_{A,B}, h_{A,B}) \geq  
-   \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
-   \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\indicatorf{m\geq \frac{\varepsilon}{2}} 
+\[\mathscr{E}_S (h_{A,B}, h_{A,B}) \geq
+   \left( 1 - m - \frac{\varepsilon}{2} \right)^2 \tmop{cap} (A,\tilde{A}) \indicatorf{m\leq 1-\frac{\varepsilon}{2}} +
+   \left( m- \frac{\varepsilon}{2} \right)^2 \tmop{cap} (B, \tilde{B})\indicatorf{m\geq \frac{\varepsilon}{2}}
 \]
 \end{lemma}
 \begin{proof}
-Recall that $\mathscr{E}_S(h_{A,B}, h_{A,B})$ can be expressed as an integral over $S$.  We decompose this into three integrals: one over $\tilde A$, one over $\Omega \backslash \tilde A,\tilde B$, and one over $\tilde B$.  
+Recall that $\mathscr{E}_S(h_{A,B}, h_{A,B})$ can be expressed as an integral over $S$.  We decompose this into three integrals: one over $\tilde A$, one over $\Omega \backslash \tilde A,\tilde B$, and one over $\tilde B$.
 \[
 \mathscr{E}_S (h_{A,B}, h_{A,B}) = \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
                                  + \int_{\tilde B \backslash B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
                                  + \int_{\Omega \backslash \tilde A,\tilde B} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
 \]
-Since the integrand is always positive, we can get a lower bound by simply ignoring the integral over $\Omega \backslash \tilde A,\tilde B$ and focusing on the integrals over $\tilde A,\tilde B$.  The $\tilde A,\tilde B$ integrals can be lower-bounded using capacities.  
+Since the integrand is always positive, we can get a lower bound by simply ignoring the integral over $\Omega \backslash \tilde A,\tilde B$ and focusing on the integrals over $\tilde A,\tilde B$.  The $\tilde A,\tilde B$ integrals can be lower-bounded using capacities.
 
 For example, let us focus on the $A$ integral.  There are two different possibilities we must consider:
 \begin{itemize}
-\item If $m>1-\varepsilon/2$ we will simply note that the integral over the $\tilde A$ region is non-negative.  
+\item If $m>1-\varepsilon/2$ we will simply note that the integral over the $\tilde A$ region is non-negative.
 \item If $m\leq 1-\varepsilon/2$, then we define
     \[
     u_A (x) \triangleq \frac{h_{A,B} (x) - m - \frac{\varepsilon}{2}}{1 - m - \frac{\varepsilon}{2}}
     \]
     Note that  $h_{A,B}(x)=1$ for $x \in \partial A$ and the $\varepsilon$-flatness condition shows that $h_{A,B}(x) \leq m + \frac {\varepsilon}{2}$ for $x \in \partial \tilde A$.  Thus $u_A(\partial A)\geq1,u_A(\partial \tilde A)\leq 0$.  Lemma \ref{lem:inequalityboundaryvar} from Appendix \ref{sec:inequalityboundaryvar} may then be applied to yield that $\mathscr{E}_{\tilde A \backslash A}(u_A,u_A) \geq \capac{A}{\tilde A}$.  We can thus obtain the bound
     \begin{align*}
-    \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx) 
+    \int_{\tilde A \backslash A} \Vert \sigma \nabla h_{A,B}\Vert^2 \rho(dx)
 	 &= \left(1 - m - \frac{\varepsilon}{2}\right)^2 \mathscr{E}_{\tilde{A} \backslash A}(u_A,u_A)\\
          &\geq \left(1 - m - \frac{\varepsilon}{2}\right)^2 \capac{A}{\tilde A}
     \end{align*}
@@ -936,7 +867,7 @@ We are now in a position to prove Theorem \ref{thm:main_thm} from the main text:
 \begingroup
 \def\thetheorem{\ref{thm:main_thm}}
 \begin{theorem}
-Assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to 
+Assume that  $h_{A,B}(x)$ is $\varepsilon$-flat relative to
 $\Omega \backslash (\tilde A \cup \tilde B)$.
 Then the first-passage probabilities can be well-approximated in terms of the target capacities:
 \[ \sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) - \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}} \right| \leqslant \varepsilon + \sqrt{\varepsilon/2} \]
@@ -951,15 +882,15 @@ To simplify notation, let $\capA=\capac{A}{\tilde A}$ and $\capB=\capac{B}{\tild
 \[
 \frac{\capA \capB}{\capA +\capB}
 \geq \mathscr{E}(h_{A,B},h_{A,B}) \geq
-\left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \indicatorf{m\leq 1-\frac{\varepsilon}{2}} + 
-   \left( m- \frac{\varepsilon}{2} \right)^2 \capB \indicatorf{m\geq \frac{\varepsilon}{2}} 
+\left( 1 - m - \frac{\varepsilon}{2} \right)^2 \capA \indicatorf{m\leq 1-\frac{\varepsilon}{2}} +
+   \left( m- \frac{\varepsilon}{2} \right)^2 \capB \indicatorf{m\geq \frac{\varepsilon}{2}}
 \]
-where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  In analyzing this inequality, there are three possibilities to consider.  
+where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x \notin \tilde A,\tilde B} (h_{A,B} (x)))$.  In analyzing this inequality, there are three possibilities to consider.
 \begin{itemize}
     \item If $m \in (\varepsilon/2,1-\varepsilon/2)$, the quadratic formula yields
     \begin{eqnarray*}
     m & \geqslant & \frac{\capA}{\capA + \capB} + \frac{
-    \frac{\varepsilon}{2}(\capB - \capA) - 
+    \frac{\varepsilon}{2}(\capB - \capA) -
     \sqrt{\capA \capB \varepsilon( 2 - \varepsilon)}}{\capA+\capB}\\
     m & \leqslant & \frac{\capA}{\capA + \capB} + \frac{
     \frac{\varepsilon}{2}(\capB - \capA) +
@@ -974,13 +905,13 @@ where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x 
     \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq \frac{2\varepsilon +\sqrt{\varepsilon (2-\varepsilon)}}{2}
     \]
 
-    \item If $m<\varepsilon/2$, our equations become 
+    \item If $m<\varepsilon/2$, our equations become
     \[
     \frac{\cancel{\capA} \capB}{\capA +\capB}
     \geq
-    \left( 1-m- \frac{\varepsilon}{2} \right)^2 \cancel{\capA} 
+    \left( 1-m- \frac{\varepsilon}{2} \right)^2 \cancel{\capA}
     \]
-    Our assumption that $m \leq \varepsilon/2$ indicates that $(1- m- \varepsilon/2)^2 \geq (1-\varepsilon)^2$, thus in fact we have 
+    Our assumption that $m \leq \varepsilon/2$ indicates that $(1- m- \varepsilon/2)^2 \geq (1-\varepsilon)^2$, thus in fact we have
     \[
     \frac{\capB}{\capA +\capB}
     \geq
@@ -988,16 +919,16 @@ where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x 
     \]
     which means that $\capA/(\capA +\capB)
     \leq
-    2\varepsilon - \varepsilon^2 \leq 2\varepsilon$.  
-    Thus we assumed $m\in[0,\varepsilon/2]$ and showed that $\capA/(\capA+\capB)\in[0,2\varepsilon-\varepsilon^2]$, so it follows that 
+    2\varepsilon - \varepsilon^2 \leq 2\varepsilon$.
+    Thus we assumed $m\in[0,\varepsilon/2]$ and showed that $\capA/(\capA+\capB)\in[0,2\varepsilon-\varepsilon^2]$, so it follows that
     \[
     \left|m -  \frac{\capA}{\capA + \capB}\right| \leq 2\varepsilon -\varepsilon^2
     \]
-    and so for any $x\notin \tilde A,\tilde B$, we have 
+    and so for any $x\notin \tilde A,\tilde B$, we have
     \[
     \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
     \]
-    
+
     \item If $m>1-\varepsilon/2$, the same bound can be achieved by arguments which are symmetric to those employed in $m<\varepsilon/2$:
     \[
     \left|h_{A,B}(x) -  \frac{\capA}{\capA + \capB}\right| \leq 2.5\varepsilon -\varepsilon^2
@@ -1006,12 +937,12 @@ where $m = \frac{1}{2} (\sup_{x \notin \tilde A,\tilde B} h_{A,B} (x) + \inf_{x 
 Our final result is found by noting that all these bounds are upper-bounded by $\varepsilon + \sqrt{\varepsilon/2}$.
 \end{proof}
 
-%     _    ____  ____  _____ _   _ ____ _____  __   ____ 
+%     _    ____  ____  _____ _   _ ____ _____  __   ____
 %    / \  |  _ \|  _ \| ____| \ | |  _ \_ _\ \/ /  / ___|
-%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  | |    
-%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \  | |___ 
+%   / _ \ | |_) | |_) |  _| |  \| | | | | | \  /  | |
+%  / ___ \|  __/|  __/| |___| |\  | |_| | | /  \  | |___
 % /_/   \_\_|   |_|   |_____|_| \_|____/___/_/\_\  \____|
-           
+
 
 
 
@@ -1019,16 +950,16 @@ Our final result is found by noting that all these bounds are upper-bounded by $
 \section{Proof of Proposition \ref{prop:flux}}
 \label{sec:proof_proposition}
 
-We first establish a lemma, using Green's first identity and some properties of the stationary SDE (\ref{equ:general_sde}), under the reversibility conditions (\ref{eqn:reversibility}), relative to $U$: 
+We first establish a lemma, using Green's first identity and some properties of the stationary SDE (\ref{equ:general_sde}), under the reversibility conditions (\ref{eqn:reversibility}), relative to $U$:
 
 \begin{lemma}  \label{lem:greenident}Fix some $S \subset \Omega$ with smooth boundary.  Then for any smooth function $g$ that satisfies $\mathcal{L}g = 0$ and smooth function $f$,
 \begin{equation*}
 \int_{S} \nabla f(x)^T a(x) \nabla g(x) e^{-U(x)}dx = \int_{\partial S} f(x) \normal(x)^T a(x) \nabla g(x) e^{-U(x)}\hausdorffmeasure
 \end{equation*}
-where $\normal$ are the normal vectors facing out of the set $S$ and $\hausdorffmeasure$ is the integral with respect to the $(n-1)$-dimensional Hausdorff measure and 
+where $\normal$ are the normal vectors facing out of the set $S$ and $\hausdorffmeasure$ is the integral with respect to the $(n-1)$-dimensional Hausdorff measure and
 \[
-(\mathcal{L}f)(x) \triangleq \sum_i b_i(x) \frac{\partial f (x)}{\partial x_i} + 
-    \frac{1}{2} \sum_{ij}a_{ij}(x)\frac{\partial^2 f(x)}{\partial x_i \partial x_j} 
+(\mathcal{L}f)(x) \triangleq \sum_i b_i(x) \frac{\partial f (x)}{\partial x_i} +
+    \frac{1}{2} \sum_{ij}a_{ij}(x)\frac{\partial^2 f(x)}{\partial x_i \partial x_j}
 \]
 \end{lemma}
 \begin{proof}
@@ -1041,7 +972,7 @@ where
 \begin{equation*}
 	\nabla \cdot (a \nabla g e^{-U}) = \sum_{i}\frac{\partial}{\partial x_i}\left[\sum_{j}e^{-U}a_{i j}\frac{\partial g}{\partial x_j}\right]
 \end{equation*}
-Next, using the reversibility constraint on $b$ from Equation (\ref{eqn:reversibility}), it's not hard to verify that 
+Next, using the reversibility constraint on $b$ from Equation (\ref{eqn:reversibility}), it's not hard to verify that
 \begin{equation*}
 	\nabla \cdot (a \nabla g e^{-U}) = 2e^{-U}\mathcal{L} g = 0
 \end{equation*}
@@ -1077,10 +1008,10 @@ Combining this with Equation \ref{eq:lemmaproof} gives us
 \label{eqn:cor}
 \tmop{cap}(A,\tilde A)  = -\int_{\partial A}  \normal^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure = \int_{\partial G}  \normal^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure
 \end{equation}
-Using the facts that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$, and $\mathcal{L} h_{G, \tilde G^c} = 0$, we apply Lemma \ref{lem:greenident} two more times to obtain 
+Using the facts that $h_{G,\tilde G^c}(x)=1,x\in \partial G,h_{G,\tilde G^c}(x)=0,x\in \partial \tilde G$, and $\mathcal{L} h_{G, \tilde G^c} = 0$, we apply Lemma \ref{lem:greenident} two more times to obtain
 \begin{align*}
 	\tmop{cap}(A,\tilde A)  &= \int_{\partial G}  \normal^T a  \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure = \int_{\partial G}  h_{G, \tilde{G}^c} \normal^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure\\
-				&= \int_{\partial (\tilde G \backslash G)}  h_{G, \tilde{G}^c} \normal^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure 
+				&= \int_{\partial (\tilde G \backslash G)}  h_{G, \tilde{G}^c} \normal^T a   \nabla h_{A, \tilde{A}^c} e^{- U } \hausdorffmeasure
 				= \int_{\tilde G \backslash G}  \nabla h_{G, \tilde{G}^c} a \nabla h_{A, \tilde{A}^c} e^{- U } dx\\
 				&= \int_{\partial (\tilde G \backslash G)}  h_{A, \tilde{A}^c}    \normal^T a  \nabla h_{G, \tilde{G}^c} e^{- U } \hausdorffmeasure
 \end{align*}
@@ -1111,7 +1042,7 @@ Put $G=S$ in Equation (\ref{eqn:cor}).
 \section{Inequality Boundary Conditions for the Variational Form}
 \label{sec:inequalityboundaryvar}
 
-Recall that $h_{A,B}(x)$ may be defined variationally.  We have let 
+Recall that $h_{A,B}(x)$ may be defined variationally.  We have let
 %
 \[
 \mathscr{E}(f,g)\triangleq \int_\Omega \nabla f(x)^T a(x) \nabla g(x) \rho(dx)
@@ -1137,7 +1068,7 @@ k(x)=
 0 & \tilde h(x)\leq 0 \\
 1 & \tilde h(x)\geq 1 \\
 \end{cases}
-\]  
+\]
 Note that $k\in \mathcal{H}^1$ and satisfies the equality boundary conditions.  Thus, by definition, $\capac{A}{\Omega \backslash B} \leq \mathscr{E}(k,k)$.  This immediately yields our result:
 \begin{align*}
 \capac{A}{\Omega \backslash B} \leq \mathscr{E}(k,k) &= \int \Vert \sigma \nabla k \Vert^2 \rho(dx) \\
@@ -1185,23 +1116,23 @@ The algorithm for estimating local hitting probabilities is outlined as follows:
     \item[Output] A collection of points $z_1,\cdots z_{N_p}$ on $\partial S$ sampled from the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted on $\partial S$, along with estimates of $h_{R,\tilde R^c}(z_i)$ for each point.
 
 \end{description}
-     
+
 \begin{enumerate}
-\item Discretize the space.  
+\item Discretize the space.
 \begin{enumerate}
   \item Generate an ensemble of samples $z_1, \ldots, z_{N_p}$ on $\partial S$
-  according to the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted to $\partial S$. 
-  
+  according to the invariant measure ${\mu}= e^{- U (x)} \mathrm{d} x$ restricted to $\partial S$.
+
   \item Evolve the ensemble on $\partial S$, by repeatedly sampling an initial location from the uniform distribution on $\{ z_1, \ldots, z_{N_p} \}$ and carry out a local simulation following the dynamics of $\{X_t\}_{t \geq 0}$
   until the trajectory hits either $\partial S_{m - 1}$ or $\partial S_{m +
   1}$. Record the hitting locations on $\partial S_{m - 1}$ and $\partial S_{m + 1}$ until we have $N_p$ points on both $\partial S_{m - 1}$ and $\partial
   S_{m + 1}$. In most cases, the process is more likely to hit one of $S_{m - 1}, S_{m + 1}$ than the other, and we need to run more than $2N_p$ local simulations to get at least $N_p$ samples on both shells. We store the results of the redundant local simulations for future estimation of transition probabilities.
-  
+
   \item Repeat the above process to sequentially evolve the ensembles on $\partial S_{m - 1}, \ldots,
   \partial S_2$ and on $\partial S_{m + 1}, \ldots, \partial S_{n - 2}$, to get $N_p$ samples on all of the intermediate shells $\partial S_1,
   \ldots, \partial S_{n - 1}$. Store the results of the redundant local simulations for future
   estimation of transition probabilities.
-  
+
   \item For each one of the shells $\partial S_1, \ldots, \partial S_{n -
   1}$, cluster the $N_p$ samples on that shell into $N_b \,$ states. In our implementation, we use $k$-means, and represent the $N_b$ states by the $N_b$ centroids we get from the algorithm.
 \end{enumerate}
@@ -1210,7 +1141,7 @@ The result of this step is a partitioning of each shell $\partial S_i$ into
 $N_b$ regions, representing an adaptive discretization of the shells. For a point on a shell $\partial S_i$, we identify its corresponding discrete state by finding the nearest centroid.
 
 \item Estimate the transition probabilities between these discrete states by running an additional $N_s$ local simulations for each one of the $N_b$ states on each shell. The result of this step is an estimate of the probability of transitioning from state $k$ on $\partial S_i$ to state $l$ on $\partial S_j$, which we denote by $P^{(i, j)}_{k, l}$, where $k, l \in \{ 1, \ldots, N_b \}$ and $i, j \in \{ 1, \ldots, n - 1 \}$ with $| i - j | = 1$.
-  
+
 \item Use the transition probabilities to get an estimate of the hitting probabilities for the $N_b$ states on
   $\partial S$.  In line with related works on Markov state models,\cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp} we  approximate the continuous dynamics using closed-form calculations from the discrete Markov chain we have developed in the previous two steps.  In particular, we estimate overall hitting probabilities using the standard ``one-step analysis.'' For any $k \in \{ 1, \ldots, N_b \}$ and $i \in \{ 1, \ldots, n - 1 \}$, let $u^{(i)}_k$ denote the probability of hitting $\partial R = \partial S_0$ before hitting $\partial \tilde{R} = \partial S_n$ if we start the discretized process at state $k$ on $\partial S_i$.  We can calculate our object of interest by solving the matrix difference equation \[ u^{(i)} = P^{(i, i + 1)} u^{(i + 1)} + P^{(i, i - 1)} u^{(i - 1)}, i = 1, \ldots, n - 1 \] with boundary conditions $u^{(0)} = {\mathbf{1}}, u^{(n)} = {\mathbf{0} }$, where ${\mathbf{0}}$ and ${\mathbf{1}}$ are vectors of all $0$'s and $1$'s. This gives the estimated hitting probability for each discrete state.  We then estimate the hitting probability of each point $z_i$ by
   \begin{equation}
@@ -1269,7 +1200,7 @@ F(x) &= F_c(x|d_c, h, r_{\dot B}) + 0.1 \times (d_c + h) \times F_m(x|x_B, r_{\d
 
 In our actual experiments, we used
 \begin{equation*}
-d_w = 10.0, 
+d_w = 10.0,
 d_c = 6.0,
 h = 1.0,
 \sigma^{A}_{i j} = \sigma^{B}_{k, l} = 0.01, \forall i, j, k, l
@@ -1286,7 +1217,7 @@ h = 1.0,
 0.516&0.596&0.027&-0.026&0.022\\%
 0.514&0.624&0.01&0.01&-0.002\\%
 0.5&0.605&0.017&-0.016&0.004%
-\end{pmatrix}, 
+\end{pmatrix},
 \mu^{B} = \begin{pmatrix}%
 -0.696&-0.006&0.023&-0.041&0.019\\%
 -0.731&0.021&-0.033&-0.014&0.017\\%
