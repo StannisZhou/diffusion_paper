@@ -44,6 +44,7 @@
 \newcommand{\TODOTHIS}{{\huge !!!!}}
 \newcommand{\indicatorf}[1]{\mathbb{I}_{#1}}
 \newcommand{\capac}[2]{\ensuremath{\operatorname{cap}}(#1,#2)}
+\newcommand{\hatcapac}[2]{\ensuremath{\operatorname{\widehat{cap}}}(#1,#2)}
 \newcommand{\hausdorffmeasure}{\mathscr{H}(dx)}
 \newcommand{\PMeasure}{\mathscr{P}(dx)}
 \newcommand{\tPMeasure}{\tilde{\mathscr P}(dx)}
@@ -74,7 +75,8 @@
 
 \begin{document}
 
-\title{Efficiently Computing First Passage Probabilities Using First Passage Capacities} %Title of paper
+\title{Capacities and the Efficient Computation of First 
+Passage Probabilities} %Title of paper
 
 \author{Jackson Loper}
 \thanks{These two authors contributed equally}
@@ -84,12 +86,14 @@
 \thanks{These two authors contributed equally}
 
 \author{Stuart Geman}
-
+\thanks{Partially supported by the Office of Naval Research under contracts ONR N000141613168 and ONR N000141512267}
 \affiliation{Division of Applied Mathematics, Brown University, Providence, RI, USA}
 \date{\today}
 
 \begin{abstract}
-	A reversible stochastic differential equation is initialized at position $x_0$ -- where will it go next?  What is the probability it will reach one target before it reaches another target?  We here propose an approach for estimating this probability.  We focus on the situation that it takes a long time to hit any target; in this case direct simulation of the hitting probabilities becomes prohibitively expensive.  We turn this curse into a blessing; if the timescales are sufficiently long the system will essentially ``forget'' its initial condition before it hits any target.  In this case we show that the hitting probabilities can be accurately approximated using only local simulations around each target, obviating the need for global simulations.  In empirical tests, we find that these estimates can be computed in the same time it would take to compute a single direct simulation, but they achieve the same accuracy as would be obtained from one hundred simulations.
+	A reversible diffusion process is initialized at position $x_0$ and run until it first hits any of several targets.  What is the probability that it terminates at a particular target? We propose a new approach for estimating this probability, focused on those situations in which it takes a long time to hit any target. In these 
+cases,  direct simulation of the hitting probabilities becomes prohibitively expensive.  On the other hand, if the timescales are sufficiently long then the system will essentially ``forget'' its initial condition before it encounters a target.  In these cases the hitting probabilities can be accurately approximated using only local simulations around each target, obviating the need for
+direct simulations.  In empirical tests, we find that these local estimates can be computed in the same time it would take to compute a single direct simulation, but that they achieve an accuracy that would require thousands of direct simulation runs.
 \end{abstract}
 
 \pacs{}% insert suggested PACS numbers in braces on next line
@@ -99,47 +103,71 @@
 \section{Introduction}
 \label{sec:Introduction}
 
-Reversible diffusions play a key role in a wide variety of physical systems.  For example, the folding of macromolecules into their native configurations is often posed as a diffusion (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   In all cases, the the physical state of the system at time $t$ is represented through a variable $X_t$, and this variable evolves according to a stochastic differential equation. 
+Reversible diffusions play a key role in a wide variety of physical systems.  For example, the folding of macromolecules into their native configurations is often posed as a diffusion (either directly through simulations of atomic dynamics or indirectly through mesoscopic models \cite{Scheraga2007-qw,Hospital2015-ol,lei2010direct}), the fluctuation of chemical species in solution can be modeled as diffusions (``chemical Langevin equations'' are one classic example of this approach \cite{sotiropoulos2011analytical,gillespie2000chemical}), the motion of particles through membranes can be posed as a diffusion \cite{holcman2004escape}, and so-on.   In all cases, the the physical state of the system at time $t$ is represented through a variable $X_t$, confined to a finite region $\Omega$ and evolving according to a stochastic differential equation.  
 
-In this paper we seek to estimate first-passage hitting probabilities of such diffusions: given an initial condition $X_0$ and two targets, $A,B$, what is the probability that we will hit target $A$ first?   Here each target represents a set of physical configurations.  For example, if $X$ represents the position of a particle trapped inside a sphere with two holes, $A$ and $B$ might represent the two holes.  The hitting probability then indicates the probability that the particle exits through the first hole.  These probabilities are also sometimes called ``splitting probabilities'' \cite{E2006-fm}.  This paper develops a new algorithm for approximating these hitting probabilities.
+In this paper we seek to estimate first-passage probabilities 
+(sometimes also called ``splitting probabilities'' \cite{E2006-fm} or simply ``hitting probabilities'')
+of such diffusions: given an initial condition $x_0$ and a collection of targets, what is the probability that the process first hits any particular target before hitting any of the other targets? Targets might represent, for example, multiple  exit locations from a region of the state space in a statistical mechanics problem or the establishment of new intra-molecular bonds in a folding problem. Where will the system first exit or  what is the next step in folding?  This paper develops a new algorithm for the  approximation of first-passage probabilities.
 
-The algorithm proposed in this paper is designed for cases where the diffusion can ``forget'' its initial condition before either target is hit.  To make this idea rigorous, we need three ingredients:
-\begin{itemize}
-    \item the initial configuration $X_0$ must lie \emph{inside} a set of physical configurations we denote $M$
-    \item the targets $A$ and $B$ lie \emph{outside} the set $M$
-    \item the first passage time out of $M$ is long (a long time elapses before the process exits the set $M$)
-\end{itemize}
-This last condition is vague -- how long is long enough?  A simplistic answer is that the proposed algorithm will be more accurate when the first passage time is longer.  A more precise answer requires some machinery from the theory of ergodicity.  Recall that reversible diffusions are ergodic: as time goes on, it gets harder and harder to guess the initial condition from it's final configuration.  As this happens, the process is said to become ``mixed,'' and the speed with which the initial condition is forgotten is called the ``mixing rate.''  If the first passage time out of $M$ is long relative to this mixing rate, the hitting probability will be nearly the same no matter which initial condition we started from.  It is this property we actually need: if the hitting probability varies by at most $\varepsilon$ among all initial conditions inside the set $M$, the proposed algorithm's approximation error is less than $\varepsilon + \sqrt{\varepsilon/2}$.  Figure \ref{fig:ToyModel} gives a rough sketch of this idea.  Rigorous definitions are given in  \S\ref{sec:Preliminaries}.  
+To keep things simple, most of the discussion will be in the context of just two targets, $A$ and $B$, $A,B\subset\Omega$, although all of the results apply, with trivial notational changes, to any finite set of targets. In this context, ``hitting probability'' 
+(aka  ``first-passage probability'') refers to the specific probability that $X_t$ hits target $A$ before target $B$.  
+The algorithm is designed for cases where the diffusion ``forgets'' its initial condition before encountering a target.  Precise definitions are in \S\ref{sec:Preliminaries}, but to get the main idea consider a region $M$ in $\Omega$ that lies outside of the targets $A$ and $B$, $M\subset \Omega\backslash(A\cup B)$,
+and assume that the diffusion starts in $M$ ($x_0\in M$).
+Recall that reversible diffusions are {\em ergodic}: as time goes on, it gets harder and harder to guess the initial condition from the current configuration.  As this happens, the process is said to become ``mixed,'' and the speed with which the initial condition is forgotten is called the ``mixing rate.''  If the first passage time out of $M$ is long relative to this mixing rate, then the hitting probability will be nearly independent of $x_0$. This is what we mean by ``forgets'' its initial condition. Our main result (Theorem \ref{thm:main_thm}) asserts that if the
+hitting probability varies by at most $\varepsilon$ among all initial conditions in $M$, then the proposed algorithm's approximation error is less than $\varepsilon + \sqrt{\varepsilon/2}$.  Figure \ref{fig:ToyModel} gives a rough sketch of this idea.  
 
-Are there any real cases where the diffusion can forget its initial condition in this way?  The narrow-escape literature gives at least one class of examples.  In these examples $X$ is a Brownian motion trapped inside a set by reflecting boundaries, and the targets are very small windows in boundary of the sphere.  These models have been successfully applied to a variety of mesoscopic biosystems (cf. \cite{schuss2007narrow} and the references therein).  These kinds of diffusions may also be relevant for modeling the folding of large molecules.  TCB McLeish has said that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' \cite{McLeish2005-dq}.  There is also some experimental evidence that the exploration of large regions is the rate-limiting step for a variety of processes \cite{Goldberg1999-mv,Jacob1999-bs,Plaxco1998-iv,Wales2006-ur}.  If these results bear out, the first-passage time out of this exploration may be long and our conditions may hold. 
+When would these conditions hold? We will have more to say about this in \S\ref{sec:MainResults}, but for now we note that the narrow-escape literature gives at least one class of examples.  In these examples $X_t$ is a Brownian motion trapped inside a set by reflecting boundaries, and the targets are very small windows in boundary.  These models have been successfully applied to a variety of mesoscopic biosystems (cf. \cite{schuss2007narrow} and the references therein).  These kinds of diffusions may also be relevant for modeling the folding of large molecules.  According to McLeish,  ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' \cite{McLeish2005-dq}.  There is also some experimental evidence that the exploration of large regions is the rate-limiting step for a variety of processes \cite{Goldberg1999-mv,Jacob1999-bs,Plaxco1998-iv,Wales2006-ur}.  If these results bear out, then to the extent that exit times are long it will be possible to obtain good approximations for hitting probabilities using our approach.
 
-Many standard methods for calculating hitting probabilities fail for diffusions of this kind.  When the escape time from $M$ is large, the associated partial differential equations often include large Lipschitz constants and direct Monte-Carlo simulation requires prohibitive number of timesteps (cf.\ \cite{Baum1986-we, Wille1987-tf, Machta2009-gh}).  Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space, not much can be done to speed up their simulation without destroying the dynamics of the system'' \cite{Christen2008-ge}.
-
-In fact, diffusions of this kind enjoy certain properties which actually make analysis easier.  The literature includes a variety of tools which use such properties to advantage.  Here we review a few of these tools:
+Many standard methods for calculating hitting probabilities fail for diffusions of this kind.  When the escape time from $M$ is large, the associated partial differential equations often include large Lipschitz constants and direct Monte-Carlo simulation requires a prohibitive number of timesteps (cf.\ \cite{Baum1986-we, Wille1987-tf, Machta2009-gh}).  Some authors take a pessimistic view on this subject: ``If these processes are intrinsically slow, i.e. require an extensive sampling of state space, not much can be done to speed up their simulation without destroying the dynamics of the system'' \cite{Christen2008-ge}.
+But in fact diffusions of this kind enjoy certain properties which can actually make analyses easier.  The literature includes a variety of tools which use such properties to advantage.  Here we review a few of these tools:
 
 \begin{description}
-    \item[Analytic analyses] When the targets are very small, the first passage hitting times are often well-approximated by analytic formulae.  The narrow-escape literature has developed many techniques in this direction.  Much of this literature focuses on making these formulas as accurate as possible for specific geometric configurations, such as the case of $N$ circular targets (cf.\ \cite{cheviakov2010asymptotic}), the case that one target lies at the end of a long tube (cf.\ \cite{li2014matched}), or the case that the motion is trapped inside a symmetric domain (cf.\ \cite{Chevalier2010-bq,Condamin2006-vi,Coombs2009-pe,Lindsay2017-ds}).  There is also some work on efficient numerical methods for low-dimensional problems using insights from these analytic results (cf.\ \cite{kaye2019fast}).  Note that this literature mostly focuses on hitting times, whereas in this paper we focus on hitting probabilities.   However, the first-passage probabilities are nearly inversely proportional to the mean first-passage times for many cases, so these techniques can often be used to estimate first-passage probabilities.  A helpful overview of many of the main ideas in this literature can be found in \cite{Benichou2014-jb}.
+    \item[Analytic analyses] When targets are very small, the first-passage {\em times} (as opposed to probabilities) are often well-approximated by analytic formulas.  The narrow-escape literature has developed many techniques in this direction.  Much of this literature focuses on making these formulas as accurate as possible for specific geometric configurations, such as the case of $N$ circular targets (cf.\ \cite{cheviakov2010asymptotic}), the case that one target lies at the end of a long tube (cf.\ \cite{li2014matched}), or the case that the motion is trapped inside a symmetric domain (cf.\ \cite{Chevalier2010-bq,Condamin2006-vi,Coombs2009-pe,Lindsay2017-ds}).  There is also some work on efficient numerical methods for low-dimensional problems using insights from these analytic results (cf.\ \cite{kaye2019fast}).  Note that this literature mostly focuses on hitting times, whereas in this paper we focus on hitting probabilities.  
+Nevertheless, the first-passage probabilities are nearly inversely proportional to the mean first-passage times for many cases, so these techniques can often be used to estimate first-passage probabilities.  A helpful overview of many of the main ideas in this literature can be found in \cite{Benichou2014-jb}.
 
     \item[Markov State Models] Markov State Models (MSM) begin by partitioning the state-space of the diffusion into $n$ sets (``states'').  The diffusion can be understood at a coarse level by looking at which state the process is in at any given time (cf.\ \cite{Pande2010-yi, Chodera2014-bh, Husic2018-xp}).   In some cases the time it takes to move between states is long relative to the rate of mixing inside the states.  This separation of timescales ensures that the coarse process is approximately Markovian.  We can therefore approximately simulate the discrete process as long as we know the distribution on the exit times and the probability of transitioning to each possible state.  The amount of computational time required to simulate from this approximate process does not depend upon how long the process actually spends in each state.
 
-    \item[Site-localizing functions] Site-localizing functions take a relaxed version of the MSM idea; instead of creating a hard partitioning of the space, one constructs basis functions $g_1(x)\cdots g_n(x)$ such that $\sum_i g_i(x)=1$.  In many cases the action of the relevant infinite-dimensional diffusion operators can be well-approximated by the their action on the $n$-dimensional space spanned by these basis functions.   For example, under a separation-of-timescales assumption, Morro (cf.\ \cite{moro1995kinetic}) shows a way to design basis functions which faithfully represent the diffusion's behavior on the slow timescale.
+    \item[Site-localizing functions] Site-localizing functions define a kind of continuous version of the MSMs: instead of creating a hard partitioning of the space, one constructs basis functions $g_1(x)\cdots g_n(x)$ such that $\sum_i g_i(x)=1$.  In many cases the action of the relevant diffusion operators can be well-approximated by the their action on the $n$-dimensional space spanned by these basis functions.   For example, under a separation-of-timescales assumption, Morro (cf.\ \cite{moro1995kinetic}) shows a way to design basis functions which faithfully represent the diffusion's behavior on the slow timescale.
 
-    \item[Milestoning] In some cases it is possible to construct a low-dimensional reaction coordinate which measures the distance from the targets in some suitable metric.  In some cases the movement along this reaction coordinate is slow relative to the mixing rate along all other directions.  This separation of timescales ensures that the dynamics of the diffusion along this coordinate are approximately Markovian.  If the reaction coordinate is carefully chosen, many properties of the original diffusion are maintained in this low-dimensional projection \cite{E2006-fm}.  Simulating from this low-dimensional approximate diffusion can yield useful insight into the overall behavior \cite{Bello-Rivas2015-ld}.  
+    \item[Milestoning] In some cases it is possible to construct a low-dimensional reaction coordinate which measures the distance from the targets in some suitable metric.  In some cases the movement along this reaction coordinate is slow relative to the mixing rate along all other directions.  This separation of timescales ensures that the dynamics of the diffusion along this coordinate are approximately Markovian.  If the reaction coordinate is carefully chosen, many properties of the original diffusion are maintained in this low-dimensional projection \cite{E2006-fm}.  Simulating the low-dimensional approximate diffusion can yield useful insights into the behavior of the original system \cite{Bello-Rivas2015-ld}.  
 \end{description}
 
-All of the ideas above take advantage of some kind of separation of timescales.  In this paper we investigate a new algorithm which uses separated timescales.  
+Here we will investigate a different way to make use of separated timescales. Let $h_{A,B}(x)$ denote
+the probability of hitting $A$ before $B$ given that the diffusion
+is initialized at $x\in M$.
+It is well known that $h_{A,B}(x)$ can be represented as the 
+solution of a variational problem. (A detailed account of this and related facts is included in Appendix \ref{sec:three_perspectives}.)  Under the special condition that $h_{A,B}(x)$ is a constant, say 
+$h_{A,B}(x)=\bar{h}$ for all $x\in M$, the solution of the variational problem, and hence $\bar{h}$, can be written in terms of certain integrals over local regions surrounding the targets
+(indicated by
+the gray-shaded areas in the examples depicted in Figure \ref{fig:ToyModel}).
+We will refer to these integrals as 
+``first-passage capacities''---see \S\ref{sec:Preliminaries} for the
+formal definition. If, on the other hand, $h_{A,B}(x)$ is not exactly constant, then $\bar{h}$ becomes an approximation rather than an exact formula: for all $x\in M$,
+$|\bar h - h(x) |\leq \varepsilon + \sqrt{\varepsilon/2}$, where $\varepsilon$ is the difference between the maximum and minimum hitting probabilities over $M$. This is the main theoretical result---Theorem \S\ref{thm:main_thm}---which reduces the first-passage problem to one of evaluating local integrals. 
+For the purpose of evaluating these integrals, we introduce a Monte Carlo approach, that we call the shell method, and  demonstrate its accuracy and computational efficiency.
 
-We here give a high-level summary of the mathematics behind the algorithm; a more detailed exposition can be found in \S\ref{sec:MainResults}.  Let $h(x)$ denote the chance the diffusion arrives in set $A$ before set $B$ when it is initialized at configuration $x$.  Recall that $h$ can be understood as the solution of a variational problem (we review this matter in Appendix \ref{sec:three_perspectives}).  The true solution of the variational problem, $h$, is a function that varies continuously as a function of the initial condition $x$.  However, we can solve the variational problem under the forced assumption that the hitting probability is exactly the same for every initial condition in a set $M$.  In particular, we will assume there is some $\bar h \in \mathbb{R}$ such that $h(x)=\bar h$ for every $x \in M$.   In Theorem \ref{thm:main_thm}, we show that we can control the error introduced by this forced assumption: $|\bar h - h(x) |\leq \varepsilon + \sqrt{\varepsilon/2}$, where $\varepsilon$ is the true difference between the maximum and minimum hitting probabilities for initial conditions in $M$.  Under this forced assumption the variational problem becomes much easier to solve; the value of $\bar h$ depends only on the dynamics outside of $M$, and this dependency can be summarized through what we call ``first passage capacities.''  These capacities can be calculated using integrals around a neighborhood of each target.  
-
-In brief, one can efficiently compute first-passage capacities around each target and use these capacities to get good estimates of the hitting probabilities.  The key advantage of this approach is that it allows us to get good estimates while completely ignoring all dynamics inside $M$.  This is particularly valueable if $M$ is a large, high-dimensional set.  When $M$ is very large, it is unclear how one would partition $M$, making Markov State Models difficult to implement.  Similarly it is unclear how one should formulate a reaction coordinate, making milestoning approaches difficult to implement.  Integrating over all of $M$ is computationally burdensome in this case, making site-localizing functions difficult to implement.  Asymptotic techniques from the narrow escape/reaction-controlled diffusion literature may still be applied, but only if the problem falls into one of the very specific cases which have already been studied.  Most of these cases lie in two or three-dimensions, feature regular targets, and assume the diffusion has no energetic potential.  By contrast, first passage capacities can be calculated efficiently for a diffusion with an arbitrary energetic potential, target shape, and ambient dimension.  Moreover, first-passage capacities are fundamentally non-asymptotic quantities; for any problem the approximation error is bounded explicitly in terms of the extent to which the hitting probability varies inside $M$, i.e. $\varepsilon$.   First-passage capacities do come with a significant limitation, however: they do not give direct insight into the overall timescale of the diffusion. There is an overall proportionality constant which connects first-passage hitting probabilities to the first-passage hitting times, and this constant cannot be recovered from the first-passage capacities.  We discuss this limitation further in \S\ref{sec:Discussion}.
+The key advantage of our approach is that it allows us to get good estimates while completely ignoring all dynamics inside $M$.  This is particularly valuable if $M$ is a large, high-dimensional set.  In this case it is unclear how one would partition $M$ or formulate a meaningful reaction coordinate, calling into question the utility of Markov State Models and milestoning under these conditions.  Furthermore, integrating over all of $M$ is computationally burdensome, making site-localizing functions also difficult to implement.  Asymptotic techniques from the narrow escape/reaction-controlled diffusion literature may still be applied, but only if the problem falls into one of a collection of very specific cases, most of which lie in two or three-dimensions, feature regular targets, and assume that the diffusion has no energetic potential.  By contrast, 
+first-passage capacities can be calculated efficiently for a diffusion with an arbitrary energetic potential, target shape, and ambient dimension.  Moreover, first-passage capacities are fundamentally non-asymptotic quantities; for any problem the approximation error is bounded explicitly in terms of the extent to which the hitting probability varies across $M$.  On the other hand,
+the strengths of the capacity-based approach are accompanied by a significant limitation: the approach gives no information about first-passage {\em times}. Indeed, the temporal process is explicitly eliminated. In general, there is an overall proportionality constant which connects first-passage hitting probabilities to first-passage hitting times, but this relationship cannot be recovered from the first-passage capacities.  We discuss this limitation further in \S\ref{sec:Discussion}.
+ 
 
 \begin{figure}
     \centering  \includegraphics[width=0.8\textwidth]{bigpicture.png}
-    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf First passage capacities allow efficient computation of hitting probabilities.} We consider a reversible stochastic differential equation in an $n$-dimensional state-space.  Let us say we initialize the diffusion at some configuration $x_0$ inside the set $M$; what is the probability it will reach region $A$ first before $B$?  We assume that the hitting probability is nearly the same for every initial condition $x_0 \in M$ -- it must differ by at most $\varepsilon$ among all such initial conditions.  Theorem \ref{thm:main_thm} then shows that the hitting probability can then be approximated to within $\varepsilon + \sqrt{\varepsilon/2}$ using only ``first passage capacities.'' These capacities can be computed using only simulations that take place outside of $M$.  Above we sketch several examples where the condition can hold.  In each case, the first passage capacities can be computed efficiently using local simulations performed in the gray areas.}
+    \caption{\footnotesize\linespread{1.}\selectfont{} {\bf First passage capacities allow efficient computation of hitting probabilities.} We consider a reversible stochastic differential equation in an $n$-dimensional state-space, initialized at some configuration $x_0$ inside a set $M$. What is the probability that 
+the diffusion will reach region $A$ before $B$?  We assume that the hitting probability is nearly the same for every initial condition $x_0 \in M$---differing by at most $\varepsilon$ 
+across all initial conditions.  
+(See Theorem \ref{thm:epsilon_flat} for some sufficient conditions, involving small targets and/or high dimensions.)
+Theorem \ref{thm:main_thm} 
+establishes an approximation to the hitting probability that
+is accurate to within $\varepsilon + \sqrt{\varepsilon/2}$, and uses only ``first-passage capacities.'' These capacities can be computed from simulations that take place locally, meaning in the neighborhoods of the targets and entirely outside of $M$.  Here we depict several examples. In each case, the first-passage capacities can be computed efficiently using simulations confined only to the areas shaded in gray.}
 \label{fig:ToyModel}
+\vglue -1cm
 \end{figure}
 
-In the following section (\S\ref{sec:Preliminaries}, ``Preliminaries'') we will introduce notation, define our diffusion, define first passage hitting probabilities, define our main assumption, and finally define the first-passage capacities that are at the heart of this approach.  In \S\ref{sec:MainResults} we show that these capacities can be used to accurately estimate first-passage probabilities as long as our assumption holds; we also give examples where this condition is guaranteed.  In \S\ref{sec:Estimation}, we develop an algorithm to compute the first passage capacities.   In \S\ref{sec:Experiments} we investigate the speed and accuracy of the capacity-based approach, using computational experiments on various diffusions.
+
+In the following section (\S\ref{sec:Preliminaries} ``Preliminaries'') we introduce notation, define the diffusion
+and first-passage probabilities, enumerate the main assumptions, and finally define the first-passage capacities that are at the heart of this approach.  In \S\ref{sec:MainResults} we show that these capacities can be used to accurately estimate first-passage probabilities, and in way of examples, we give some sufficient conditions that guarantee that the main assumptions are satisfied. In \S\ref{sec:Estimation}, we develop the ``shell method,'' a numerical approach to computing first-passage capacities.   And in \S\ref{sec:Experiments} we investigate the speed and accuracy of the capacity-based approach in a variety of  
+computational experiments.
 
 \section{Preliminaries}
 \label{sec:Preliminaries}
@@ -170,11 +198,11 @@ where $a(x)=\sigma(x)\sigma(x)^T$ is uniformly elliptic.
 When the conditions in (\ref{eqn:reversibility}) are in force
 we will say that $X$ satisfies the reversibility conditions relative to $U$.  We assume these conditions throughout the paper.
 
-The main goal of this paper is to estimate first passage hitting probabilities for $X$.  We here give a formal definition for these hitting probabilities:
+The main goal of this paper is to estimate first-passage  probabilities for $X$.  We here give a formal definition for these hitting probabilities for the two-target case, although all of our results extend, straightforwardly, to finite collections of targets:
 
-\begin{definition}(First passage hitting probabilities).  Fix two disjoint sets $A,B\subset \Omega$.  The first-passage hitting probability function $h_{A,B}(x)$ indicates the probability that the process $X$ visits $A$ before $B$ if it is initialized at $X_0=x$.  Formally,
+\begin{definition}(First passage probabilities).  Fix two disjoint sets $A,B\subset \Omega$.  The first-passage probability function $h_{A,B}(x)$ is the probability that the process $X$ visits $A$ before $B$ if it is initialized at $X_0=x$.  Formally,
 \[ h_{A, B}(x) \triangleq \mathbb{P}(X_{\tau_{A\cup B}}\in A|X_0=x)\]
-where $\tau_{A\cup B}$ indicates the first passage time to $A\cup B$, i.e.\ $\tau_{A\cup B} \triangleq \inf \{ t \geqslant 0 : X_t \in A \cup B \}$.  Throughout this paper we will use $\tau_S$ to denote the first passage time to a set $S$ and $h_{S,S'}$ to denote the hitting probability function for targets $S,S'$.
+where $\tau_{A\cup B}$ indicates the first-passage time to $A\cup B$, i.e.\ $\tau_{A\cup B} \triangleq \inf \{ t \geqslant 0 : X_t \in A \cup B \}$.  Throughout this paper we will use $\tau_S$ to denote the first-passage time to a set $S$ and $h_{S,S'}$ to denote the hitting probability function for targets $S,S'$.
 \end{definition}
 
 As discussed in the introduction, these hitting probabilities are much easier to estimate if the process forgets its initial condition to such an extent that the hitting probabilities are nearly constant for any initial condition inside a set $M$.  Here we give a formal definition for this property:
@@ -194,9 +222,9 @@ Let $S \subset \tilde{S} \subset \Omega$ be open sets and let $X$ be a diffusion
 %
 \end{definition}
 
-We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity'' in the probabilistic potential theory literature, all slightly different.  For example, the Harmonic capacity arises by taking the above definition in the special case when the diffusion is a simple Brownian motion.  The definition used here most closely follows the work of Bovier \cite{Bovier2016-ez,Bovier2004-wj}.  Throughout this work, the term is used only in the sense of the above definition.
+We refer the reader to Appendix \ref{sec:three_perspectives} for more details on capacity and the related concept of Dirichlet form.  Note that there are several related definitions of ``capacity'' in the probabilistic potential theory literature, all slightly different.  For example, the harmonic capacity arises by taking the above definition in the special case when the diffusion is a simple Brownian motion.  The definition used here most closely follows the work of Bovier \cite{Bovier2016-ez,Bovier2004-wj}.  Throughout this work, the term is used only in the sense of the above definition.
 
-\section{Main theoretical results}
+\section{Main Theoretical Results}
 \label{sec:MainResults}
 
 Our main theorem shows that the first-passage capacities give accurate approximations of the hitting probabilities when the hitting probabilities are themselves $\varepsilon$-flat in a region outside a neighborhood of the targets.
@@ -210,17 +238,16 @@ Then the first-passage probabilities are well-approximated by the first-passage 
 
 We defer the proof to Appendix \ref{sec:proof_thm}.  Note that the generalization to multiple targets is straightforward due to the additive property of capacities (Proposition \ref{prop:capacity} in Appendix \ref{sec:three_perspectives}).  In general, the hitting probability is approximately proportional to the corresponding capacity.
 
-When might the $\varepsilon$-flatness condition hold?  In the introduction, we gave an intuitive explanation for when this might be expected to happen, namely whenever the diffusion forgets its initial condition before it hits the targets.  To prove the $\varepsilon$-flatness condition for a particular problem, one must make this idea rigorous.  To offer the reader a flavor for how this may be done, we offer the following examples:
+When might the $\varepsilon$-flatness condition hold?  In the introduction, we gave an intuitive explanation for when this might be expected to happen, namely whenever the diffusion forgets its initial condition before it hits the targets.  To prove the $\varepsilon$-flatness condition for a particular problem, one must make this idea rigorous. Here are two examples of how this might be done: 
 
 \begin{theorem}\label{thm:epsilon_flat} (Examples of $\varepsilon$-flatness).   Let $\bb{x,r} = \{y:\ \Vert x-y \Vert < r\}$ denote the ball of radius $r$ centered at $x$.  Let us say that a diffusion governed by Equation (\ref{eq:pde}) ``behaves like Brownian motion'' on a set if $\sigma(x)=I$ and $\nabla U(x)=0$ for every $x$ in that set.  
 \begin{enumerate}
-    \item Fix $r,\varepsilon>0$.  We can then find $\delta>0$ with the following property.  For any bounded convex set $\Omega$ with diameter less than or equal to 1, any $x_A,x_B \in \Omega$, any reversible stationary diffusion trapped inside $\Omega$ and behaving like Brownian motion for all $x\notin \bb{x_A, \delta} \cup \bb{x_B, \delta}$, and any $A\subset \bb{x_A, \delta}, B \subset \bb{x_B, \delta}$, we have that $h_{A,B}$ is $\varepsilon$-flat on $\Omega \backslash \bb{x_A, r} \cup \subset \bb{x_B, r}$.
-
-    \item Fix $r,\varepsilon>0$ and $r'<r$.  We can then find $n$ with the following property.  For any convex set $\Omega \in \mathbb{R}^n$ with diameter less than or equal to 1, any $x_A,x_B$ such that $\bb{x_A, r},\bb{x_B, r} \subset \Omega$, any reversible stationary diffusion trapped inside $\Omega$ and behaving like Brownian motion for all $x\notin \bb{x_A, r'} \cup \bb{x_B, r'}$, and any $A\subset \bb{x_A, r'}, B \subset \bb{x_B, r'}$, we have that $h_{A,B}$ is $\varepsilon$-flat on $\Omega \backslash \bb{x_A, r} \cup \subset \bb{x_B, r}$.
+    \item (small targets) Fix $r,\varepsilon>0$.  We can then find $\delta>0$ with the following property.  For any bounded convex set $\Omega$ with diameter less than or equal to 1, any $x_A,x_B \in \Omega$, any reversible stationary diffusion trapped inside $\Omega$ and behaving like Brownian motion for all $x\notin \bb{x_A, \delta} \cup \bb{x_B, \delta}$, and any $A\subset \bb{x_A, \delta}, B \subset \bb{x_B, \delta}$, we have that $h_{A,B}$ is $\varepsilon$-flat on $\Omega \backslash (\bb{x_A, r} \cup \bb{x_B, r})$.
+    \item (high dimensions) Fix $r,\varepsilon>0$ and $r'<r$.  We can then find $n$ with the following property.  For any convex set $\Omega \in \mathbb{R}^n$ with diameter less than or equal to 1, any $x_A,x_B$ such that $\bb{x_A, r},\bb{x_B, r} \subset \Omega$, any reversible stationary diffusion trapped inside $\Omega$ and behaving like Brownian motion for all $x\notin \bb{x_A, r'} \cup \bb{x_B, r'}$, and any $A\subset \bb{x_A, r'}, B \subset \bb{x_B, r'}$, we have that $h_{A,B}$ is $\varepsilon$-flat on $\Omega \backslash (\bb{x_A, r} \cup \bb{x_B, r})$.
 \end{enumerate}
 \end{theorem}
 
-A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.  The first example shows how hitting probabilities become flat as the targets become small.  The second example notes that even if we fix the radius of the targets, the hitting probabilities becomes flat if the ambient dimension $n$ is high.  In both cases, the results are proved by showing that the rate of mixing inside $M$ is fast and it generally takes a long time to leave $M$.
+A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.  The first example shows how hitting probabilities become flat as the targets become small.  The second example notes that even if we fix the radius of the targets, the hitting probabilities becomes flat if the ambient dimension $n$ is high.  In both cases, the results are proved by showing that the rate of mixing inside $M$ is fast relative to the time it takes to exit $M$.
 
 %      _          _ _                _   _               _ 
 %  ___| |__   ___| | |_ __ ___   ___| |_| |__   ___   __| |
@@ -232,7 +259,7 @@ A proof can be found in Appendix \ref{sec:proof_epsilon_flat}.  The first exampl
 
 \section{Capacity Estimation via the Shell Method}
 \label{sec:Estimation}
-To make use of Theorem \ref{thm:main_thm} in practice, we must be able to compute capacities.  The calculation is local, in that $\capac{A}{\tilde{A}}$ is an integral on $\tA\backslash A$. We will propose here a Monte Carlo approach to evaluating the integral, using a combination of analytic reductions and a short location simulations.
+To make use of Theorem \ref{thm:main_thm} in practice, we must be able to compute capacities.  The calculation is local, in that $\capac{A}{\tilde{A}}$ is an integral on $\tA\backslash A$. We will propose here a Monte Carlo approach to evaluating the integral, using a combination of analytic reductions and local sampling. 
 
 We begin by using an alternative formulation of the capacity:
 
@@ -245,7 +272,7 @@ For any regions $G$ and $\tilde{G}$ having smooth boundaries and such that $A\su
 \end{equation}
 where $a(x)=\sigma(x)\sigma(x)^T$ is the diffusion matrix, $\hausdorffmeasure$ is the $(n-1)$-dimensional Hausdorff measure, and $\normal$ represents the outward-facing (relative to the set $\tilde G \backslash G$) normal vector on $\partial (\tilde G \backslash G)$.
 \end{proposition}
-\noindent This result is already known, though we could not find it written down in exactly the form we need.  A formal proof is in Appendix \ref{sec:proof_proposition}.
+\noindent (Results like this are well known, though perhaps not in exactly this form. In any case, we have included a formal proof which can be found in Appendix \ref{sec:proof_proposition}.)
 
 There is a great deal of freedom in choosing $G$ and $\tilde G$; the idea is to choose them so as to make the surface integrals as simple as possible.  Each of these surface integrals can be viewed as an expectation.  Let $\hausdorffmeasure$ denote the $n-1$-dimensional Hausdorff measure.  We can define a probability measure on
 $\partial G$ by
@@ -356,65 +383,117 @@ $S=S_{n-1}$, a well-chosen inner approximation of $\tilde G$.
 
 
 \section{Numerical Experiments\footnote{All the experimental results can be reproduced or easily modified from open-source code, which can found, along with detailed instructions, at \url{https://github.com/StannisZhou/entropic_barrier}.}}\label{sec:Experiments}
-We use numerical experiments to test the practical relevance of our theoretical results and capacity-estimation algorithm.  There several questions we would like to address empirically:
+%We use numerical experiments to test the practical relevance of our theoretical results and capacity-estimation algorithm.  There several questions we would like to address empirically:
+We used a series of experiments to investigate 
+the accuracy and computational efficiency of the proposed
+approach to estimating first-passage probabilities. Three 
+questions were addressed empirically, in each of several settings:
 
 \begin{itemize}
-    \item When are first-passage hitting probability functions flat?  Recall that the first-passage capacity method is only guaranteed to be accurate when this flatness condition holds.  Theorem \ref{thm:epsilon_flat} gives conditions for the first-passage hitting probability function to become flat in the asymptotic limit as the targets become small.  How quickly do these asymptotic limits begin to apply?  What kinds of diffusions actually satisfy $\varepsilon$-flatness condition with $\varepsilon \ll 1$?
-	\item Is Theorem \ref{thm:main_thm} loose or tight?  This Theorem shows that the first-passing hitting probabilities can be well-approximated by first-passage capacities whenever the first-passage hitting probability function is $\varepsilon$-flat.  Specifically, the theory shows that capacity-based estimates lie within $\theepsrate$ of the truth.  Is this bound is tight or loose?
-	\item Is the shell-method accurate and fast?  In Section \ref{sec:Estimation} we propose a new algorithm for estimating the capacity.  What is the speed and accuracy of this algorithm?
+
+\item Is the first-passage probability function 
+ $\varepsilon$-flat?  
+The capacity approach to first-passage probabilities (Theorem  \ref{thm:main_thm}) is predicated on the assumption that 
+$h_{A,B}(x)$ is $\varepsilon$-flat over a region that is sufficiently removed from the immediate neighborhoods of the targets.
+Theorem \ref{thm:epsilon_flat} gives asymptotic (small-target or high-dimension) sufficient conditions. How quickly do these asymptotic limits come into play?  We estimated, numerically, the extent of $\varepsilon$-flatness in each setting. 
+	
+\item How tight are the bounds in Theorem \ref{thm:main_thm}?  The Theorem guarantees that the first-passage probability function is within $\theepsrate$ of the probability determined by the target-capacity ratios.  We estimated the tightness of the bound in each setting. 
+
+\item Is the shell method accurate and computationally efficient?  
+Target capacities can rarely be computed analytically, and hence the applicability of the capacity-based approach to first-passage probabilities depends upon the accuracy and computational efficiency of the shell method (\ref{sec:Estimation}).  We examined both in each of many settings. 
 \end{itemize}
 
-To test these questions we look at problems of the following form.  In every case the configuration space,
-$\Omega$, is the unit ball in $\mathbb{R}^5$.  In other words, 
-$\Omega = \bb{0,1}$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$. A diffusion is confined to $\Omega$ by a reflecting boundary at $\partial\Omega$, and within $\Omega$ the dynamics are assumed given by the first-order (high-viscosity) Langevin equation,
+We looked at problems of the following form.  In every case the configuration space,
+$\Omega$, was the unit ball in $\mathbb{R}^5$.  In other words, 
+$\Omega = \bb{0,1}$, where $\bb{x, r} \triangleq \{ y : || y - x || < r \}$. The diffusion was confined to $\Omega$ by a reflecting boundary at $\partial\Omega$, and within $\Omega$ the dynamics were assumed to obey the first-order (high-viscosity) Langevin equation,
 \begin{equation}
 \label{equ:toy_sde}
 \mathrm{d} X_t = - \nabla U (X_t) \mathrm{d} t + \mathrm{d} W_t
 \end{equation}
 where $W_t$ is an $n$-dimensional Brownian motion and
-$U$ is a potential energy. There are only two targets,
+$U$ is a potential energy. Although the method applies to multiple targets (as noted earlier), the experiments involved only  two,
 \begin{align*}
 A &\triangleq \bb {x_A, r_A}\\
 B &\triangleq \bb {x_B, r_B}
 \end{align*}
-Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first.  We further assume that $U$ is constant beyond the immediate neighborhoods of $A$ and $B$; letting $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $r_A<r_\dA<r_\tA$, letting $\dB=\bb{x_B,r_\dB }$ and  $\tB=\bb{x_B,r_\tB}$ such that $r_B<r_\dB<r_\tB$, we assume that $\nabla U(x)=0$ for all $x\in\Omega\backslash (\dA\cup\dB)$.  We will be particularly interested in initial conditions $X_0 \nin \tA \cup \tB$.
 
-We will consider several variations on the setup described above; each variation will gives us a different perspective on the empirical questions we are seeking to answer.  
+Given an initial condition $X_0\in \Omega \backslash (A\cup B)$, we are interested to know whether the dynamics carry the system into $A$ or $B$ first.  We further assumed that $U$ is constant beyond the immediate neighborhoods of $A$ and $B$: letting $\dA=\bb{x_A,r_\dA }$ and $\tA=\bb{x_A,r_\tA }$ such that $r_A<r_\dA<r_\tA$, and letting $\dB=\bb{x_B,r_\dB }$ and  $\tB=\bb{x_B,r_\tB}$ such that $r_B<r_\dB<r_\tB$, we assumed that $\nabla U(x)=0$ for all $x\in\Omega\backslash (\dA\cup\dB)$.  Our interest is in estimating $h_{A,B}(x)$ over the region $x=X_0 \in \Omega\setminus \tA \cup \tB$.  
+
+In order to establish good estimates for ground truth, 
+we ran a total of 400,000 simulations of (\ref{equ:toy_sde}) 
+until the first passage to $A$ or $B$, 
+in each of six experiments. This was greatly facilitated by
+the assumption that
+ $\nabla U(x)=0$ outside of $\dA\cup\dB$, since we could use
+ the ``walk-on-spheres'' method (cf.\ \cite{bingham1972random})
+for the corresponding portions of the trajectory.
+
+We considered two broadly different variations of the set-up: one (Brownian diffusion) in which the
+{\em exact} target capacities could be computed, thereby allowing for a direct assessment of the accuracy of the shell method,  and the other involving complex energy landscapes in the neighborhoods of the targets. In the latter case, the accuracy of the capacity estimates could only be inferred from the accuracy of the resulting estimates of first-passage probabilities.
+
 \subsection{Brownian Diffusion}
 \label{sec:B_D}
 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
     \includegraphics[width=\textwidth]{results_brownian_motion.png}
-    \caption{\label{fig:results_brownian_motion}{\bf Local capacities can accurately answer the question ``where will we go next?'' for Brownian motions.}    We consider three different cases (small, medium and large), as illustrated in the left side of the figure.  In each case we have two targets and are interested in the probability that a Brownian motion will target $A$ before target $B$.  We consider 100 random initial locations which are modestly far away from either target; for each initial location, we estimate the probability of hitting target $A$ first.   We plot these 100 hitting probabilities as a histogram.  The histograms reveal that the hitting probabilities fall within a narrow range, especially when the targets are small.  Moreover, we see that the location of this narrow range can be accurately predicted by the capacity-based approximation in Theorem \ref{thm:main_thm} (shown as a dotted red line); this ``Expected hitting probability'' always falls inside the span of the histogram.  We can compare this expected value to an estimate of the hitting probability for a process initialized at a random location, found by averaging over simulations from 200,000 different initial conditions (this is shown as a red line). }
+    \caption{\label{fig:results_brownian_motion}{\bf 
+    Capacities and first-passage probabilities: Brownian motion.}
+We consider three different cases (small, medium and large), as illustrated in the left side of the figure.  In each case we have two targets and are interested in the probability that a Brownian motion will first encounter target $A$ before target $B$.  We consider 100 random initial locations,  confined to be outside of the small black circles. For each location, we use 2,000 runs of the diffusion to estimate the probability of hitting target $A$ before $B$.   We plot these 100 estimates as a histogram.  The histograms reveal that the hitting probabilities fall within a narrow range, especially when the targets are small.  Moreover, we see that the location of this narrow range can be accurately predicted by the capacity-based approximation in Theorem \ref{thm:main_thm} ($p_A$ from equation \ref{eqn:p_A},
+shown as a dotted red line); the capacity-based approximation, derived from purely {\em local} computations within the neighborhoods of the targets, always falls inside the span of the histogram.  We can further compare the capacity-based value to an estimate of the mean hitting probability for a process initialized at a random location, which is just the relative frequency of hitting $A$ before $B$ in  200,000 additional simulations from random initial conditions (shown as a  solid red line.)}
 \end{minipage}}
 \end{figure}
 
-The first set of experiments tests the capacity-based approach in the simplest possible case: $U(x)=0$.  Using the simple geometry of our setup, a ``walk-on-spheres'' method (cf.\ \cite{bingham1972random}) can efficiently simulate trajectories for this kind of problem.  This allows us to compute something very close to ``ground-truth'' estimates for the hitting probabilities, even though no analytic formula is available and the problem is somewhat high-dimensional.  We can then compare the results of Theorem \ref{thm:main_thm} and \ref{thm:epsilon_flat} against this ground-truth.  
+The first set of experiments tested the capacity-based approach in the simplest possible case: $U(x)=0$ for all $x$ outside of the targets. The target centers were fixed
+at $x_A=(0.5,0.6,0.0,0,0,0.0)$ and $x_B=(-0.7,0.0,0.0,0,0,0.0)$, the radii $r_\tA$ and $r_\tB$ were fixed at $0.2$, 
+and the radii $r_A$ and $r_B$ were varied across three conditions. These were defined as ``small targets'' ($r_A=0.02, r_B=0.04$), ``medium targets'' ($r_A=0.05, r_B=0.075$) and ``large targets'' ($r_A=r_B=0.15$). 
+The three cases are illustrated, along with the corresponding results, in Figure \ref{fig:results_brownian_motion}.  
+(In light of the assumption $U(x)=0$, the particular values of
+$r_\dA$ and $r_\dB$ 
+are irrelevant in this set of experiments, though not in the next set---see \ref{sec:nontrivial_results}.)
 
-In this set of experiments, we fixed the target centers $x_A=(0.5,0.6,0.0,0,0,0.0), x_B=(-0.7,0.0,0.0,0,0,0.0)$, fixed the radii $r_\tA=r_\tB=0.2$, and varied the radii $r_A,r_B$.  We looked at three different cases: small (where $r_A=0.02, r_B=0.04$), medium (where $r_A=0.05, r_B=0.075$) and large (where $r_A=r_B=0.15$). An illustration of the three different cases and the corresponding results are shown in Figure \ref{fig:results_brownian_motion}.  
+Each of the three questions raised earlier 
+(Is the first-passage probability function 
+ $\varepsilon$-flat?
+ How tight are the bounds in Theorem \ref{thm:main_thm}? 
+ Is the shell method accurate and computationally efficient? )
+was explored for each of the three target sizes.  
 
-For each radius we will be interested in our three main questions.  Does the $\varepsilon$-flatness condition hold?  How well do the first-passage capacities estimate the hitting probabilities?  How accurate and fast is the capacity estimation algorithm?
-
-\subsubsection{Does the $\varepsilon$-flatness condition hold?}
+\subsubsection{Is the first-passage probability function 
+ $\varepsilon$-flat?}
 \label{sec:toy_constant}
-How much do the hitting probabilities vary as a function of initial condition?  To investigate the relationship between hitting probability and initial condition, we conducted 2,000 diffusion simulations at each of 100 randomly selected initial conditions.  These simulations yielded 100 well-estimated hitting probabilities.  The histograms of these probabilities can be be found in Figure \ref{fig:results_brownian_motion}.  As the targets become smaller, the hitting probability varies less, and these histograms become more peaked.  Based on these histograms we estimate that the flatness of the hitting probability functions are given by:
+Theorem \ref{thm:epsilon_flat}, although an asymptotic result, suggests that the variability of the first-passage probabilities will decrease with target size. 
+To investigate this relationship we conducted 2,000 diffusion simulations at each of 100 randomly selected initial conditions,
+$X_0 \in \Omega\setminus \tA \cup \tB$.  These simulations yielded 100 well-estimated hitting probabilities.  The histograms of these probabilities are displayed in Figure \ref{fig:results_brownian_motion}.  As the targets become smaller, the histograms become more peaked.  
+A crude estimate of the flatness of $h_{A,B}(x)$ is the 
+spread of the 100 estimated probabilities:
 \begin{itemize}
-    \item $\varepsilon\approx 0.0295$ when the targets are small
-    \item $\varepsilon\approx 0.0420$ when the targets are medium
-    \item $\varepsilon\approx 0.1060$ when the targets are large
+    \item $\varepsilon\approx 0.0295$ for the small targets
+    \item $\varepsilon\approx 0.0420$ for the medium targets
+    \item $\varepsilon\approx 0.1060$ for the large targets
 \end{itemize}
+In other words, the dependency of the hitting probability on the initial condition decreases with target size, as anticipated.
 
-\subsubsection{Are first-passage probabilities proportional to capacity?}
+
+\subsubsection{How tight are the bounds in Theorem \ref{thm:main_thm}?}
 \label{sec:toy_capacity}
-Since the hitting probability functions appear to be fairly flat, Theorem \ref{thm:main_thm} suggests that first-passage capacities should be able to approximate the hitting probabilities according to the formula
+If we were to take these estimates of $\varepsilon$-flatness and apply Theorem \ref{thm:main_thm}, as though they were precise measurements, then we would conclude that 
 \begin{equation}
-\label{eqn:capacity_ratio}
-h_{A,B}(x) \approx p_A \triangleq \frac{\capac{A}{\tA}}{\capac{A}{\tA}+\capac{B}{\tB}}
+\label{eqn:bound}
+\sup_{x \notin \tilde A,\tilde B} \left| h_{A,B} (x) -p_A
+\right| \leqslant \varepsilon + \sqrt{\varepsilon/2} 
 \end{equation}
-for $x\in M=\mathcal{B}(0, 1) \setminus (\tilde{A} \cup \tilde{B})$.  Theorem \ref{thm:main_thm} shows that this estimate should be accurate to within $\theepsrate$ for a capacity which is $\varepsilon$-flat on the region $M$.  In our case, using the numbers found in the previous section, we calculate that the capacity-based estimates should be accurate to within 15\%, 19\%, and 34\% for small, medium, and large targets respectively.  
+where 
+\begin{equation}
+\label{eqn:p_A}
+p_A\triangleq 
+   \frac{\capac{A}{\tilde A}}{\capac{A}{\tilde A}+\capac{B}{\tilde B}}  
+\end{equation}
+and $\varepsilon +
+\sqrt{\varepsilon/2}=0.0295+\sqrt{0.0295/2}
+\approx 0.15$ for the small targets, and 0.19 and 0.34 for the medium and large targets, respectively.
 
-In this case we can compute these capacity-based estimates analytically.  The capacities can be computed according to
+In this special case, in which the diffusion is just a Brownian motion outside of the targets, the capacities can be computed exactly via the formulas
 \begin{equation}
 \label{eqn:analytic_capacities}
 \capac{A}{\tA}  =
@@ -424,61 +503,185 @@ In this case we can compute these capacity-based estimates analytically.  The ca
 \frac{6\pi^{\frac{5}{2}}}
 {\Gamma(\frac{5}{2})(r_B^{-3} - r_\tB^{-3})}
 \end{equation}
-The capacity-based estimates are thus given by:
+which are easily derived using the representation in equation (\ref{eqn:GIntegral}), established in Proposition \ref{prop:flux}. Together with (\ref{eqn:p_A}), we then get the following formula for the corresponding probabilities:
 \begin{equation*}
 p_A = \frac{\frac{1}{r_A^{-3} - r_{\tilde{A}}^{-3}}}{\frac{1}{r_A^{-3} - r_{\tilde{A}}^{-3}} + \frac{1}{r_B^{-3} - r_{\tilde{B}}^{-3}}}
 \end{equation*}
-In our case: $p_A \approx 0.1104$ for small targets, $p_A \approx 0.2219$ for medium targets, and $p_A = 0.5$ for large targets.  These are shown as dotted red lines in Figure \ref{fig:results_brownian_motion}.
+which evaluates to 0.1104, 0.2219, and 0.5, respectively for the small, medium and large targets. These capacity-based estimates are indicated in Figure \ref{fig:results_brownian_motion} by the dotted red lines, which are  superimposed on the corresponding histograms of the one-hundred empirically derived probabilities.
 
-How accurate are these capacity-based estimates?  In every case, we found the error to be less than $8\varepsilon/9$; this is less than the $\theepsrate$ bound guaranteed by Theorem \ref{thm:main_thm}.   For example, consider the small target case.  For every initial condition we looked at, the true hitting probability lay within 2\% of the capacity-based estimate.  This is much smaller than the 15\% error bound promised by Theorem \ref{thm:main_thm}.  In fact, this error is nearly as low as we could possibly get, given that $\varepsilon \approx 2.3\%$ for small targets.  That is, the true hitting probabilities vary by 2.3\% as we vary the initial condition within $M$.  We are attempting to summarize these different hitting probabilities with a single number: the capacity-based estimate.  To minimize error, the best case would be that the capacity-based estimate was directly in the middle of the variability; this would lead to an error or $\varepsilon/2$.  In fact, we achieve an error of about $8\varepsilon/9$ for the small targets.  Considered as a proportion of the $\varepsilon$ coefficient, the error is even smaller for the the medium- and large-target cases because the estimates lay more directly in the middle of the variability.  
+To the extent that the range of the 100 well-estimated hitting probabilities (2,000 samples of the diffusion starting at each of the 100 randomly selected starting locations) is a reasonable estimate of the $\varepsilon$-flatness, for a given pair of targets,
+we are now in a position to evaluate the accuracy of the bound guaranteed by Theorem {\ref{thm:main_thm}, i.e. the bound in equation (\ref{eqn:bound}). In particular, in each of the three examples depicted in Figure \ref{fig:results_brownian_motion}
+the value of $p_A$ (dotted red line) lies within the range of the corresponding histogram. Therefor, in each of the three examples,  the maximum error is smaller than our estimate of $\varepsilon$ itself. For these examples, the theoretical bound appears to be fairly loose---in each case  $\varepsilon +
+\sqrt{\varepsilon/2}$  could be replaced by  $\varepsilon$, which comes to 0.0295 instead of 0.15 for the small targets, and 0.0420 instead of 0.19 and 0.1060 instead of 0.34 for the medium and large targets. Possibly, the {\em asymptotic} bound ($\varepsilon\to
+0$), which is not addressed by Theroem \ref{thm:main_thm},
+is dominated by $\varepsilon$ rather than $\sqrt{\varepsilon}$.
 
-This suggests the possibility that it might be possible to tighten the bound in Theorem \ref{thm:main_thm}.
 
-\subsubsection{Accuracy and speed of the shell method.}
+\subsubsection{Is the shell method accurate and computationally efficient?}
 \label{sec:toy_shell}
-We here check the accuracy of the capacity estimation algorithm that we call the shell method (cf. \S\ref{sec:Estimation}). For small targets, we find that $\capac{A}{\tA}=0.000632$ and $\capac{B}{\tB}=0.005094$, while shell method estimates them to be $0.000549$ and $0.004699$, respectively. For medium targets, the true capacities are $\capac{A}{\tA}=0.01002626$ and $\capac{B}{\tB}=0.03516428$, while shell method estimates them to be $0.00930769$ and $0.03362453$, respectively. For large targets, the true capacities are $\capac{A}{\tA}=\capac{B}{\tB}=0.4609372$, while shell method estimates them to be $0.45244093 $ and $0.45153703$, respectively.\footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method: $m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of $10^{-7}$.}
+As noted in \S\ref{sec:toy_capacity}, the special assumptions in these examples allow us to compute the exact capacities, according to equation (\ref{eqn:analytic_capacities}). Hence we can directly measure the accuracy of the approximations computed with the shell method.\footnote{With reference to Appendix \ref{sec:shell_method}, the following parameters were used to implement the shell method: $m = 2, n = 4, N_p = 100, N_b = 3, N_s = 1000$, and a time-step of $10^{-7}$.}
+Table \ref{table:brownian_capacities} summarizes the results for
+each of the three target sizes. 
+By Theorem \ref{thm:main_thm}, the capacities enter into an approximation of first-passage probabilities through $p_A$, 
+as defined in equation (\ref{eqn:p_A}). 
+The third and fourth rows of the table give the exact values of $p_A$ and the corresponding values derived from the shell-estimated capacities, respectively. The differences are small relative to the spread of first-passage probabilities and, in particular, each of the estimated values lies comfortably within the range of estimated probabilities (cf. Figure 
+\ref{fig:results_brownian_motion}).
+The shell method does not introduce any significant additional error for these problems.
 
-Had we used the shell-method to estimate capacities instead of the exact capacities in computing $p_A$ from Equation
-(\ref{eqn:capacity_ratio}), we would have obtained different estimates of the first-passage probability: 0.1091 instead of 0.1104 for small targets, 0.2168 instead of 0.2219 for medium targets, and 0.5005 instead of 0.5 for large targets.  Note that these errors are all at least ten times smaller than the $\varepsilon$ coefficients.  As discussed above, $\varepsilon/2$ is the lowest error we could possibly hope to achieve.  Thus the the shell method does not introduce any significant additional error for these problems.
+
+\begin{table}[!ht]
+\begin{tabular}{ c| c c c}
+      Targets & small & medium & large  \\
+  \hline
+  $\large(\capac{A}{\tilde A},\capac{B}{\tilde B}\large)$ 
+  & (0.000632,0.005094) 
+  & (0.010026,0.035164)
+  & (0.460937,0.460937)
+   \\
+$\large(\hatcapac{A}{\tilde A},\hatcapac{B}{\tilde B}\large)$
+  &(0.000549,0.004699)
+  &(0.009308,0.033625)
+  &(0.452441,0.451537)
+  \\
+  $p_A$ & 0.1104 & 0.2219 & 0.5000\\
+  $\hat{p}_A$  & 0.1091 &0.2168 & 0.5005 \\
+  \end{tabular}
+  \caption{{\bf Accuracy of the shell method: Brownian motion.} 
+  There are thee pairs of targets, labeled small, medium and large.
+ The target capacities, which can be calculated exactly for Brownian motion, are entered in the first row. The second row contains the corresponding estimates derived by the shell method
+(cf. \S\ref{sec:Estimation}). According to Theorem \ref{thm:main_thm}, $p_A$ (\ref{eqn:p_A}) is an estimate of the probability that the first passage occurs at $A$, accurate to within an error of $\varepsilon$ + $\sqrt{\varepsilon/2}$. The exact values
+ of $p_A$ are entered in the third row, and the estimated values, derived from the estimated capacities, are in the fourth row.}
+\label{table:brownian_capacities}
+\end{table}
+
+Turning now to the question of computational efficiency, 
+how fast is a capacity-estimation approach when compared against a simulation-based approach?  There are of course many
+variables that might affect the comparison, including the dimension and the details of the energies, not to mention the implementation details. In our experiments with direct simulations, we used the ``walk-on-spheres'' method to simulate trajectories in the flat region \cite{bingham1972random}, JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. (In that the walk-on-spheres method requires a flat energy landscape and Theorem \ref{thm:main_thm} does not, 
+our inferences about computational efficiency are, in this regard, somewhat tilted in favor of the simulation approach.)
+As for capacity estimation, we made no effort to adjust the number of samples or the discretization parameters. 
+
+In both the Brownian-motion experiments discussed in this section and the experiments with non-trivial landscapes discussed in the next section, we observed that a single run of direct simulation took about as long as estimating two capacities using the shell method,
+i.e. as long as it takes to compute the capacity-based estimate of the first-passage probability. With this benchmark in hand, the comparison of the two approaches comes down to the question of accuracy: How many direct simulations would be needed to compute the first-passage probability to within an accuracy 
+comparable to what was obtained using capacities? 
+
+A single simulation run produces  a single Bernoulli variable---one if target $A$ is encountered before target $B$, and zero otherwise. The total number of ones, then, in a sequence of independent simulations will have a binomial distribution. Hence, given any probability $p$ of the Bernoulli event ``one,''
+and any desired accuracy $\delta$, the number of independent simulations needed to achieve a confidence interval of size $\delta$, with 95\% confidence, is
+about $n(\delta)=4\frac{p(1-p)}{\delta^2}$.\footnote{
+In principle, the value of $p$ depends on the starting location. But in light of the tight clustering of first-passage probabilities ($\varepsilon$-flatness), we used the mean value obtained from 200,000 samples at random starting locations, which is designated ``Mean of simulated probabilities'' in the figures, 
+for all calculations of sample sizes.}
+Since a single simulation run takes about as long as our capacity-based estimation for $p_A$, we can assert that in this sense the capacity-based estimation is approximately $n=n(\delta)$ times more efficient.
+
+What is a reasonable value of $\delta$? Here are two points of view, leading to similar estimates of $n$:
+\begin{enumerate}
+\item 
+Let $\hat{p}_A$ be the capacity-based estimate 
+of first encountering $A$ after starting at a given location 
+$x \in \Omega\setminus \tA \cup \tB$
+(indicated, for each of the three experiments, by the dotted red line in Figure
+\ref{fig:results_brownian_motion}), 
+and recall that $h_{A,B}(x)$ 
+represents the actual probability, which in general depends on the starting location, $x$.
+Keep in mind that the capacity-based estimator is independent of $x$. If the starting location were chosen randomly, then an unbiased estimator of the mean absolute error,
+$\mathbb{E}[| h_{A,B}(X) - \hat{p}_A |]$, 
+for a given value of $\hat{p}_A$,
+is obtained by taking expectation with respect to the empirical probability distribution, which is displayed in the figure by a histogram for each target size.
+The resulting three estimates, for the small, medium, and large targets, of the mean absolute errors are 
+0.0127,
+0.0080,
+and 0.0167, respectively. 
+From this point of view (i.e. using these three values for $\delta$),
+{\em 
+the number of simulation runs from a given location $x$ needed to achieve an error approximately equal to the mean absolute error of the capacity method, and hence the computational advantage of the capacity method, is about 
+2,000 for the small targets, 10,000 for the medium targets, and 
+3,500 for the large targets.}
+\item Suppose, instead, that the goal is to estimate the mean first-passage probability, i.e. the average over all starting locations 
+$x \in \Omega\setminus \tA \cup \tB$. For each of the three target sizes, we used 200,000 simulation runs, each one initiated at an independent and randomly chosen starting location, and recorded the relative frequencies with which target $A$ was reached before target $B$. The resulting estimates of the mean first-passage probabilities are reported in the figure and indicated by the solid red lines in the histograms. The difference between these means and the capacity-based probabilities (the distance between the red and dotted-red lines) is an approximation of the accuracy of the capacity-based approach in estimating the mean first-passage probabilities. We used these differences as $\delta$, but slightly corrected (made larger) to account for the binomial approximation error associated with a  sample size of 200,000 (i.e. corrected for the estimation of the mean in the first place).
+{\em In this way we estimate a computational advantage for the capacity-based method to be about 
+2,000 fold for the small targets, 400,000 for the medium targets and  8,000 for the large targets.}
+\end{enumerate}
+
+
 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
     \includegraphics[width=\textwidth]{results_nontrivial.png}
-    \caption{\label{fig:results_nontrivial} {\bf  Local capacities can accurately answer the question ``where will we go next?'' for nontrivial diffusions.}  The setup is similar to Figure \ref{fig:results_brownian_motion}, but now the targets $A$ and $B$ are only partially contained in $\Omega$ and the energy landscape becomes complicated near the targets. We again consider three different cases (small, medium and large targets), as illustrated in the left side of the figure. In each case, for each of 100 initial locations at modest distance from the targets, we estimate the probability of hitting target $A$ first.  In each case, we plot these 100 hitting probabilities with a histogram.  The histograms show that the first-passage probabilities vary significantly in the case of large targets, but they fall in a narrow range in the case of small and medium targets.  In all cases the capacity-based estimates, shown as dotted red lines, fall inside the span of the histograms.}
+    \caption{\label{fig:results_nontrivial} {\bf  Capacities and first-passage probabilities: nontrivial energy landscapes.} See Figure \ref{fig:results_brownian_motion}. The setup here is the same
+ except that the targets $A$ and $B$ are only partially contained in $\Omega$, and the energy landscapes become complicated near the targets. 
+The histograms show that the first-passage probabilities 
+are largely independent of starting location for the small and medium targets, as they were in the previous set of experiments. 
+In contrast, the first-passage probabilities for the large targets depend strongly on starting location. This is expected, since these targets are substantially larger than the corresponding targets from the previous experiments. (The size difference is 
+even bigger than it might appear, given that these figures represent two-dimensional slices of a five-dimensional region.) 
+In contrast to the Brownian motion examples, the complex landscape in these examples precludes an exact evaluation of 
+$p_A$ (equation \ref{eqn:p_A}). Hence the dotted red line
+represents the {\em estimated} value,
+$\hat{p}_A$, computed using the shell method (cf. Figure 
+\ref{fig:results_brownian_motion}). Nonetheless, 
+these estimates fall within the span of the respective histograms in all three examples.}
 \end{minipage}}
 \end{figure}
 
 \subsection{Nontrivial Landscape}\label{sec:nontrivial_results}
-The second set of experiments considers diffusions where the targets $A$ and $B$ are only partially contained in $\Omega$ and the energy landscape $U$ is nontrivial.  We fixed the target centers $x_A=(0.6402,0.7682,0.0,0,0,0.0), x_B=(-1.0,0.0,0.0,0,0,0.0)$ and the radii $r_\tA=r_\tB=0.5$.  We investigated three different cases with targets of different sizes: small (where $r_A=0.02, r_\dA=0.05, r_B=0.04, r_\dB=0.075$), medium (where $r_A=0.1, r_\dA=0.15, r_B=0.2, r_\dB=0.25$) and large (where $r_A=r_B=0.45, r_\dA=r_\dB=0.475$). More details of the specification can be found in Appendix \ref{sec:energy_function}. An illustration of the three different cases and the corresponding results are shown in Figure \ref{fig:results_nontrivial}.  We look at our three main questions in the context of these kinds of diffusions.
+In the second set of experiments the targets $A$ and $B$ were only partially contained in $\Omega$, and the energy landscape $U$ was nontrivial.  We fixed the target centers at $x_A=(0.6402,0.7682,0.0,0,0,0.0)$ and  $x_B=(-1.0,0.0,0.0,0,0,0.0)$, and the outer radii at $r_\tA=r_\tB=0.5$.  We investigated three different cases with targets of different sizes: small (where $r_A=0.02, r_\dA=0.05, r_B=0.04$, and $r_\dB=0.075$), medium (where $r_A=0.1, r_\dA=0.15, r_B=0.2$, and $r_\dB=0.25$) and large (where $r_A=r_B=0.45$ and $r_\dA=r_\dB=0.475$). The  
+specifications of the energy functions can be found in Appendix \ref{sec:energy_function}. Illustrations of the three set ups and corresponding results are shown in Figure \ref{fig:results_nontrivial}.  We will now revisit the three issues discussed in the previous examples, but in the context of the more complex landscapes surrounding the targets.
 
-\subsubsection{Does the $\varepsilon$-flatness condition hold?}
-Following the same procedure used in \S\ref{sec:toy_constant} we tested for the $\varepsilon$-flatness of $h_{A,B}$ on $M=\Omega\backslash(\tA\cup\tB)$. The histograms of the probabilities are illustrated in Figure \ref{fig:results_nontrivial}. We find that $h$ is $\varepsilon$-flat, with:
+\subsubsection{Is the first-passage probability function 
+ $\varepsilon$-flat?}
+ \label{sec:nontrivial_flat}
+ Following the same procedures used in \S\ref{sec:toy_constant}, we estimated $\varepsilon$-flatness 
+from the spreads of the probability histograms: 
 \begin{itemize}
     \item $\varepsilon\approx 0.0530$ when the targets are small
     \item $\varepsilon\approx 0.0495$ when the targets are medium
     \item $\varepsilon> 0.75$ when the targets are large
 \end{itemize}
-In the last case $h$ can hardly be called flat, varying by more than 75\% based depending upon the initial condition.  However, in the first two cases the constant $\varepsilon$ is sufficiently small that Theorem \ref{thm:main_thm} has relevant consequences.
+In the third example,
+the first-passage probability function $h_{A,B}(x)$ can hardly be called flat.
+Evidently, the large targets are not subject to the asymptotic guarantees offered in Theorem \ref{thm:epsilon_flat}.
+In this circumstance, Theorem \ref{thm:main_thm} is irrelevant, and therefore we will discuss the remaining questions only in the context of the small and medium targets.
 
-\subsubsection{Are first-passage probabilities proportional to estimated capacities?}
 
-Applying Theorem \ref{thm:main_thm} and using the shell method to estimate capacities, we can produce capacity-based estimates for the hitting probabilities.  These are shown as dotted red lines in Figure \ref{fig:results_nontrivial}.  Similar to the Brownian motion case, every hitting probability we looked at lay within $2\varepsilon/3$ of the capacity-based estimate.  This is better than the $\theepsrate$ promised by Theorem \ref{thm:main_thm} and closer to the minimum possible error of $\varepsilon/2$.   This again suggests that the bound of \ref{thm:main_thm} may be somewhat loose.
+\subsubsection{How tight are the bounds in Theorem
+\ref{thm:main_thm}?}
+\label{sec:nontrivial_bounds}
+In other words, how large is $\sup_x|h_{A,B}(x)-p_A|$ on $\Omega \setminus \tA \cup \tB$ compared to 
+$\theepsrate$?
+For Brownian motion (\S\ref{sec:B_D}), 
+the capacities were derivable analytically (equation \ref{eqn:analytic_capacities}), which led to 
+a closed-form expression for $p_A$. Here,
+we followed the same reasoning as in 
+\S\ref{sec:toy_capacity}
+to get an approximation of the tightness of the theorem's bound, but replaced $p_A$ by  $\hat{p}_A$, the estimate computed from the shell method. The resulting value of $\hat{p}_A$, for each target size, is displayed in 
+Figure \ref{fig:results_nontrivial}
+as a dotted red line superimposed on the target-probability histogram. For both the small and medium targets, the estimated hitting probability lies within the range of the one-hundred sampled probabilities, as it did in the case of Brownian motion. 
+Reasoning as we did there, these observations suggest that the true error may be better approximated by $\varepsilon$ rather than 
+the $\theepsrate$
+ guarantee given in the theorem. Specifically, the magnitudes of the ranges, 0.0530 and 0.0495 respectively, serve as ballpark upper bounds on the estimation errors for the first-passage probabilities for the small and medium targets.
 
-\subsubsection{Accuracy and speed of the shell method.}
 
-How accurate is the shell method in this case?  In the previous section, we saw that we could use the shell-method to estimate capacities, use those capacities to get hitting-probability estimates, and that those estimates were fairly good.  This constitutes indirect evidence for the accuracy of the shell method.  However, this does not actually show that the shell-method accurately estimates the capacities (for example, if all estimated capacities were off by a multiplicative factor, this error would not show up in the estimates based on the shell method's capacity estimates).  Unfortunately, in this case it is not possible to obtain exact values for the capacity for this case, making it difficult to determine whether the shell algorithm is accurately estimating the capacity.   
+\subsubsection{Is the shell method accurate and computationally efficient?}
+How accurate is the shell method in these cases?  
+In the absence of a closed-form expression for the capacities, we are forced to rely on an indirect measure.
+In \S\ref{sec:nontrivial_bounds}, we used the shell method to estimate capacities and used those capacities to get hitting-probability estimates. These were in good agreement with
+the results obtained from 200,000 runs of simulated diffusions
+ (2,000 from each of 100 random starting points).
+This, then, constitutes indirect evidence for the accuracy of the shell method, but with the important proviso that the estimated hitting probabilities only depend on the {\em ratio} of the (estimated) capacities, and not on the capacities themselves. 
 
-Concerning computational efficiency: how fast is a capacity-estimation approach when compared against a simulation-based approach?  It is somewhat difficult to assess; there are many parameters and run times will depend on the dimension and details of the energies, possibly affecting the two approaches differently. In our experiments, for direct simulations we used the ``walk-on-spheres'' method to simulate trajectories in the flat region \cite{bingham1972random}, JIT compilation to remove loop overhead, multi-CPU parallelization, and the coarsest time step that yielded accurate results. As for capacity estimation, we made no effort to adjust the number of samples or the discretization parameters. 
+To assess computational efficiency, we repeated the approach used for Brownian motion, step-by-step as laid out in \S\ref{sec:toy_shell}.
+As noted there, one simulation run is nearly the same as using the shell method to estimate $p_A$, in terms of computational cost. 
+Therefore, efficiency comparisons between the shell method (capacity-based) approach
+and direct simulation come down to computing the number of simulation runs required to achieve comparable accuracy in estimating first-passage probabilities. In \S\ref{sec:toy_shell} we explored two interpretations of accuracy, which we repeat here, but using instead the results reported in Figure \ref{fig:results_nontrivial}:
+\begin{enumerate}
+\item 
+For each target size (small and medium) and corresponding value
+of $\hat{p}_A$, we used the probability histogram to estimate  $\mathbb{E}[| h_{A,B}(X) - \hat{p}_A |]$, the mean absolute error of the capacity-based method. The resulting accuracy measures came to 0.0078 for the small targets and 0.0095 for the medium targets. Then, using the respective probabilities of 0.8217 and 0.3893 (solid red lines), we conclude that in each case about 10,000 simulation runs would be needed to achieve an accuracy comparable to capacity-based approach. {\em In this sense, the capacity approach, based on shell-method estimates, is about 10,000 fold more efficient than direct simulation.}
+\item
+In the second interpretation, we consider the problem of estimating the mean first-passage probability for a randomly chosen starting position (approximately 0.8154 for the small targets and 0.3893 for the medium targets, based on 200,000 independent random samples). Errors in the capacity-based approach were about 0.0072 and 0.0089, which come from the differences in the positions of the red and dotted-red lines, but inflated to account for 
+the expected sampling error when using a sample of size $n$=200,000.
+Comparable accuracies would require about 12,000 simulation runs, for each of the small and medium targets. {\em Hence, from this point of view,  we would estimate that the capacity-based approach is about 12,000 fold more efficient than direct simulation.}
+\end{enumerate}
 
-Nonetheless, we can provide some facts which may give a sense for the computational efficiency gains.  Here are three different perspectives on the question:
 
-\begin{description}
-    \item[A single run of the direct simulation took about as long as estimating two capacities.]  Recall that estimating a hitting probability will require many runs of the direct simulation to see how often each target is hit.  
 
-    \item[Getting a particular hitting probability with a 3\% error tolerance may be one-hundred times faster with capacities.]  In the small-targets Brownian motion case, the capacity-based estimate has a 3\% error.  That is, from any initial condition inside the set $M$, we found the true hitting probability to be within 3\% of the capacity-based estimate.  Now let us say we were interested in the hitting probability for a particular initial condition.  For some initial conditions the capacity-based estimator would actually be exactly correct.  However, for others it could be as much as 3\% off.  To achieve this 3\% error level using direct simulations we would need about 100 simulations (this follows from standard deviation of the binomial estimator for the hitting probability, together with the assumption that each individual simulation is exactly perfect).  As mentioned above, each simulation takes about as long as it does to compute both capacities.  Thus, if one wanted to compute the hitting probability up to within 3\% error, the capacity-based method would be one hundred times faster.
-
-    \item[Estimating the mean hitting probability may be thousands of times faster with capacities.] Consider the problem of estimating the \emph{mean} hitting probability over the region $M$.  In other words, consider a diffusion initialized at a random location inside $M$: what is the probability it hits target $A$ first?  We measured these mean hitting probabilities for all of the examples above, using 200,000 different initial conditions; they are shown as solid red lines in Figures \ref{fig:results_brownian_motion} and \ref{fig:results_nontrivial}.   For example, in the medium-size target case, we find that the mean hitting probability was given by 38.93\%.  The capacity-based estimate was given by $38.15\%$.  This represents an error of $.8\%$.  To achieve a comparable error one would need to conduct about four thousand naive simulations.  
-\end{description}
 
 
 %  ____ ___ ____   ____ _   _ ____ ____ ___ ___  _   _
@@ -489,18 +692,30 @@ Nonetheless, we can provide some facts which may give a sense for the computatio
 
 
 
-\section{Discussion}
+\section{Summary and Discussion}
 \label{sec:Discussion}
 
-If the hitting probability is nearly the same for every initial condition in a region $M$, then it can be well-approximated in terms of certain integrals.   We dub these integrals the ``first-passage capacities.''  These capacities can be approximately computed using a milestoning-like technique, as described in \S\ref{sec:Estimation}.  In Theorem \ref{thm:main_thm} we show that the error introduced by this approximation is small whenever hitting probabilities are fairly similar for different initial conditions inside a large region, $M$.  When this condition holds, we say the hitting probabilities are $\varepsilon$-flat; the coefficient $\varepsilon$ measures how much the hitting probabilities vary as one varies the initial condition.  Does this condition ever hold?  Can the hitting probabilities be similar for every initial condition in large region, $M$?  Theorem \ref{thm:epsilon_flat} shows several examples where the answer is yes.  Indeed, the answer is yes whenever the mixing rate of the diffusion is fast relative to the typical escape time from $M$.  In practice, this condition may not always be easy to check.
+If a first-passage probability is nearly the same for every initial condition in a region $M$, then it can be well-approximated in terms of certain integrals.   We dub these integrals the ``first-passage capacities.''  These capacities can be approximately computed using a milestoning-like technique, as described in \S\ref{sec:Estimation}.  In Theorem \ref{thm:main_thm} we show that the error introduced by this approximation is small whenever hitting probabilities are sufficiently similar across different initial conditions inside a large region, $M$.  When this condition holds, we say that the hitting probabilities are ``$\varepsilon$-flat,'' where the coefficient $\varepsilon$ bounds  how much the hitting probabilities vary over the initial conditions.  Under what circumstances are hitting probabilities similar for all initial conditions in a large region, $M$?  Theorem \ref{thm:epsilon_flat} provides some sufficient conditions, though 
+the concept is more general and we would expect some form
+of $\varepsilon$-flatness to hold anytime the mixing rate of the diffusion is fast relative to the typical escape time from $M$.
 
-A major outstanding limitation of this work is that we provide no strategy for checking the $\varepsilon$-flatness condition.  In theory, bounds on the Lipschitz constant of the energy function and the Poincare constant for $M$ should be sufficient to ensure this condition, but we leave this for future work.  For now, we content ourselves that the condition certainly holds when the ambient dimension is at least three and the targets become small.  Moreover, when the dimension is very large then even targets with modestly large diameter can have very small overall volume, yielding a similar result.
+The capacity of a given target is local, in the sense that the capacity integral is over a region in the neighborhood of the target. We have devised a Monte Carlo approach to estimating capacities that we call the shell method (\S\ref{sec:Estimation}).
+In \S\ref{sec:Experiments} we provide evidence for the accuracy and computational efficiency of using estimated capacities and Theorem \ref{thm:main_thm} to compute 
+first-passage probabilities. 
+In a series of computational experiments we compared our capacity-based approach to the direct estimation of hitting probabilities using repeated runs of the diffusion. In each of these experiments, repeated simulation required at least three
+orders-of-magnitude more computation to achieve comparable accuracy.
 
-The second major limitation of this work is that first-passage capacities do not directly inform us about the overall timescale on which the diffusion is operating.  The mean first-passage capacities are often inversely proportional to the first-passage times, but the overall proportionality constant is lost in this analysis.  In some limited cases, methods from the narrow escape literature may enable us to determine this overall constant.
+We were motivated by the narrow-escape problem, and in particular the potential connection to modeling the folding of large molecules. To the extent that folding can be thought of as a series of discrete steps, each requiring a rate-limiting search for  new connections in a large conformational space 
+\cite{McLeish2005-dq,Goldberg1999-mv,Jacob1999-bs,Plaxco1998-iv,Wales2006-ur},
+it might be possible to sidestep the exploratory phases by computing first-passage probabilities---one for each potential connection. An example might be the sequence of stem formations in the folding of structural RNA molecules.
+The idea would be to model the creation of each new stem as the outcome of a first-passage problem, defined by the already established stems. Not only does the search, as opposed to the stem creation, have to be the rate-limiting step, but it must be slow enough to allow for the hitting probabilities to be nearly independent of the starting configuration. 
+But the larger problem would be the possibility of the dissolution of an existing stem. RNA folding is not necessarily monotonic; stems come and go. Which will come first, the undoing of an existing stem or the creation of a new one?
+Unless the undoing of a stem could be formulated as itself a target
+or some kind of narrow escape, we would be forced to confront
+the problem of estimating first-passage {\em times} in addition to probabilities. 
 
-In general, it may turn out that estimating first-passage times is profoundly more difficult than estimating first-passage hitting probabilities.  In this work we showed that the first-passage probabilities are sometimes invariant to the diffusion dynamics on the interior of a large set $M$, but the first-passing times will admit no such invariance.   If the dynamics inside of $M$ are genuinely intricate, it appears that estimating hitting times will always require a correspondingly intricate analysis.
+In general, it may turn out that estimating first-passage times is profoundly more difficult than estimating first-passage probabilities.  In this work we showed that the first-passage probabilities are sometimes invariant to the diffusion dynamics on the interior of a large set $M$, but the first-passing times will admit no such invariance.   If the dynamics inside of $M$ are genuinely intricate, it appears that estimating hitting times will always require a correspondingly intricate analysis.
 
-We conclude by considering a possible future direction for this work.  Let us consider the case where we have many targets, $A_1,A_2\cdots A_n$, and the path between any two of the targets must pass through a set $M$.  In this case, assuming the $\varepsilon$-flatness condition holds on $M$, the order in which the process explores the targets could be accurately modeled using first-passage capacities alone.  In future we hope to explore this possibility.
 
 \newpage
 \appendix
