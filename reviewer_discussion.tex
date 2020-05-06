@@ -17,7 +17,12 @@ Michael Thoennessen,
 
 \vspace{.2in}
 
-Thank you for the opportunity to revise our manuscript, {\em Capacities and the free passage of entropic barriers}. We appreciate the careful reviews and the constructive suggestions made by the two reviewers.   The revision addresses the points raised by the reviewers. We have attached an overview of the revisions, along with a point-by-point response to each of the reviewer comments. \\
+Thank you for the opportunity to revise our manuscript, {\em Capacities and the Efficient Computation of First
+Passage Probabilities}.
+We appreciate the careful reviews and the constructive suggestions made by the two reviewers.   The revision addresses the points raised by the reviewers. We have attached an overview of the revisions, along with a point-by-point response to each of the reviewer comments. \\
+
+
+
 
 \noindent
 Sincerely,
@@ -40,8 +45,9 @@ Over the past few months we have performed a series of additional simulations an
     \end{itemize}
     \item We rewrote the preliminaries to more actively highlight the four key objects (reversible diffusions, hitting probabilities, $\varepsilon$-flatness, and capacities).
     \item We rewrote the main results section to trim out unnecessary mathematical details and focus on the key results.
-    \item We rewrote the shell-method section to better highlight the main ideas. 
-    \item We conducted more comprehensive numerical simulations of the technique's accuracy.  In the previous draft we used the numerical results mostly to verify the theory.  The new draft tries to take a more methodical look, using a wider variety of problems and quantifying the approximation error in a wider variety of ways.  
+    \item We rewrote the shell-method section to better highlight the main ideas.
+    \item We conducted more comprehensive numerical simulations of the technique's accuracy.  In the previous draft we used the numerical results mostly to verify the theory.  The new draft takes
+a more methodical look, using a wider variety of problems, and measuring the computational cost and approximate accuracy in a wider variety of ways.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,14 +74,14 @@ In the introduction of the new revision we have made the main ideas clearer:
     \item When does this algorithm apply -- Here we had a bit of difficulty, because there are two ways of thinking about this:
     \begin{itemize}
         \item On the one hand, there is a technical condition we actually use ($\varepsilon$-flatness).  The algorithm is only guaranteed to work if that condition holds
-        \item On the other hand, we have a more the intuitive and vague condition which implies the technical condition. 
-    \end{itemize} 
+        \item On the other hand, we have a more the intuitive and vague condition which implies the technical condition.
+    \end{itemize}
     In the third paragraph we try to explain both in progressive order from simple to sophisticated, so that the casual reader can skip unnecessary details.  In the second section we give a technical definition.
 \end{itemize}
-} 
+}
 
 \rev{1}{(also because of the notation that is not common for theoretical chemists/physicists).}{
-    
+
 We made a review of the literature and changed any notation/language that seemed non-standard.   If there is anything specific we should change we would of course be happy to do so.}
 
 \rev{1}{References are not order and superscript citations should follow after
@@ -89,7 +95,7 @@ to recognize an immediate relevance for the proposed algorithm ... The authors m
 stress from MD and focusing it more on mesoscopic bio-systems where
 the algorithm could have a much higher applicability. }{
 
-Following Reviewer 2's suggestion of looking at mesoscopic systems we now include a description of the ``narrow escape problem'' in the introduction.  This is at least one area of study where these methods should find immediately application.  For narrow escape problems, the hitting probabilities are proportional to the hitting times, so these methods can be applied to determine the relative hitting times to all kinds of different odd-shaped targets that that literature is interested in.  
+Following Reviewer 2's suggestion of looking at mesoscopic systems we now include a description of the ``narrow escape problem'' in the introduction.  This is at least one area of study where these methods should find immediately application.  For narrow escape problems, the hitting probabilities are proportional to the hitting times, so these methods can be applied to determine the relative hitting times to all kinds of different odd-shaped targets that that literature is interested in.
 
 }
 
@@ -100,15 +106,14 @@ yet were unreferenced.}{
 
 Our main results (Theorem 1 and 2) are substantially new to the literature, as far as we know.
 
-Our work does contain many propositions and lemmas, and some of these are certainly known by at least some people.  For example, the results about capacity and flux follows quite quickly from Green's first identity applied to the relevant equations.  We also include an inequality about Bessel functions that is doubtless obvious to those that specialize in such things.  Unfortunately, we had a difficult time finding sources in the literature which proved exactly the things we needed.  For this reason we were unable to source many of the proofs, even though they are indeed similar to what is already published in the literature.     
-}
+Our work does contain many propositions and lemmas, and some of these are certainly known by at least some people.  For example, the results about capacity and flux follows quite quickly from Green's first identity applied to the relevant equations.  We also include an inequality about Bessel functions that is doubtless obvious to those that specialize in such things.  More generally, in some cases we had a difficult time finding sources in the literature which proved exactly the things we needed, so we chose to include the derivation or proof in the appendix, to keep the paper more-or-less self contained. We included a few remarks to this effect.}
 
 \rev{2}{(i) The motivation builds heavily on the analysis of molecular dynamics data yet the algorithm will presumably be rather useless for the analysis of macromolecular systems because the central assumption
 (of small absorbing points in a mostly flat landscape) is mostly incompatible with the respective landscapes.}{
 
 We shifted the motivation to the narrow escape problem (which does have implications in mesoscopic bio-systems) for which the proposed algorithm is more obviously relevant.
 
-However, we do still include some mention of macromolecular systems.  We note TCB McLeish has said that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.''   There is also some experimental evidence that the exploration of regions with golf-course potentials is the rate-limiting step for a variety of processes. 
+However, we do still include some mention of macromolecular systems.  We note TCB McLeish has said that ``folding rates are controlled by the rate of diffusion of pieces of the open coil in their search for favorable contacts'' and ``the vast majority of the space covered by the energy landscape must actually be flat.''   There is also some experimental evidence that the exploration of regions with golf-course potentials is the rate-limiting step for a variety of processes.
 
 Some references we looked at that gave us this impression:
 
@@ -120,7 +125,7 @@ Some references we looked at that gave us this impression:
     \item David J Wales. Energy landscapes: calculating pathways and rates. Int. Rev. Phys. Chem., 25(1-2):237–282, January 2006
 \end{itemize}
 
-If these results bear out, the first-passage time out of this exploration may be long and our conditions may hold for macromolecular diffusions. 
+If these results bear out, the first-passage time out of this exploration may be long and our conditions may hold for macromolecular diffusions.
 
 }
 
@@ -131,19 +136,19 @@ Ward, partly decades ago...In particular, the golf-course
 problem (as the authors called it) has been solved asymptotically by
 singular perturbation theory and matched asymptotics.}{
 
-For several special cases, Reviewer 2 is correct that there are existing methods which could be used to get reasonably accurate estimates for hitting probabilities.  We now include a section comparing our work with these asymptotic methods. 
+For several special cases, Reviewer 2 is correct that there are existing methods which could be used to get reasonably accurate estimates for hitting probabilities.  We now include a section comparing our work with these asymptotic methods.
 
 In brief, there are three differences between this work and the approach taken by Schuss/Keller/Ward:
 \begin{enumerate}
     \item Not all of our results are asymptotic.  One of our results is, but one of our results is not:
     \begin{itemize}
-        \item Our main theorem really isn't asymptotic at all: it proposes a method for approximating hitting probabilities, and shows that the error of this approximation is bounded in terms of a value $\varepsilon$ which quantifies how much the hitting probabilities vary inside a set $M$.  
+        \item Our main theorem really isn't asymptotic at all: it proposes a method for approximating hitting probabilities, and shows that the error of this approximation is bounded in terms of a value $\varepsilon$ which quantifies how much the hitting probabilities vary inside a set $M$.
         \item We also have a second theorem which shows that this $\varepsilon$ vanishes as the target sets become smaller.  This is indeed an asymptotic result, although qualitatively different from the kinds of results found in the narrow escape literature.  Instead of showing how hitting times can be well-approximated (as the narrow escape literature does), this second theorem shows cases where that hitting probabilities are nearly constant inside a large region $M$.
     \end{itemize}
 
     \item Second, taking a step back, the the proposed algorithm is posed to handle a much wider variety of problems, because it requires very little special analysis to deal with the particular shape of the target.  By reducing the problem to a small region around each target, the proposed algorithm makes it feasible to compute the relevant properties numerically; no asymptotic analysis of the shape are necessary.  Moreover, the proposed method applies even in the case of nontrivial energy landscapes.  The axons studied in the narrow escape literature certainly contain large-scale fields, and this method should be able to handle those kinds of issues easily, whereas existing work focuses almost exclusively on the Brownian Motion case.
 
-    \item Third, our method says \emph{nothing} about the overall timescale of the process -- this is a weakness of the algorithm proposed here.  The existing asymptotic analysis are able to give information about these timescale because they make strong assumptions about the process (e.g. that it is a Brownian motion in a sphere).  The algorithm proposed here is much more general, but it comes at a steep cost: we can't get timing information.
+    \item Third, our method says \emph{nothing} about the overall timescale of the process -- this is a weakness of the algorithm proposed here.  The existing asymptotic analyses are able to give information about these timescales because they make strong assumptions about the process (e.g. that it is a Brownian motion in a sphere).  The algorithm proposed here is much more general, but it comes at a steep cost: we can't get timing information.
 \end{enumerate}
 We try to make these points clear in the new draft of the introduction.  The last point we also revisit in the discussion.
 }
@@ -156,54 +161,37 @@ probabilistic potential theory}{
 
 We tried to tighten this up as much as possible.  For example,
 \begin{itemize}
-    \item We removed all reference to ``entropic barriers.'' 
-    \item What we used to call ``capacity'' we now call ``first passage capacity'' to differentiate it from all the other notions of set capacity.    We compare it with Harmonic capacity and cite the work of Anton Bovier (who uses essentially the same notion of capacity).  These capacities are indeed to be understood in the context of probabilistic potential theory, a fact we now mention.  
-    \item We mention that our ``hitting probabilities'' are sometimes called ``splitting probabilities'' (especially in the case when there are exactly two targets; this is the case we mostly discuss though the algorithm holds equally well for any finite number of targets). 
+    \item We removed all reference to ``entropic barriers.''
+    \item What we used to call ``capacity'' we now call ``first passage capacity'' to differentiate it from all the other notions of set capacity.    We compare it with Harmonic capacity and cite the work of Anton Bovier (who uses essentially the same notion of capacity).  These capacities are indeed to be understood in the context of probabilistic potential theory, a fact we now mention.
+    \item We mention that our ``hitting probabilities'' are sometimes called ``splitting probabilities'' (especially in the case when there are exactly two targets; this is the case we mostly discuss though the algorithm holds equally well for any finite number of targets).
 \end{itemize}
 We are certainly open to any further suggestions in this regard.
 }
 
 \rev{2}{The existing literature is extremely poorly described.}{
 
-We now devote half of the introduction to describing what is already known.  We describe four different related literatures and relate our approach to each one.  
+We now devote half of the introduction to describing what is already known.  We describe four different related literatures and relate our approach to each one.
 
 }
 
 \rev{2}{However, the assumption of MSM is actually orthogonal to the
 assumptions made in the present work (yet this appears to have slipped
-under the radar). Namely, MSM are built on the assumption that the
-residence time in the metastable cores (and hence the escape from a
-core) is much longer than the time spent outside of the cores...splitting probabilities from a point located
-initially *not* inside a stable core seem to bear little relevance in
-describing conformational dynamics...Splitting probabilities in that sense (even if
-determined with perfect accuracy) as a whole would e relevant for the
-dynamics in-between the cores only upon the further assumption of
-renewal dynamics between the cores.}{
+under the radar).}{
 
-In the previous draft we dove into many details about how the ideas motivating MSM might connect to the current proposed work, and this reviewer comment reflects many of those subtleties.  
-
-However, in the interest of keeping the issues clear for a broad audience, the new draft has a much more limited focus.  In the new manuscript we focus on only two points; we believe that the authors and reviewer 2 already agree on these points:
-
-\begin{itemize}
-    \item MSM is different from our approach.  The set of situations where MSM can be applied is different from the set of situations where our approach can be applied.  Each approach requires a different set of assumptions to work.  As reviewer 2 points out, the empirical success of MSM suggests that its assumptions may indeed hold in a variety of cases.  The assumptions for first-passage capacities certainly hold in the narrow-escape setting and they may also hold in other situations.  In the introduction of the new draft we make these distinctions clear.
-
-    \item If the relevant assumptions hold, the method proposed here could be used to achieve something \emph{similar} to what MSM techniques achieve.  Under the right assumptions, first-passage capacities could be used to accurately simulate the order in which a process explores a set of targets (specifically it suffices that every path between the targets passes through a set $M$ where the hitting probabilities are $\varepsilon$-flat).  We discuss this possibility at the end of the discussion of the new draft.
-\end{itemize}
-
+In the previous draft we dove into many details about how the ideas motivating MSM might connect to the current proposed work, and this reviewer comment reflects many of those subtleties.  However, in the interest of keeping the issues clear for a broad audience, the new draft has a much more limited focus.  In the new manuscript we focus only on clarifying the differences between MSM and our approach.  Indeed, the set of situations where MSM can be applied is different from the set of situations where our approach can be applied.  Each approach requires a different set of assumptions to work.  As reviewer 2 points out, the empirical success of MSM suggests that its assumptions may indeed hold in a variety of cases.  The assumptions for first-passage capacities certainly hold in the narrow-escape setting and they may also hold in other situations.  In the introduction of the new draft we make these distinctions clear.
 }
 
 \rev{2}{I failed to see any quantitative evidence for the quality of the
 approximations, as advertised in section 3. Nor did I could recognize
 the gauge on what 'good agreement' is supposed to mean.}{
-    
+
 We have completely replaced the numerical results section, using six new experiments intended to more methodically assess the quality of the approximations.  We try to clearly investigate all possible sources of error in a capacity-based approach:
 \begin{itemize}
     \item The hitting probability functions are not perfectly flat.  We investigate clearly exactly how flat they are in various circumstances.
     \item The hitting probability is not exactly equal to the ratio of capacities.  We investigate the error here, and find that it is significantly smaller than what might be expected from the results of Theorem 1.
-    \item The capacity cannot be computed exactly.  Where the capacity can be computed exactly we evaluate the error of the shell method.  Where it cannot be computed exactly we evaluate the quality of the shell method by proxy, looking at the accuracy of the hitting probability estimates derived from the capacity estimates.  
+    \item The capacity cannot be computed exactly.  Where the capacity can be computed exactly we evaluate the error of the shell method.  Where it cannot be computed exactly we evaluate the quality of the shell method by proxy, looking at the accuracy of the hitting probability estimates derived from the capacity estimates.
 \end{itemize}
-We also now include two ways to think about the magnitude of these errors (to gauge what `good agreement' might mean).  First, we compare against the number of direct simulations necessary to achieve comparable accuracy (under the optimistic assumption that the direct simulations are perfectly exact).  Second, we compare the magnitude of the second two types of errors against the first; indeed, if the hitting probabilities vary by initial condition by $\varepsilon$ inside a region, then capacity-based methods (which give only a single estimate) cannot hope to get less error than $\varepsilon/2$.  This provides a kind of lower-bound we can measure against.
-
+We also now include two ways to think about the magnitude of these errors (to gauge what `good agreement' might mean).  First, we compare against the number of direct simulations necessary to achieve comparable accuracy.  Second, we compare the magnitude of the second two types of errors against the first; indeed, if the hitting probabilities vary by initial condition by $\varepsilon$ inside a region, then capacity-based methods (which give only a single estimate) cannot hope to get less error than $\varepsilon/2$.  This provides a kind of lower-bound we can measure against.
 
 
 }
