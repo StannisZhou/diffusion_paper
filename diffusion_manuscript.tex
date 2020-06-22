@@ -436,11 +436,11 @@ We considered two broadly different variations of the set-up: one (Brownian diff
 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
-    \includegraphics[width=\textwidth]{results_brownian_motion.png}
+    \includegraphics[width=\textwidth]{results_brownian_motion.pdf}
     \caption{\label{fig:results_brownian_motion}{\bf 
     Capacities and first-passage probabilities: Brownian motion.}
-We consider three different cases (small, medium and large), as illustrated in the left side of the figure.  In each case we have two targets and are interested in the probability that a Brownian motion will first encounter target $A$ before target $B$.  We consider 100 random initial locations,  confined to be outside of the small black circles. For each location, we use 2,000 runs of the diffusion to estimate the probability of hitting target $A$ before $B$.   We plot these 100 estimates as a histogram.  The histograms reveal that the hitting probabilities fall within a narrow range, especially when the targets are small.  Moreover, we see that the location of this narrow range can be accurately predicted by the capacity-based approximation in Theorem \ref{thm:main_thm} ($p_A$ from equation \ref{eqn:p_A},
-shown as a dotted red line); the capacity-based approximation, derived from purely {\em local} computations within the neighborhoods of the targets, always falls inside the span of the histogram.  We can further compare the capacity-based value to an estimate of the mean hitting probability for a process initialized at a random location, which is just the relative frequency of hitting $A$ before $B$ in  200,000 additional simulations from random initial conditions (shown as a  solid red line.)}
+    We consider three different cases (small, medium and large), as illustrated in the left side of the figure.  In each case we have two targets and are interested in the probability that a Brownian motion will first encounter target $A$ before target $B$.  We consider 100 random initial locations,  confined to be outside of the small black circles. For each location, we use 2,000 runs of the diffusion to estimate the probability of hitting target $A$ before $B$.   We plot these 100 estimates as a histogram.  The histograms reveal that the hitting probabilities fall within a narrow range (0.0295, 0.0420, 0.1060 for small, medium and large targets, respectively), especially when the targets are small.  Moreover, we see that the location of this narrow range can be accurately predicted by the capacity-based approximation in Theorem \ref{thm:main_thm} ($p_A$ from equation \ref{eqn:p_A},
+shown as a dotted red line, 0.1104, 0.2219, 0.5000 for small, medium and large targets, respectively); the capacity-based approximation, derived from purely {\em local} computations within the neighborhoods of the targets, always falls inside the span of the histogram.  We can further compare the capacity-based value to an estimate of the mean hitting probability for a process initialized at a random location, which is just the relative frequency of hitting $A$ before $B$ in  200,000 additional simulations from random initial conditions (shown as a  solid red line, 0.0975, 0.2223, 0.4903 for small, medium and large targets, respectively.)}
 \end{minipage}}
 \end{figure}
 
@@ -604,7 +604,7 @@ $x \in \Omega\setminus \tA \cup \tB$. For each of the three target sizes, we use
 
 \begin{figure}
 \fbox{\begin{minipage}{\textwidth}
-    \includegraphics[width=\textwidth]{results_nontrivial.png}
+    \includegraphics[width=\textwidth]{results_nontrivial.pdf}
     \caption{\label{fig:results_nontrivial} {\bf  Capacities and first-passage probabilities: nontrivial energy landscapes.} See Figure \ref{fig:results_brownian_motion}. The setup here is the same
  except that the targets $A$ and $B$ are only partially contained in $\Omega$, and the energy landscapes become complicated near the targets. 
 The histograms show that the first-passage probabilities 
@@ -616,7 +616,7 @@ $p_A$ (equation \ref{eqn:p_A}). Hence the dotted red line
 represents the {\em estimated} value,
 $\hat{p}_A$, computed using the shell method (cf. Figure 
 \ref{fig:results_brownian_motion}). Nonetheless, 
-these estimates fall within the span of the respective histograms in all three examples.}
+these estimates fall within the span of the respective histograms in all three examples. For small, medium and large targets, the ranges of the 100 hitting probabilities are 0.0495, 0.0530, 0.6430, respectively; the capacity-based hitting probabilities (dotted lines) are 0.8217, 0.3815, 0.5219, respectively; the mean hitting probabilities (solid lines), estimated using 200,000 additional simulations from random initial conditions, are 0.8154, 0.3893, 0.5069, respectively.}
 \end{minipage}}
 \end{figure}
 
